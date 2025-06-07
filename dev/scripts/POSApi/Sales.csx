@@ -80,12 +80,17 @@ public class Sale
     public string Storage_id { get; set; } 
     // If inventory is affected
     public int IsInventoryAffected { get; set; } // If the sale is already in the inventory
-    // Sale details
+    public string Status { get; set; } = "PENDING"; // Sale status, default is PENDING
+    // Sale observations
+    public string Observations { get; set; } = "";
+    // Payment status
+    public string Payment_status { get; set; }
+    // Pendig reason
+    public string Pending_reason { get; set; }
+    public string Reason_code { get; set; }
     public List<Sale_detail> Sale_detail { get; set; } = [];
     // Payment methods
     public List<Payments> Payments { get; set; } = [];
-
-
 
 }
 
@@ -177,7 +182,7 @@ public class Classification
 /// </summary>
 public class Payments
 {
-    public string id { get; set; }
+    public string Id { get; set; }
     public string Account_id { get; set; }
     public string Sale_id { get; set; }
     public string Description { get; set; }

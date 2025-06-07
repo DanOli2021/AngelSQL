@@ -261,7 +261,7 @@ string SavePayment(AngelApiOperation api, Translations translation)
         // Crear el objeto de pago
         payment = new()
         {
-            id = data.id,
+            Id = data.id,
             Sale_id = data.Sale_id,
             DateTime = data.DateTime,
             Description = data.Description ?? "",
@@ -279,7 +279,7 @@ string SavePayment(AngelApiOperation api, Translations translation)
     }
     else
     {
-        payment = sale.Payments.FirstOrDefault(p => p.id == data.id.ToString());
+        payment = sale.Payments.FirstOrDefault(p => p.Id == data.id.ToString());
 
         if (payment == null)
         {
@@ -390,7 +390,7 @@ string DeletePayment(AngelApiOperation api, Translations translation)
 
     sale.Payments ??= [];
 
-    Payments payment = sale.Payments.FirstOrDefault(p => p.id == data.Payment_id.ToString());
+    Payments payment = sale.Payments.FirstOrDefault(p => p.Id == data.Payment_id.ToString());
 
     if (payment == null)
     {

@@ -178,7 +178,7 @@ async function GetDefaultCurrency() {
         return "USD"; // Devolver el valor predeterminado si no hay datos
     }
 
-    default_currency = JSON.parse( responce_query.result );
+    default_currency = JSON.parse(responce_query.result);
     return default_currency; // Devolver el valor de la moneda predeterminada
 
 }
@@ -1406,6 +1406,18 @@ window.onload = async function () {
     document.getElementById("button_accept").addEventListener("click", function () {
         SavePaymentMethod();
     });
+
+    const logoImg = document.getElementById('sku_image');
+
+    getDominantColor(logoImg, function (color) {
+        document.getElementById('btnLogo').style.backgroundColor = color;
+    });
+
+    // logoImg.onload = function () {
+    //     getDominantColor(logoImg, function (color) {
+    //         document.getElementById('btnLogo').style.backgroundColor = color;
+    //     });
+    // };
 
 
     textSku.focus();

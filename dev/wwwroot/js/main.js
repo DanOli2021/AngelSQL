@@ -669,10 +669,63 @@ function createDialog(message, onAccept) {
 
 
 
-function Round( num, precision = 2 ) {
-    if ( isNaN( num ) ) {
+function Round(num, precision = 2) {
+    if (isNaN(num)) {
         return 0;
     }
-    var factor = Math.pow( 10, precision );
-    return Math.round( num * factor ) / factor;
+    var factor = Math.pow(10, precision);
+    return Math.round(num * factor) / factor;
+}
+
+
+
+function getDominantColor(imgElement, callback, borderSize = 10) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (!imgElement.complete) {
+        imgElement.onload = () => getDominantColor(imgElement, callback, borderSize);
+        imgElement.onerror = () => console.error("No se pudo cargar la imagen.");
+        return;
+    }
+
+    const width = imgElement.width;
+    const height = imgElement.height;
+    canvas.width = width;
+    canvas.height = height;
+
+    context.drawImage(imgElement, 0, 0, width, height);
+
+    const colorCounts = {};
+    let maxCount = 0;
+    let dominantColor = { r: 255, g: 255, b: 255 };
+
+    const processPixel = (x, y) => {
+        const pixelData = context.getImageData(x, y, 1, 1).data;
+        const r = pixelData[0], g = pixelData[1], b = pixelData[2], a = pixelData[3];
+
+        if (a < 125 || (r > 240 && g > 240 && b > 240) || (r < 15 && g < 15 && b < 15)) {
+            return;
+        }
+
+        const rgbString = `${r},${g},${b}`;
+        colorCounts[rgbString] = (colorCounts[rgbString] || 0) + 1;
+
+        if (colorCounts[rgbString] > maxCount) {
+            maxCount = colorCounts[rgbString];
+            dominantColor = { r, g, b };
+        }
+    };
+
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < borderSize; y++) processPixel(x, y);
+        for (let y = height - borderSize; y < height; y++) processPixel(x, y);
+    }
+    for (let y = borderSize; y < height - borderSize; y++) {
+        for (let x = 0; x < borderSize; x++) processPixel(x, y);
+        for (let x = width - borderSize; x < width; x++) processPixel(x, y);
+    }
+
+    const finalColor = `rgb(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b})`;
+    callback(finalColor);
 }

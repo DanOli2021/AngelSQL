@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Python.Runtime;
 using Renci.SshNet;
 using System.Collections.Concurrent;
+using System.Drawing;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -25,7 +26,6 @@ if (WindowsServiceHelpers.IsWindowsService())
     Environment.CurrentDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
 }
 
-//Console.WriteLine(Environment.CurrentDirectory);
 string commandLine = string.Join(" ", args);
 
 string config_file = Environment.CurrentDirectory + "/dev/config/AngelSQL.csx";
@@ -139,6 +139,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
     ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location) : default,
     WebRootPath = parameters["wwwroot"],
 });
+
 
 // End Create a builder for the web app
 // Server DB
@@ -1330,11 +1331,24 @@ _ = Task.Run(() =>
 void PutHeader()
 {
     //Console.Clear();
-    AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Magenta);
-    AngelDB.Monitor.ShowLine(" =>  DataBase software, powerful and simple at the same time", ConsoleColor.Magenta);
-    AngelDB.Monitor.ShowLine(" =>  We explain it to you in 20 words or fewer:", ConsoleColor.Magenta);
+    AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Green);
+    AngelDB.Monitor.ShowLine(" =>  DataBase software, powerful and simple at the same time", ConsoleColor.Green);
+    AngelDB.Monitor.ShowLine(" =>  We explain it to you in 20 words or fewer:", ConsoleColor.Green);
     AngelDB.Monitor.ShowLine(" =>  AngelSQL", ConsoleColor.Green);
-    AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Magenta);
+
+    if (parameters["use_proxy"] == "yes") 
+    {
+        AngelDB.Monitor.ShowLine("Public URL: " + server_db.Prompt("VAR db_public_url"), ConsoleColor.Cyan);
+    }
+
+    foreach (string item in app.Urls)
+    {
+        AngelDB.Monitor.ShowLine("Listen on: " + item, ConsoleColor.Yellow);
+    }
+
+    AngelDB.Monitor.ShowLine("APP DIRECTORY: " + app_directory, ConsoleColor.Gray);
+
+    AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Green);
 
 }
 
@@ -1416,8 +1430,6 @@ app.Use(async (context, next) =>
     await next.Invoke();
 
 });
-
-
 
 
 void ActivateProxy()
@@ -1525,11 +1537,10 @@ void OnPowerChange(object s, PowerModeChangedEventArgs e)
     }
 }
 
-
 //Save Account for remote orders
 File.WriteAllText(parameters["wwwroot"] + "/js/account.js", $"var angelsql_account = '{parameters["public_account"]}'");
 
-server_db.Prompt("VAR db_public_url = ''");
+//server_db.Prompt("VAR db_public_url = ''");
 
 // Activamos el proxy
 ActivateProxy();
@@ -1541,6 +1552,7 @@ if (WindowsServiceHelpers.IsWindowsService())
 }
 else
 {
+
     //Mapping the AngelPOS API (POST)
     AngelDB.DB prompt_db = new AngelDB.DB();
     prompt_db.Prompt($"DB USER {parameters["master_user"]} PASSWORD {parameters["master_password"]} DATA DIRECTORY {parameters["data_directory"]}", true);
@@ -1550,7 +1562,11 @@ else
     prompt_db.Prompt($"USE DATABASE {parameters["database"]}", true);
 
     app.RunAsync();
+
+    Console.Clear();
+
     PutHeader();
+
 
     DbLanguage language = new DbLanguage();
     language.SetCommands(AngelSQL.AngelSQLCommands.DbCommands());

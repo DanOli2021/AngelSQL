@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Table Assignment</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+
+
+    <link rel="stylesheet" type="text/css" href="./css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/responsive.dataTables.css">
+    <script src="./js/code.jquery.com_jquery-3.7.0.min.js"></script>
+    <script src="./js/jquery.dataTables.min.js"></script>
+    <script src="./js/dataTables.responsive.min.js"></script>
+    <script src="./js/cdn.datatables.net_buttons_2.4.0_js_dataTables.buttons.min.js"></script>
+    <script src="./js/cdn.datatables.net_buttons_2.4.0_js_buttons.print.min.js"></script>
+
+    <script src="./js/index_translate.js"></script>
+    <script src="./js/main.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="row justify-content-center">
+
+            <div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+
+                <div class="col-sm-12">
+                    <a class="btn btn-primary btn-block" href="menu.html" id="nav_link"
+                        style="width: 100%; margin-bottom: 10px;">
+                        <span style="float: left;">
+                            <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px">
+                        </span>
+                        <span id="assign_tables_menu">
+                            Menu
+                        </span>
+                    </a>
+                </div>
+
+                <img src="./images/waiter_table.webp" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:256px">
+                <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Table Assignment</h1>
+
+                <div class="col-sm-6">
+                    <button type="button" id="ButtonNew" class="btn btn-primary btn-block" style="width: 100%;"
+                        onclick="showContentDialog('', true)" style="margin-top: 20px;">
+                        <span id="assign_tables_new">
+                            New table mapping (F2)
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-6">
+                    <button type="button" id="ButtonSearch" class="btn btn-secondary btn-block" style="width: 100%;"
+                        onclick="GetData()" style="margin-bottom: 20px;margin-top: 20px;">
+                        <span id="assign_tables_refresh">
+                            Refresh (F4)
+                        </span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div id="user_name" class="row" style="margin-top: 10px;">
+            </div>
+
+            <br />
+
+            <div class="col-sm-12">
+                <table id="dataTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th id="id">Id</th>
+                            <th id="Waiter">Waiter</th>
+                            <th id="Name">Name</th>
+                            <th id="Tables_assigned">Tables Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <dialog id="myDialog" class="dialog-box">
+        <h1 id="dialogTittle">Title</h1>
+        <p id="dialogMessage">Message</p>
+        <button id="closeButton" class="btn btn-warning" style="width: 100%;" onclick="closeDialog()">Close</button>
+    </dialog>
+
+    <dialog id="DialogAcceptCancel" class="dialog-box">
+
+        <h1 id="dialogTittleAcceptCancel">Title</h1>
+        <p id="dialogMessageAcceptCancel">Message</p>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <button id="accept" onclick="closeDialogAcceptCancelDialog()" class="btn btn-danger"
+                    style="width: 100%;">Accept</button>
+            </div>
+
+            <div class="col-sm-6">
+                <button id="cancel" onclick="closeDialogAcceptCancelDialog()" class="btn btn-primary"
+                    style="width: 100%;">Cancel</button>
+            </div>
+        </div>
+    </dialog>
+
+
+    <dialog id="capture_form" style="width: 90%;">
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="form-group">
+                    <label for="id" id="waiter_label_id">Id</label>
+                    <input type="text" class="form-control" id="Waiter_id" name="Waiter_id">
+                </div>
+
+                <div class=" form-group" id="waiter_group">
+                    <label for="waiters_list" id="waiter_label_list">Waiter</label>
+                    <select class="form-control" id="waiters_list" name="waiters_list">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="waiter_tables" id="waiter_tables_label">Tables</label>
+                    <input type="text" class="form-control" id="waiter_tables" name="waiter_tables">
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <button type="button" class="btn btn-primary"
+                        style=" text-align: right; margin-top: 20px; width: 100%;" onclick="SaveWaiterData()">
+                        <span id="content_button_save">
+                            Save
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-6">
+                    <button type="button" class="btn btn-danger"
+                        style="text-align: right; margin-top: 20px; width: 100%;"
+                        onclick="showAcceptCancelDialog('Attention','Are you sure you want to remove the Content?', DeleteData)">
+                        <span id="content_button_delete">
+                            Delete
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <button id="closeSkuEdit" class="btn btn-secondary"
+                        style="text-align: right; margin-top: 5px; width: 100%;" onclick="closeContentDialog()"
+                        style="text-align: right;">
+                        <span id="content_button_close">
+                            Close
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+
+    <script>
+
+        function DeleteData() {
+            var id = document.getElementById('Waiter_id').value;
+
+            closeDialogAcceptCancelDialog();
+
+            var data_result = DeleteWaitersTables(Token.username, Token.token, id);
+
+            data_result.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Attention", responce_query.result);
+                    console.log(responce_query.result);
+                    return;
+                }
+
+                showDialog("Attention", "Waiter Table Assign " + id + " deleted successfully");
+                closeContentDialog();
+                GetData();
+                return;
+
+            });
+        }
+
+        function showContentDialog(waiter_data, new_waiter = false) {
+
+            document.getElementById('id').value = "";
+            document.getElementById('id').readOnly = true;
+
+            let select = document.getElementById('waiters_list');
+
+            while (select.options.length > 0) {
+                select.remove(0);
+            }
+
+            var waiters_data = GetWaiters(Token.username, Token.token);
+
+            waiters_data.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    console.log(responce_query.result);
+                    showDialog("Error:", responce_query.result);
+                    return;
+                }
+
+                let waiters = JSON.parse(responce_query.result);
+
+                waiters.forEach(element => {
+                    var option = document.createElement("option");
+                    option.text = element.id + " - " + element.Name;
+                    option.value = element.id;
+
+                    if (!new_waiter) {
+                        if (element.id == waiter_data.id) {
+                            option.selected = true;
+                            select.value = element.id;
+                        }
+                    }
+
+                    select.add(option);
+                });
+
+                if (new_waiter) {
+                    var dialog = document.getElementById("capture_form");
+                    dialog.showModal();
+                    document.getElementById('waiters_list').value = "";
+                    document.getElementById('waiter_tables').value = "";
+                    document.getElementById('Waiter_id').readOnly = false;
+                    document.getElementById('waiters_list').focus();
+                    return;
+                }
+
+                var data_result = GetTablesFromWaiter(Token.username, Token.token, waiter_data.id);
+
+                data_result.then(function (query) {
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        console.log(responce_query.result);
+                        return;
+                    }
+
+                    let waiter_tables = JSON.parse(responce_query.result);
+                    var dialog = document.getElementById("capture_form");
+                    dialog.showModal();
+
+                    let id = document.getElementById('id');
+                    id.readOnly = true;
+                    document.getElementById('Waiter_id').value = waiter_tables.Id;
+                    document.getElementById('waiters_list').value = waiter_tables.Waiter;
+                    document.getElementById('waiter_tables').value = waiter_tables.Tables_assigned;
+                    document.getElementById('waiters_list').focus();
+
+                });
+
+            });
+
+
+        }
+
+        function closeContentDialog() {
+            var dialog = document.getElementById("capture_form");
+            dialog.close();
+        }
+
+        function SaveWaiterData() {
+            let waiter = {};
+
+            waiter.Id = document.getElementById('Waiter_id').value;
+            waiter.Waiter = document.getElementById('waiters_list').value;
+            waiter.Name = document.getElementById('waiters_list').options[document.getElementById('waiters_list').selectedIndex].text;
+            waiter.Tables_assigned = document.getElementById('waiter_tables').value;
+
+            console.log(document.getElementById('waiter_tables').value);    
+
+            var data_result = SaveWaitersTables(Token.username, Token.token, waiter);
+            data_result.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error:", responce_query.result);
+                    console.log(responce_query.result);
+                    return;
+                }
+
+                showDialog("Success:", "Waiter Saved");
+                GetData();
+
+            });
+
+        }
+
+        function GetData() {
+
+            var datos = GetWaitersTables(Token.username, Token.token);
+            
+            datos.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    console.log(responce_query.result);
+                    showDialog("Error:", responce_query.result);
+                    return;
+                }
+
+                tabla.clear().rows.add(JSON.parse(responce_query.result)).draw();
+                tabla.columns.adjust().draw();
+
+            });
+
+        }
+
+        document.addEventListener('keydown', function (event) {
+
+            if (event.key === "F2") {
+                showContentDialog('', true);
+            }
+
+            if (event.key === "F4") {
+                GetData();
+            }
+
+        });
+
+        var tabla;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var datos = [];
+
+            tabla = $('#dataTable').DataTable({
+                responsive: true,
+                data: datos,
+                bFilter: true,
+                dom: 'Bfrtip',
+                buttons: ['print'],
+                columns: [
+                    {
+                        // Columna de botón
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-primary">+</button>';
+                        }
+                    },
+                    { data: 'id' },
+                    { data: 'Waiter' },
+                    { data: 'Name' },
+                    { data: 'Tables_assigned' }
+                ]
+            });
+
+            $('#dataTable').on('click', 'td', function () {
+                var index = $(this).index();
+                if (index === 0) { // Si es la tercera columna (los índices comienzan en 0)
+                    var datosFila = tabla.row($(this).parents('tr')).data();
+                    showContentDialog(datosFila);
+                    // Aquí se ejecuta el código al hacer clic en la tercera columna
+                }
+
+                if (index == 4) {
+                    var datosFila = tabla.row($(this).parents('tr')).data();
+                    window.open("contentdetail.html?content_id=" + datosFila.id, "_self");
+                }
+
+            });
+
+            GetData();
+            //translate_content(language);
+
+        });
+
+    </script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

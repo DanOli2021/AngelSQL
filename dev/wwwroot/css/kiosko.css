@@ -1,0 +1,251 @@
+:root {
+  --bs-primary: #2C3E50;
+  --bs-secondary: #18BC9C;
+  --bs-success: #27AE60;
+  --bs-danger: #C0392B;
+  --bs-warning: #F39C12;
+  --bs-info: #3498DB;
+  --bs-light: #F4F6F8;
+  --bs-dark: #1A252F;
+
+  --bs-body-color: #2C3E50;
+  --bs-secondary-color: #7F8C8D;
+  --bs-link-color: #2980B9;
+  --bs-body-bg: #ECF0F1;
+  --bs-border-radius: 0.5rem;
+  --bs-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}/* ---------------------
+     Botones personalizados
+  ------------------------ */
+  .btn {
+    border-radius: var(--bs-border-radius);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    box-shadow: var(--bs-box-shadow);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Botón Principal */
+  .btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background-color: #e64a19;
+    border-color: #e64a19;
+  }
+  
+  /* Botón Éxito */
+  .btn-success {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    color: #fff;
+  }
+  .btn-success:hover {
+    background-color: #388e3c;
+    border-color: #388e3c;
+  }
+  
+  /* Botón Alerta */
+  .btn-danger {
+    background-color: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: #fff;
+  }
+  .btn-danger:hover {
+    background-color: #c62828;
+    border-color: #c62828;
+  }
+  
+  /* Botón Secundario */
+  .btn-secondary {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: #212121;
+  }
+  .btn-secondary:hover {
+    background-color: #ffb300;
+    border-color: #ffb300;
+  }
+  
+  /* Botón Info */
+  .btn-info {
+    background-color: var(--bs-info);
+    border-color: var(--bs-info);
+    color: #fff;
+  }
+  .btn-info:hover {
+    background-color: #0097a7;
+    border-color: #0097a7;
+  }
+
+  /* ---------------------
+   Alerts personalizados
+------------------------ */
+.alert {
+    border-radius: var(--bs-border-radius);
+    font-weight: 500;
+    border: none;
+    padding: 1rem;
+  }
+  
+  .alert-primary {
+    background-color: #ffccbc;
+    color: var(--bs-primary);
+  }
+  
+  .alert-success {
+    background-color: #c8e6c9;
+    color: var(--bs-success);
+  }
+  
+  .alert-danger {
+    background-color: #ffcdd2;
+    color: var(--bs-danger);
+  }
+  
+  .alert-warning {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  .alert-info {
+    background-color: #b2ebf2;
+    color: var(--bs-info);
+  }
+  
+  
+  /* ---------------------
+     Badges personalizados
+  ------------------------ */
+  .badge {
+    padding: 0.5em 0.75em;
+    font-size: 0.85rem;
+    border-radius: 1rem;
+    font-weight: 600;
+  }
+  
+  .badge-primary {
+    background-color: var(--bs-primary);
+    color: #fff;
+  }
+  
+  .badge-success {
+    background-color: var(--bs-success);
+    color: #fff;
+  }
+  
+  .badge-danger {
+    background-color: var(--bs-danger);
+    color: #fff;
+  }
+  
+  .badge-warning {
+    background-color: var(--bs-warning);
+    color: #212121;
+  }
+  
+  .badge-info {
+    background-color: var(--bs-info);
+    color: #fff;
+  }
+  
+  
+  /* ---------------------
+     Inputs (form-control)
+  ------------------------ */
+  .form-control {
+    border-radius: var(--bs-border-radius);
+    border: 1px solid #ccc;
+    box-shadow: none;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s;
+  }
+  
+  .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 87, 34, 0.25);
+  }
+  
+  .form-select {
+    border-radius: var(--bs-border-radius);
+    border: 1px solid #ccc;
+  }
+  
+  .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(255, 87, 34, 0.25);
+  }
+  
+
+  /* Tabla con caché y flow */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #fff;
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Encabezados */
+.table thead {
+  background-color: var(--bs-primary);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Celdas */
+.table td, .table th {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border: none;
+}
+
+/* Filas alternadas */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #fff3e0;
+}
+
+/* Hover */
+.table-hover tbody tr:hover {
+  background-color: #ffe0b2;
+}
+
+/* Totales en negritas ya los tienes, pero aquí se remarca */
+.table td:last-child {
+  font-weight: bold;
+}
+
+/* Responsive friendly */
+.table-responsive {
+  border-radius: var(--bs-border-radius);
+  overflow-x: auto;
+}
+
+.table td:first-child {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table td:first-child:hover {
+  white-space: normal;
+  overflow: visible;
+  background-color: #fff8e1;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+footer a {
+    color: #666;
+    margin: 0 0.5rem;
+    text-decoration: none;
+}
+
+    footer a:hover {
+        text-decoration: underline;
+    }

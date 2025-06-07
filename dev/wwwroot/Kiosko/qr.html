@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>QR para Pedidos Kiosko</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            #printButton {
+                display: none !important;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 1.8cm;
+        }
+
+        h1 {
+            margin-bottom: 0.5em;
+            font-size: 2.5em;
+        }
+
+        #qr {
+            margin: 2em auto;
+            width: 8cm;
+            height: 8cm;
+        }
+
+        #urlDisplay {
+            font-size: 1.2em;
+            margin-top: 1em;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <button id="printButton" class="btn btn-light" style="width: 100%;" onclick="window.print()">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="businessinfo">Kiosko</div>
+
+    <h1>¡Haz tu pedido aquí!</h1>
+    <div id="qr" style="display: flex; align-items: center; justify-content: center;"></div>
+    <div id="urlDisplay"></div>
+
+    <script>
+        var Token;
+        var BusinessInfo;
+
+        window.onload = async function () {
+            if (sessionStorage.getItem("Token") == null) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            language = getSelectedLanguage();
+            Token = JSON.parse(sessionStorage.getItem("Token"));
+
+            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+
+            if (response.startsWith("Error:")) {
+                alert("Error to get the Business Info: " + response);
+                return;
+            }
+
+            var query = JSON.parse(response);
+
+            if (query.result.startsWith("Error:")) {
+                alert("Error to get the Business Info: " + query.result);
+                return;
+            }
+
+            BusinessInfo = JSON.parse(query.result);
+
+            var business_html = "<img src='" + BusinessInfo.Logo + "' style='width: 200px; max-width: 200px;'><br>";
+            business_html += "<strong>" + BusinessInfo.Name + "</strong><br>";
+            business_html += BusinessInfo.Slogan + "<br>";
+            business_html += BusinessInfo.Address + "<br>";
+            business_html += BusinessInfo.Phone + "<br>";
+            business_html += BusinessInfo.Email + "<br>";
+            business_html += BusinessInfo.Website;
+
+            document.getElementById('businessinfo').innerHTML = business_html;
+            document.getElementById('businessinfo').style.fontSize = "1.2em";
+
+            response = await sendToAngelPOST(Token.User, "pos_backend/pos_serverdata", Token.Token, "PublicUrl", "");
+
+            if (response.startsWith("Error:")) {
+                alert("Error to get the URL: " + response);
+                return;
+            }
+
+            var jsonData = JSON.parse(response);
+
+            if (jsonData.result.startsWith("Error:")) {
+                alert("Error to get the URL: " + response.result);
+                return;
+            }
+
+            var account = Token.User.split("@")[1];
+
+            const publicUrl = jsonData.result + "kiosko/kiosko.html?account=" + account;
+            document.getElementById('urlDisplay').innerText = publicUrl;
+
+            new QRCode(document.getElementById("qr"), {
+                text: publicUrl,
+                width: 300,
+                height: 300,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        };
+    </script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+
+</html>

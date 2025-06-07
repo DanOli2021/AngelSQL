@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Skus)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<div id="loadingOverlay"
+    style="display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.8); text-align: center;">
+    <div class="spinner-border text-primary" role="status"
+        style="width: 5rem; height: 5rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p
+        style="position: absolute; top: 65%; left: 50%; transform: translateX(-50%); font-size: 1.5rem; font-weight: bold;">
+        Saving, please wait...</p>
+</div>
+
+
+<body>
+    <div class="container">
+
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="inventory.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Inventory</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/SkuCatalog_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Skus)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+
+        <div class="row col-12" style="margin-top: 10px;">
+
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="ImporFromSpreadSheet()">
+                    <img src="images/importfromexcel_small.png" alt="logo" style="width:48px;" class="me-2">
+                    <span id="menu_log_out">Imports from spreadsheet</span>
+                </a>
+            </div>
+
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="EditSku('')">
+                    <img src="images/icons/new.png" alt="logo" style="width:48px;" class="me-2">
+                    <span id="menu_menu">New Sku</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+
+            <div class="col-9">
+                <input type="text" id="searchsku" class="form-control" style="width: 100%;"
+                    placeholder="Search SKU..." />
+            </div>
+
+            <div class="col-3">
+                <button id="search_button" class="btn btn-primary" style="width: 100%;">Search</button>
+            </div>
+
+            <div id="tableContainer"></div>
+
+        </div>
+
+
+    </div>
+
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <dialog id="sku_edit" style="width: 60%; overflow-y: auto;">
+        <div class="form-group">
+            <h1 id="sku_edit_title" class="form-group">Edit SKU</h1>
+
+            <table class="table table-striped table-bordered table-hover" id="sku_edit_table">
+                <tr>
+                    <td><label for="sku_id" class="form-label">SKU</label></td>
+                    <td colspan="3"><input type="text" id="sku_id" class="form-control" /></td>
+                </tr>
+                <tr>
+                    <td><label for="sku_description" class="form-label">Description</label></td>
+                    <td colspan="3"><input type="text" id="sku_description" class="form-control" /></td>
+                </tr>
+                <tr>
+                    <td><label for="sku_price" class="form-label">Price</label></td>
+                    <td><input type="number" id="sku_price" class="form-control" step="0.01" /></td>
+                    <td><label for="sku_cost" class="form-label">Cost</label></td>
+                    <td><input type="number" id="sku_cost" class="form-control" step="0.01" /></td>
+                </tr>
+                <tr>
+                    <td><label for="sku_tax" class="form-label">Tax %</label></td>
+                    <td><input type="number" id="sku_tax" class="form-control" /></td>
+                    <td><label for="sku_tax_name" class="form-label">Tax Name</label></td>
+                    <td><input type="text" id="sku_tax_name" class="form-control" /></td>
+                </tr>
+                <tr>
+                    <td><label for="sku_tax2" class="form-label">Second Tax %</label></td>
+                    <td><input type="number" id="sku_tax2" class="form-control" /></td>
+                    <td><label for="sku_tax_name2" class="form-label">Second Tax Name</label></td>
+                    <td><input type="text" id="sku_tax_name2" class="form-control" /></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button id="sku_clasification_button" class="btn btn-light btn-lg form-control"
+                            style="margin-bottom: 10px;" onclick="ShowClassifications()">Clasifications</button>
+                    </td>
+                    <td colspan="3">
+                        <textarea id="sku_clasification" class="form-control" rows="3" readonly="true"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="sku_alternative" class="form-label">Alternative SKU</label></td>
+                    <td colspan="3"><input type="text" id="sku_alternative" class="form-control" /></td>
+                </tr>
+                <tr>
+                    <td><label for="sku_main_image" class="form-label">Main Image</label></td>
+                    <td colspan="3">
+                        <img id="sku_main_image" src="" alt="Sku Image"
+                            style="width: 150px; height: auto; margin-bottom: 20px;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="sku_url_image" class="form-label">Img Url</label>
+                    </td>
+                    <td colspan="4">
+                        <input type="text" id="sku_url_image" class="form-control" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="4"><input type="file" id="sku_image" class="form-control" accept="image/*"
+                            style="margin-bottom: 10px;" /></td>
+                </tr>
+
+            </table>
+
+            <table class="table table-striped table-bordered table-hover" id="sku_edit_table">
+                <tr>
+                    <td><button id="sku_edit_save_button" class="btn btn-success btn-lg form-control col-6"
+                            style="margin-bottom: 10px;" onclick="Save();">Save</button></td>
+
+                    <td><button id="sku_edit_delete_button" class="btn btn-warning btn-lg form-control col-6"
+                            style="margin-bottom: 10px;" onclick="ConfirmDeleteSku();">Delete</button></td>
+
+                    <td><button id="sku_edit_cancel_button" class="btn btn-danger btn-lg form-control col-6"
+                            style="margin-bottom: 10px;">Cancel</button></td>
+
+                </tr>
+
+            </table>
+
+
+
+        </div>
+    </dialog>
+
+
+    <dialog id="checkDialog" style="width: 400px; padding: 20px;">
+        <h5 class="mb-3">Selecciona opciones</h5>
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar...">
+        <div id="checkboxContainer" class="form-check" style="max-height: 300px; overflow-y: auto;"></div>
+        <div class="text-end mt-3">
+            <button id="confirmBtn" class="btn btn-success">Aceptar</button>
+            <button onclick="document.getElementById('checkDialog').close()"
+                class="btn btn-secondary ms-2">Cancelar</button>
+        </div>
+    </dialog>
+
+
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <dialog id="checkDialog" style="width: 400px; padding: 20px;">
+        <h5 class="mb-3">Select options</h5>
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar...">
+        <div id="checkboxContainer" class="form-check" style="max-height: 300px; overflow-y: auto;"></div>
+        <div class="text-end mt-3">
+            <button id="confirmBtn" class="btn btn-success">Accept</button>
+            <button onclick="document.getElementById('checkDialog').close()"
+                class="btn btn-secondary ms-2">Cancel</button>
+        </div>
+    </dialog>
+
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <script>
+
+        function ImporFromSpreadSheet() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".xlsx,.xls";
+            input.click();
+
+            input.onchange = async (e) => {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function (event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                    var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "SaveImportSkus", json);
+
+                    response.then(function (query) {
+
+                        if (query.startsWith("Error:")) {
+                            ShowDialog("Alert", query);
+                            return;
+                        }
+
+                        let responce_query = JSON.parse(query);
+
+                        if (responce_query.result.startsWith("Error:")) {
+                            ShowDialog("Alert", responce_query.result);
+                            return;
+                        }
+
+                        if (responce_query.result == "Ok.") {
+                            ShowDialog("Alert", "Skus imported correctly.");
+                            SearchSkus(":ALL");
+                        } else {
+                            ShowDialog("Alert", "Failed to save skus info.");
+                        }
+
+                    });
+
+                };
+
+                reader.readAsArrayBuffer(file);
+
+            };
+        }
+
+        async function ShowClassifications() {
+
+            const classifications = document.getElementById("sku_clasification");
+
+            try {
+                var response = await sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "GetMany", ":ALL");
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", response);
+                    return;
+                }
+
+                let responce_query = JSON.parse(response);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const dataArray = JSON.parse(responce_query.result);
+
+                showCheckDialog(dataArray, classifications.value).then((selected) => {
+                    if (selected != null) {
+                        classifications.value = selected;
+                    }
+                });
+
+
+            } catch (error) {
+                ShowDialog("Error", "An error occurred while saving: " + error.message);
+            } finally {
+                document.getElementById("sku_edit_save_button").disabled = false;
+            }
+
+        }
+
+
+        async function showCheckDialog(dataArray, selectedCsv) {
+            return new Promise((resolve) => {
+                const dialog = document.getElementById("checkDialog");
+                const container = document.getElementById("checkboxContainer");
+                const searchInput = document.getElementById("searchInput");
+                const confirmBtn = document.getElementById("confirmBtn");
+
+                // Guardamos estado de selección
+                const selectedSet = new Set(selectedCsv.split(',').map(x => x.trim()));
+
+                const updateSelectedFromDOM = () => {
+                    const allCheckboxes = container.querySelectorAll('input[type="checkbox"]');
+                    for (const checkbox of allCheckboxes) {
+                        if (checkbox.checked) selectedSet.add(checkbox.value);
+                        else selectedSet.delete(checkbox.value);
+                    }
+                };
+
+                const renderCheckboxes = (filter = '') => {
+                    container.innerHTML = '';
+                    const filtered = dataArray.filter(item =>
+                        item.id.toString().includes(filter) ||
+                        item.Description.toLowerCase().includes(filter.toLowerCase())
+                    );
+
+                    for (const item of filtered) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'form-check';
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.className = 'form-check-input';
+                        checkbox.value = item.id;
+                        checkbox.id = `chk_${item.id}`;
+                        checkbox.checked = selectedSet.has(item.id.toString());
+
+                        const label = document.createElement('label');
+                        label.className = 'form-check-label';
+                        label.setAttribute('for', checkbox.id);
+                        label.innerText = `${item.id} - ${item.Description}`;
+
+                        wrapper.appendChild(checkbox);
+                        wrapper.appendChild(label);
+                        container.appendChild(wrapper);
+                    }
+                };
+
+                searchInput.value = '';
+                renderCheckboxes();
+
+                searchInput.oninput = () => {
+                    updateSelectedFromDOM(); // guarda el estado antes de renderizar
+                    renderCheckboxes(searchInput.value);
+                };
+
+                confirmBtn.onclick = () => {
+                    updateSelectedFromDOM();
+                    const selected = Array.from(selectedSet).join(',');
+                    dialog.close();
+                    resolve(selected);
+                };
+
+                dialog.showModal();
+            });
+        }
+
+        function ShowLoader() {
+            document.getElementById("loadingOverlay").style.display = "block";
+        }
+
+        function HideLoader() {
+            document.getElementById("loadingOverlay").style.display = "none";
+        }
+
+        document.getElementById('sku_url_image').addEventListener('change', function () {
+            const url = this.value;
+            const mainImage = document.getElementById('sku_main_image');
+
+            if (url) {
+                mainImage.src = url;
+                mainImage.hidden = false;
+            } else {
+                mainImage.hidden = true;
+            }
+        });
+
+        document.getElementById('sku_url_image').addEventListener('input', function () {
+            const url = this.value;
+            const mainImage = document.getElementById('sku_main_image');
+
+            if (url) {
+                mainImage.src = url;
+                mainImage.hidden = false;
+            } else {
+                mainImage.hidden = true;
+            }
+        });
+
+        document.getElementById('sku_image').addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                const file = this.files[0];
+                if (!file) return;
+
+                const maxSizeMB = 2;
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                    ShowDialog("Error", `The image exceeds the ${maxSizeMB} MB limit.`);
+                    this.value = "";
+                    return;
+                }
+
+                compressAndPreviewImage(file);
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+
+            }
+        });
+
+
+        function compressAndPreviewImage(file) {
+            const maxWidth = 300;
+            const maxHeight = 300;
+
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                img.src = e.target.result;
+            };
+
+            img.onload = function () {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+
+                // Ajustar dimensiones manteniendo proporción
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL("image/jpeg", 0.6); // calidad 60%
+
+                const mainImage = document.getElementById('sku_main_image');
+
+                // Mostrar imagen forzando recarga
+                mainImage.hidden = true;
+                mainImage.src = ""; // limpia primero
+                setTimeout(() => {
+                    document.getElementById('sku_url_image').value = "";
+                    mainImage.src = compressedBase64;
+                    mainImage.hidden = false;
+                }, 10);
+
+                // Limpiar el input file solo después de asignar imagen
+                mainImage.onload = () => {
+                    document.getElementById('sku_image').value = "";
+                };
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("sku_edit_cancel_button").onclick = function () {
+                document.getElementById("sku_edit").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                }
+            });
+
+            document.getElementById("search_button").addEventListener("click", async function () {
+                const searchValue = document.getElementById("searchsku").value.trim();
+                SearchSkus(searchValue);
+
+            });
+
+            document.getElementById("searchsku").onkeydown = function (event) {
+                if (event.key === "Enter") {
+                    const searchValue = document.getElementById("searchsku").value.trim();
+                    SearchSkus(searchValue);
+                }
+            };
+
+            SearchSkus(":ALL");
+
+            translate_menu(language);
+
+            document.getElementById("searchsku").focus();
+
+        };
+
+
+        function SearchSkus(searchValue) {
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "GetSkus", searchValue);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const skus = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-secondary" style="width:100%"><strong>${value}</strong></button>`, // Closing button tag added
+                        "onclick": (val, row) => EditSku(`${val}`),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Price":
+                    {
+                        "html": (value) => `<strong>$${ThousandsSeparator(value)}</strong>`,
+                        "style": "text-align: right;"
+                    },
+                    "Consumption_taxes":
+                    {
+                        "visible": false
+                    }
+                };
+
+                if (responce_query.result == "[]") {
+                    ShowDialog("Alert", "No SKUs found.");
+                    return;
+                }
+
+                renderPaginatedTable(skus, "tableContainer", 20, customCols, "searchsku");
+
+                document.getElementById("searchsku").focus(); // Regresar el foco al campo de búsqueda
+
+            });
+
+        }
+
+
+        function EditSku(skuId) {
+
+            document.getElementById("sku_id").disabled = true;
+
+            if (skuId == null || skuId == "") {
+                document.getElementById("sku_id").disabled = false;
+
+                document.getElementById("sku_id").onblur = function () {
+                    this.value = this.value.trim().toUpperCase();
+                    EditSku(this.value);
+                };
+
+                document.getElementById("sku_id").value = "";
+                document.getElementById("sku_description").value = "";
+                document.getElementById("sku_price").value = "";
+                document.getElementById("sku_cost").value = "";
+                document.getElementById("sku_tax").value = "";
+                document.getElementById("sku_tax_name").value = "";
+                document.getElementById("sku_tax2").value = "";
+                document.getElementById("sku_tax_name2").value = "";
+                document.getElementById("sku_clasification").value = "";
+                document.getElementById("sku_alternative").value = "";
+                document.getElementById("sku_main_image").hidden = true;
+                document.getElementById("sku_main_image").src = ""; // Limpiar la imagen al crear un nuevo SKU
+                document.getElementById("sku_edit").showModal();
+                return;
+
+            }
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "GetSimpleSku", skuId);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    if (responce_query.result == "Error: No data found.") {
+                        return;
+                    }
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                const sku = JSON.parse(responce_query.result);
+
+                document.getElementById("sku_id").value = sku.Id;
+                document.getElementById("sku_description").value = sku.Description;
+                document.getElementById("sku_price").value = Number(sku.Price);
+                document.getElementById("sku_cost").value = Number(sku.Cost);
+                document.getElementById("sku_tax").value = Number(sku.Tax);
+                document.getElementById("sku_tax_name").value = sku.Tax_name;
+                document.getElementById("sku_tax2").value = Number(sku.Tax2);
+                document.getElementById("sku_tax_name2").value = sku.Tax_name2;
+                document.getElementById("sku_clasification").value = sku.Classification;
+                document.getElementById("sku_alternative").value = sku.Sku_alternativ;
+
+                if (sku.Sku_image == null || sku.Sku_image == "") {
+                    document.getElementById("sku_main_image").hidden = true;
+                } else {
+                    document.getElementById("sku_main_image").hidden = false;
+                    document.getElementById("sku_main_image").src = sku.Sku_image; // Asegúrate de que la imagen esté en formato base64
+                }
+
+                if (sku.Sku_image == null || sku.Sku_image == "") {
+                    document.getElementById("sku_url_image").value = "";
+                } else {
+                    document.getElementById("sku_url_image").value = sku.Sku_image + `?t=${Date.now()}`;;
+                    document.getElementById("sku_main_image").src = sku.Sku_image + `?t=${Date.now()}`;;
+                }
+
+                // Mostrar el diálogo de edición
+                document.getElementById("sku_edit").showModal();
+
+            });
+
+        }
+
+
+        function Save() {
+            try {
+                document.getElementById("sku_edit").close(); // Cerrar el diálogo de edición antes de mostrar el loader
+                ShowLoader(); // <-- mostrar loader
+                document.getElementById("sku_edit_save_button").disabled = true;
+                SaveSku();
+            } catch (error) {
+                ShowDialog("Error", "An error occurred while saving: " + error.message);
+            } finally {
+                document.getElementById("sku_edit_save_button").disabled = false;
+            }
+        }
+
+
+        function SaveSku() {
+            const skuId = document.getElementById("sku_id").value;
+            const skuDescription = document.getElementById("sku_description").value;
+            const skuPrice = parseFloat(document.getElementById("sku_price").value);
+            const skuTax = parseFloat(document.getElementById("sku_tax").value);
+            const skuTaxName = document.getElementById("sku_tax_name").value;
+            const skuTax2 = parseFloat(document.getElementById("sku_tax2").value);
+            const skuTaxName2 = document.getElementById("sku_tax_name2").value;
+            const skuClasification = document.getElementById("sku_clasification").value;
+            const skuAlternative = document.getElementById("sku_alternative").value;
+            const skuCost = parseFloat(document.getElementById("sku_cost").value);
+            const skuImage = document.getElementById("sku_main_image").src;
+
+            var sku = {
+                Sku: skuId,
+                Description: skuDescription,
+                Price: skuPrice,
+                Cost: skuCost,
+                Tax: skuTax,
+                TaxName: skuTaxName,
+                Tax2: skuTax2,
+                TaxName2: skuTaxName2,
+                Classification: skuClasification,
+                Sku_alternativ: skuAlternative,
+                Image: skuImage
+            };
+
+            if (document.getElementById("sku_main_image").src.toUpperCase().includes("BASE64") == true) {
+                sku.Image = document.getElementById("sku_main_image").src;
+            }
+            else {
+                sku.Image = ""; // No se puede guardar la imagen en base64, se guarda la URL de la imagen
+            }
+
+            if (document.getElementById("sku_url_image").value != "") {
+                sku.Image = document.getElementById("sku_url_image").value;
+            }
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "SaveImportSkus", JSON.stringify(sku));
+
+            response.then(function (query) {
+
+                console.log("Response: " + query);
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                SearchSkus(":TODAY");
+                document.getElementById("sku_edit").close();
+                HideLoader(); // <-- ocultar loader
+
+
+            });
+
+
+        }
+
+
+        function ConfirmDeleteSku() {
+            const skuId = document.getElementById("sku_id").value;
+
+            ShowAcceptCancelDialog("Delete SKU", "Are you sure you want to delete the SKU: " + skuId + "?",
+                function () {
+                    DeleteSku(skuId);
+                });
+        }
+
+        function DeleteSku(skuId) {
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "DeleteSku", skuId);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                skuId = skuId.trim().toUpperCase();
+
+                // Eliminar el renglón de la tabla
+                const rowToDelete = document.getElementById(skuId);
+
+                if (rowToDelete) {
+                    rowToDelete.parentNode.removeChild(rowToDelete);
+                }
+
+                ShowDialog("Alert", "Sku deleted correctly: " + skuId);
+                document.getElementById("dialog_accept").close();
+                document.getElementById("sku_edit").close();
+                //SearchSkus(skuId);
+
+            });
+        }
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

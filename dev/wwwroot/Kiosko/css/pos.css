@@ -1,0 +1,70 @@
+.matrix {
+    background-color: black;
+    color: lime;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.matrix::placeholder {
+    background-color: black;
+    color: rgb(159, 241, 159);
+    font-family: monospace;
+    font-weight: bold;
+}
+
+/* Estilo cuando el input tiene el foco */
+.matrix:focus {
+    background-color: black;
+    color: lime;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+
+.totals {
+    font-size: 1.5em;
+    text-align: center;
+    background-color: rgb(92, 83, 83);
+}
+
+.skus {
+    font-size: 1.0em;
+    text-align: center;
+    background-color: rgb(55, 59, 55);
+}
+
+
+/* Asegúrate de que todo el cuerpo ocupe el 100% del alto de la ventana */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    margin-left: 12px;
+}
+
+/* El contenedor principal estará centrado horizontalmente pero alineado arriba */
+.container-fluid {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+    /* Ajusta este valor según la distancia deseada desde la parte superior */
+}
+
+.row {
+    width: 100%;
+    /* Para mantener el diseño responsivo */
+}
+
+/* Ajusta el contenido máximo del contenedor para pantallas grandes */
+.container-content {
+    max-width: 900px;
+    width: 100%;
+}
+
+/* Fuerza a los botones a estar en una fila */
+.btn-row {
+    display: flex;
+    justify-content: space-between;
+}
+

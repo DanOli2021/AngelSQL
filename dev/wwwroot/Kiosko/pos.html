@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosko POS Web</title>
+    <link href="../bootstrap-5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link href="css/pos.css" rel="stylesheet">
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <style>
+        #dialog_sale_confirm {
+            width: 70%;
+            max-width: 100%;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            #dialog_sale_confirm {
+                width: 90%;
+            }
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="container-content">
+
+            <!--Barra de inicio-->
+            <div class="row mb-3 text-center" style="margin-top: 10px;">
+                <div class="col-4 themed-grid-col">
+                    <button type="button" id="btnSearchSku" style="background-color: azure; color: black;"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <img src="images/POS_Options.png" alt="" style="width: 60px;">
+                        <span>Search Sku (F3)</span>
+                    </button>
+                </div>
+
+                <div class="col-4 themed-grid-col">
+                    <button type="button" id="btnSearchCustomer" style="background-color: azure; color: black;"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <img src="images/POS_Customer.png" alt="" style="width: 60px;">
+                        <span>Search Customer (F4)</span>
+                    </button>
+                </div>
+
+                <div class="col-4 themed-grid-col">
+                    <button type="button" id="btnConfirmSale" style="background-color: azure; color: black;"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <img src="images/pos_color.png" alt="" style="width: 60px;">
+                        <span>Confirm (F7)</span>
+                    </button>
+                </div>
+
+            </div>
+            <!--Barra de inicio-->
+
+            <!--Logo de la aplicación-->
+            <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                <div class="col-sm-12 themed-grid-col">
+                    <button type="button" id="btnLogo"
+                        class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+                        style="background-color: white; color: white;">
+                        <img id="sku_image" src="images/Kiosko_logo.png" alt="" style="width: 140px;">
+                        <span id="sku_description"
+                            style="color: #3a3939; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                            The best
+                            helper for your business
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="row mb-2 text-center" style="margin-top: 10px;">
+                <div class="col-sm-6 themed-grid-col">
+                    <button type="button" id="btnCustomer" style="background-color: cadetblue;"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <span id="customer_text">Customer (F8): SYS</span>
+                    </button>
+                </div>
+
+                <div class="col-sm-6 themed-grid-col">
+                    <button type="button" id="btnNewCustomer" style="background-color: rgb(108, 130, 131);"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                        <span id="newcustomertext">New Customer</span>
+                    </button>
+                </div>
+
+            </div>
+
+
+            <!--Barra de búsqueda de SKU-->
+            <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                <div class="col-sm-12 themed-grid-col">
+                    <input id="textSku" type="text" class="form-control matrix" placeholder="Barcode SKU (F2)"
+                        autocomplete="off" aria-label="SKU" aria-describedby="basic-addon1" autocomplete="off"
+                        aria-autocomplete="none">
+                </div>
+            </div>
+            <!--Barra de búsqueda de SKU-->
+
+            <!--Botones de totales -->
+            <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                <div class="col-6 themed-grid-col">
+                    <button type="button" id="btnItems"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center totals">
+                        <span id="btnItems_text">Items 0</span>
+                    </button>
+                </div>
+
+                <div class="col-6 themed-grid-col">
+                    <button type="button" id="btnTotal"
+                        class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center totals">
+                        <span id="btnTotal_text">Total $0.00</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row mb-3 justify-content-center">
+                <div id="sale_detail" class="row mb-3 justify-content-center">
+                </div>
+            </div>
+
+            <iframe id="my_frame" style="display:block; width:100%; height:12000px">
+            </iframe>
+
+            <dialog id="search_result" class="dialog-box">
+            </dialog>
+
+            <dialog id="generic_dialog" class="dialog-box">
+                <h1 id="generic_dialog_title">Title</h1>
+                <p id="generic_dialog_message">Message</p>
+                <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;"
+                    onclick="document.getElementById('generic_dialog').close()">Close</button>
+            </dialog>
+
+            <dialog id="dialog_accept" class="dialog-box">
+                <h1 id="dialog_accept_title">Title</h1>
+                <p id="dialog_accept_message">Message</p>
+                <button id="dialog_button_accept" class="btn btn-success"
+                    style="width: 100%; margin-bottom: 10px;">Accept</button>
+                <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;"
+                    onclick="document.getElementById('dialog_accept').close()">Close</button>
+            </dialog>
+
+            <dialog id="dialog_customer" class="dialog-box">
+                <h1 id="dialog_customer_title">Customer</h1>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_id">Customer ID</label>
+                    <input type="text" id="customer_id" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_name">Customer Name</label>
+                    <input type="text" id="customer_name" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_email">Customer Email</label>
+                    <input type="text" id="customer_email" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_phone">Customer Phone</label>
+                    <input type="text" id="customer_phone" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_rfc">Customer RFC</label>
+                    <input type="text" id="customer_rfc" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_address">Customer Address</label>
+                    <input type="text" id="customer_address" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_city">Customer City</label>
+                    <input type="text" id="customer_city" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_state">Customer State</label>
+                    <input type="text" id="customer_state" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_country">Customer country</label>
+                    <input type="text" id="customer_country" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="customer_zip">Customer Zip</label>
+                    <input type="text" id="customer_zip" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="business_line">Business Line</label>
+                    <select id="business_line">
+                    </select>
+                </div>
+
+                <div class="row mb-3 justify-content-center" style="margin-top: 10px;">
+                    <label for="business_line_description">Business Line Description</label>
+                    <input type="text" id="business_line_description" class="form-control" style="margin-bottom: 10px;">
+                </div>
+
+                <button id="customer_dialog_button_accept" class="btn btn-success"
+                    style="width: 100%; margin-bottom: 10px; margin-top: 20px;">Accept</button>
+                <button id="customer_dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+            </dialog>
+
+
+            <dialog id="dialog_sku_edit" class="dialog-box">
+
+                <h1 id="dialog_sku_edit">Edit Sale Item</h1>
+
+                <div class="container col-12 align-content-center">
+
+                    <div class="row mb-3 justify-content-center" style="margin-left: 3px; margin-top: 5px;">
+                        <label for="sku_item">Sku</label>
+                        <input type="text" id="sku_item" class="form-control" style="margin-bottom: 10px;">
+                    </div>
+
+                    <div class="row mb-3 justify-content-center" style="margin-left: 3px; margin-top: 5px;">
+                        <label for="sku_item_description">Description</label>
+                        <textarea id="sku_item_description" rows="5">
+                        </textarea>
+                    </div>
+
+                    <div class="row mb-3 justify-content-center" style="margin-left: 3px; margin-top: 5px;">
+                        <label for="sku_item_price">Price:</label>
+                        <input type="number" id="sku_item_price" class="form-control"
+                            style="margin-bottom: 10px; text-align: right;">
+                    </div>
+
+                    <div class="row mb-3 justify-content-center" style="margin-left: 3px; margin-top: 5px;">
+                        <label for="sku_item_qty">Qty</label>
+                        <input type="number" id="sku_item_qty" class="form-control"
+                            style="margin-bottom: 10px; text-align: right;">
+                    </div>
+
+                    <button id="dialog_skuedit_accept" class="btn btn-success"
+                        style="width: 100%; margin-bottom: 10px;">Accept</button>
+                    <button id="dialog_skuedit_delete" class="btn btn-danger"
+                        style="width: 100%; margin-bottom: 10px;">Delete</button>
+                    <button id="dialog_skuedit_close" class="btn btn-warning"
+                        style="width: 100%; margin-bottom: 10px;">Close</button>
+
+                </div>
+
+            </dialog>
+
+            <dialog id="dialog_sale_confirm">
+                <h1 id="confirm_sale_title"></h1>
+
+                <div class="container col-12 align-content-center">
+                    <div class="row mb-3 justify-content-center" style="margin-top: 5px;">
+
+                        <h1 id="total_confirm" style="margin-bottom: 20px;"></h1>
+
+                        <div class="col-2">
+                            <label for="pay"
+                                style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Pay
+                                $</label>
+                        </div>
+                        <div class="col-4">
+                            <input type="number" id="pay" class="form-control"
+                                style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder; margin-bottom: 10px; text-align: right;">
+                        </div>
+
+                        <div class="col-2">
+                            <label for="payment_method">Payment Method</label>
+                        </div>
+                        <div class="col-4">
+                            <select id="payment_method" data-style="btn-primary" class="selectpicker form-control"
+                                style="margin-bottom: 10px;">
+                                <option value="cash">Cash</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="transfer">Transfer</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-3">
+                            <button id="button_accept"
+                                class="btn btn-info d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                                style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                                <img src="images/Accept_small.png" alt="Cash" style="width: 60px; height: auto;">
+                                <span style="font-weight: bold;">Accept</span>
+                            </button>
+                        </div>
+
+
+                        <div class="col-3">
+                            <button id="button_cash"
+                                class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                                style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                                <img src="images/Cash_small.png" alt="Cash" style="width: 60px; height: auto;">
+                                <span style="font-weight: bold;">Cash</span>
+                            </button>
+                        </div>
+
+                        <div class="col-3">
+                            <button id="button_credit_card"
+                                class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                                style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                                <img src="images/CreditCard_small.png" alt="Credit Card" class="float-left"
+                                    style="width: 60px; height: auto;">
+                                <span style="font-weight: bold;">Credit Card</span>
+                            </button>
+                        </div>
+
+                        <div class="col-3">
+                            <button id="button_transfer"
+                                class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                                style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                                <img src="images/BankTransfer_small.png" alt="Transfer" class="float-left"
+                                    style="width: 60px; height: auto;">
+                                <span style="font-weight: bold;">Transfer</span>
+                            </button>
+                        </div>
+
+                        <div class="col-2">
+                            <label for="currency_id"
+                                style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Currency</label>
+                        </div>
+                        <div class="col-4">
+                            <select id="currency_id" data-style="btn-info" class="selectpicker form-control"
+                                style="margin-top: 10px; margin-bottom: 10px;">
+                            </select>
+                        </div>
+
+                        <div class="col-2">
+                            <label for="exchange_rate"
+                                style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Exchange
+                                rate</label>
+                        </div>
+
+                        <div class="col-4">
+                            <input type="number" id="exchange_rate" class="form-control"
+                                style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder; margin-bottom: 10px; text-align: right;">
+                        </div>
+
+                        <div class="col-3">
+                            <label for="payment_comments">Payment comments</label>
+                        </div>
+                        <div class="col-9">
+                            <textarea id="payment_comments" class="form-control" style="margin-bottom: 10px;">
+                            </textarea>
+                        </div>
+
+                        <hr style="border: 1px solid #000; margin-top: 10px; margin-bottom: 10px;">
+
+                        <div id="tableContainer"></div>
+
+                        <div class="col-4">
+                            <button id="dialog_confirm_accept" class="btn btn-success"
+                                style="width: 100%; height: 60px; margin-bottom: 10px;">Confirm</button>
+                        </div>
+
+                        <div class="col-4">
+                            <button id="dialog_credit_accept" class="btn btn-danger"
+                                style="width: 100%; height: 60px; margin-bottom: 10px;">For Credit</button>
+                        </div>
+
+                        <div class="col-4">
+                            <button id="dialog_confirm_cancel" class="btn btn-warning"
+                                style="width: 100%; height: 60px; margin-bottom: 10px;">Cancel</button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </dialog>
+
+        </div>
+    </div>
+
+    <script src="js/pos.js"></script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.js"></script>
+</body>
+
+</html>

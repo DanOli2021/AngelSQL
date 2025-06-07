@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Table Bill</title>
+
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="./css/3dButtons.css">
+    <script src="./js/index_translate.js"></script>
+    <script src="./js/main.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage()
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="col-sm-12">
+            <a class="btn btn-primary btn-block" href="my_tables.html" id="nav_link"
+                style="width: 100%; margin-bottom: 10px; margin-top: 10px;">
+                <span style="float: left;">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px">
+                </span>
+                <span id="assign_tables_menu">
+                    My Tables
+                </span>
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+
+            <img src="./images/logo.webp" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:256px">
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Restaurant Commander
+                (Table Bill)</h1>
+
+            <div id="user_name" class="row" style="margin-top: 10px;">
+            </div>
+
+            <div class="col-sm-12">
+                <button id="button_neworder" class="btn btn-primary btn-success" href="#" id="nav_link"
+                    style="width: 100%; margin-bottom: 10px; margin-top: 10px;">
+                    <span style="float: left;">
+                        <img src="images/icons/order.webp" alt="logo" style="width:40px; height: 40px;">
+                    </span>
+                    <span id="new order">
+                        <h2>New Order</h2>
+                    </span>
+                </button>
+            </div>
+
+            <div class="col-sm-12">
+                <button id="button_confirmorder" class="btn btn-primary btn-secondary" href="#" id="nav_link"
+                    style="width: 100%; margin-bottom: 5px; margin-top: 5px;">
+                    <span style="float: left;">
+                        <img src="images/icons/order.webp" alt="logo" style="width:40px; height: 40px;">
+                    </span>
+                    <span id="confirm order">
+                        <h2>Confirm Order</h2>
+                    </span>
+                </button>
+            </div>            
+
+
+            <div id="total" class="row" style="margin-top: 10px;">
+            </div>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <dialog id="myDialogDelete">
+        <div class="form-group">
+            <h1 id="dialogTittleDelete" class="form-group">Title</h1>
+            <h3 id="dialogMessageDelete" class="form-group">Message</h3>
+            <button id="dialogConfirmButton" class="btn btn-danger">Confirm</button>
+            <button id="dialogCancelButton" class="btn btn-secondary">Cancel</button>            
+        </div>
+    </dialog>    
+
+
+    <dialog id="order_new">
+
+        <div class="container-fluid">
+            
+            <div class="row">
+              <div class="col-sm">
+                <div class="col-sm-12">
+                    <div class="order_clasification" id="clasifications_buttons" ></div>
+                    <div class="order_subclasification" id="subclasifications_buttons" ></div>
+                    <div class="order_menu" id="menu_buttons" ></div>       
+                </div>     
+              </div>
+
+              <div class="col-sm">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="clasifications_input">Classification:</label>
+                            <input type="text" class="form-control selected_clasifiacion" id="clasifications_input">
+                        </div>
+                        <div class="form-group">
+                            <label for="subClasifications_input">Subclassification:</label>
+                            <input type="text" class="form-control selected_subclasifiacion" id="subClasifications_input">
+                        </div>
+                        <div class="form-group">                       
+                            <label for="personClasifications_input" value="1">Person:</label>
+                            <input type="text" class="form-control selected_personclasifiacion" id="personClasifications_input" value="1">
+                            <div class="row">
+                                <div class="col-sm-3" style="margin-top: 8px; ">
+                                    <button id="addPerson" type="button" class="btn btn-dark"
+                                        style=" text-align: center; width: 100%;">
+                                        <span id="label_add">
+                                            +
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="col-sm-3" style="margin-top: 8px; ">
+                                    <button id="decreasePerson" type="button" class="btn btn-dark"
+                                        style=" text-align: center; width: 100%;">
+                                        <span id="label_decrease">
+                                            -
+                                        </span>
+                                    </button>
+                                </div>  
+                            </div>                                
+                        </div>
+                        <div class="form-group">
+                            <label for="menuClasifications_input">Order:</label>
+                            <input type="text" class="form-control selected_menuclasifiacion" id="menuClasifications_input">
+                        </div>
+                        <div class="form-group">
+                            <label for="observationClasifiacion_input">Observation:</label>
+                            <textarea class="form-control" rows="5" style="width: 100%;" type="textarea" 
+                            class="form-control selected_observationClasifiacion" id="observationClasifiacion_input"></textarea>
+                        </div>
+                    </div>
+                </div>
+              </div>
+
+              <div class="col-sm">
+                <div class="row">
+
+                    <div class="col-sm-6">
+                        <button id="saveNewOrder" type="button" class="btn btn-primary"
+                            style=" text-align: right; width: 100%; margin-top: 5px;">
+                            <span id="label_save">
+                                Save
+                            </span>
+                        </button>
+                    </div>
+    
+                    <div class="col-sm-6">
+                        <button id="cleanNewOrder" type="button" class="btn btn-warning"
+                            style=" text-align: right; width: 100%; margin-top: 5px;">
+                            <span id="label_save">
+                                Clean
+                            </span>
+                        </button>
+                    </div>                
+    
+                    <div class="col-sm-12">
+                        <button id="closeNewOrder" class="btn btn-secondary"
+                            style="text-align: right; margin-top: 5px; width: 100%;" style="text-align: right;">
+                            <span id="label_close">
+                                Close
+                            </span>
+                        </button>
+                    </div>    
+      
+                </div>
+            </div>
+        </div>
+
+    </dialog>
+
+    <dialog id="order_optionsMenu">
+        <div class="container-fluid">
+        
+            <div class="row">
+              <div class="col">
+                    <div class="order_options1" id="options_buttons1" ></div>           
+                        <label for="clasifications_input">Selection:</label>
+                    <input type="text" class="form-control selected_selection1" id="selection_input_1">
+                    <label for="clasifications_input">Notes:</label>                       
+                    <textarea class="form-control" rows="3" style="width: 100%;" type="textarea" 
+                    class="form-control selected_observationClasifiacion" id="observation_input_1"></textarea>                                        
+              </div>
+              <div class="col">
+                    <div class="order_options2" id="options_buttons2" ></div>   
+                        <label for="clasifications_input">Selection:</label>
+                    <input type="text" class="form-control selected_selection2" id="selection_input_2">   
+                    <label for="clasifications_input">Notes:</label>                       
+                    <textarea class="form-control" rows="3" style="width: 100%;" type="textarea" 
+                    class="form-control selected_observationClasifiacion" id="observation_input_2"></textarea>                                           
+              </div>
+              <div class="col">
+                    <div class="order_options3" id="options_buttons3" ></div>   
+                        <label for="clasifications_input">Selection:</label>
+                    <input type="text" class="form-control selected_selection3" id="selection_input_3">    
+                    <label for="clasifications_input">Notes:</label>                       
+                    <textarea class="form-control" rows="3" style="width: 100%;" type="textarea" 
+                    class="form-control selected_observationClasifiacion" id="observation_input_3"></textarea>                                          
+              </div>
+              <div class="col">
+                    <div class="order_options4" id="options_buttons4" ></div>     
+                        <label for="clasifications_input">Selection:</label>
+                    <input type="text" class="form-control selected_selection4" id="selection_input_4">       
+                    <label for="clasifications_input">Notes:</label>                       
+                    <textarea class="form-control" rows="3" style="width: 100%;" type="textarea" 
+                    class="form-control selected_observationClasifiacion" id="observation_input_4"></textarea>                                       
+              </div>     
+              
+              <div class="col">
+                <div class="order_options5" id="options_buttons5" ></div>     
+                    <label for="clasifications_input">Selection:</label>
+                <input type="text" class="form-control selected_selection5" id="selection_input_5">       
+                <label for="clasifications_input">Notes:</label>                       
+                <textarea class="form-control" rows="3" style="width: 100%;" type="textarea" 
+                class="form-control selected_observationClasifiacion" id="observation_input_5"></textarea>                                       
+          </div>                   
+
+              <div class="col-sm">
+                <div class="row">
+
+                    <div class="col-sm-6">
+                        <button id="saveNewOrderOption" type="button" class="btn btn-primary"
+                            style=" text-align: right; width: 100%; margin-top: 5px;">
+                            <span id="label_save">
+                                Save
+                            </span>
+                        </button>
+                    </div>
+    
+                    <div class="col-sm-6">
+                        <button id="cleanNewOrderOption" type="button" class="btn btn-warning"
+                            style=" text-align: right; width: 100%; margin-top: 5px;">
+                            <span id="label_save">
+                                Clean
+                            </span>
+                        </button>
+                    </div>                
+    
+                    <div class="col-sm-12">
+                        <button id="closeNewOrderOption" class="btn btn-secondary"
+                            style="text-align: right; margin-top: 5px; width: 100%;" style="text-align: right;">
+                            <span id="label_close">
+                                Close
+                            </span>
+                        </button>
+                    </div>                   
+                  
+                    <div class="col-sm-12">
+                        <label id="id_menuLabel" >Menu:</label>
+                        <label id="id_menu" ></label>                        
+                    </div>                        
+                                                 
+                    <div class="col-sm-12">
+                        <label id="id_comandaLabel" >Comanda:</label>
+                        <label id="id_comanda" ></label>                        
+                    </div>                                    
+                                                 
+                                   
+                </div>
+            </div>
+        </div>
+
+    </dialog>    
+
+    <dialog id="order_modify">
+        <div class="col-md-12">
+            <div class="row">
+
+                <div class="form-group">
+                    <label id="id">Id</label>
+                    <label id="sku">Sku</label>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-sm-6">
+                        <div id="order_info" class="row" style="margin-top: 10px;">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <img src="" id="order_image" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row justify-content-center" style="margin-top: 10px;">
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="order_person" id="order_person_label">Person</label>
+                            <input type="number" class="form-control" id="order_person" placeholder="Person">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-9">
+                        <div class="form-group">
+                            <textarea rows="5" style="width: 100%;" id="observations"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <button id="button_save" type="button" class="btn btn-primary"
+                        style=" text-align: right; margin-top: 20px;; width: 100%;">
+                        <span id="label_save">
+                            Save
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-6">
+                    <button id="button_delete" type="button" class="btn btn-danger"
+                        style="text-align: right; margin-top: 20px; width: 100%;">
+                        <span id="label_delete">
+                            Delete
+                        </span>
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <button id="closeSkuEdit" class="btn btn-secondary"
+                        style="text-align: right; margin-top: 5px; width: 100%;" style="text-align: right;">
+                        <span id="button_close">
+                            Close
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        var id_menu = document.getElementById("id_menu");
+        var id_comanda = document.getElementById("id_comanda");        
+
+        var selection1Input = document.getElementById("selection_input_1");
+        var observation1Input = document.getElementById("observation_input_1");
+
+        var selection2Input = document.getElementById("selection_input_2");
+        var observation2Input = document.getElementById("observation_input_2");
+
+        var selection3Input = document.getElementById("selection_input_3");
+        var observation3Input = document.getElementById("observation_input_3");
+
+        var selection4Input = document.getElementById("selection_input_4");
+        var observation4Input = document.getElementById("observation_input_4");   
+        
+        var selection5Input = document.getElementById("selection_input_5");
+        var observation5Input = document.getElementById("observation_input_5");           
+
+        var clasifications_input = document.getElementById("clasifications_input");
+        var subClasifications_input = document.getElementById("subClasifications_input");
+        var menuClasifications_input = document.getElementById("menuClasifications_input");
+        var observationClasifiacion_input = document.getElementById("observationClasifiacion_input");
+        var personClasifications_input =  document.getElementById("personClasifications_input");   
+
+        var options_buttons1 = document.getElementById("options_buttons1");
+        var options_buttons2 = document.getElementById("options_buttons2");
+        var options_buttons3 = document.getElementById("options_buttons3");
+        var options_buttons4 = document.getElementById("options_buttons4"); 
+        var options_buttons5 = document.getElementById("options_buttons5"); 
+
+        var ordersContainerClasif = document.getElementById("clasifications_buttons");
+        var ordersContainerSubClasif = document.getElementById("subclasifications_buttons");
+        var ordersContainerMenuClasif = document.getElementById("menu_buttons");
+
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search);
+        var active_table = params.get('table');
+
+        var user_div = document.getElementById("user_name");
+        user_div.innerHTML = '<h1 class="text-center" style="font-size: 24px; font-weight: bolder;" id="auth_title"> User: ' + Token.username + ', Table: ' + active_table + '</h1>';
+
+        document.querySelector('#addPerson').addEventListener('click', function () {
+            var person = parseInt(personClasifications_input.value);
+
+            personClasifications_input.value = person + 1;
+        });
+
+        document.querySelector('#decreasePerson').addEventListener('click', function () {
+            var person = parseInt(personClasifications_input.value);
+            if (person > 1) {
+                personClasifications_input.value = person - 1;
+            }
+        });        
+
+        document.querySelector('#closeButton').addEventListener('click', function () {
+            document.querySelector('#myDialog').close();
+        });
+
+        document.querySelector('#closeSkuEdit').addEventListener('click', function () {
+            document.querySelector('#order_modify').close();
+        });
+
+        document.querySelector('#closeNewOrder').addEventListener('click', function () {
+            document.querySelector('#order_new').close();
+        });   
+
+        document.querySelector('#saveNewOrder').addEventListener('click', function () {
+
+            if (document.getElementById('personClasifications_input').value === "") {
+                showDialog("Error", "Person field are required.");
+                return;
+            }
+
+            var order = {
+                Table: active_table,
+                Person: document.getElementById('personClasifications_input').value,
+                Observations: document.getElementById('observationClasifiacion_input').value, 
+                Sku: document.getElementById('menuClasifications_input').value
+            };
+
+            let response = SaveTableOrder(Token.username, Token.token, order);
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    SelectPreference(document.getElementById('menuClasifications_input').value);
+                    showDialog("Ok.", "The data was saved correctly");
+                    closeElement('order_new');
+                    reladData();                    
+                }
+            });        
+        });   
+
+        document.querySelector('#button_confirmorder').addEventListener('click', function () {     
+            var ordersContainer = document.getElementById("buttonszone");
+            ordersContainer.innerHTML = '';
+
+            let response = ConfirmOrderForPrinting(Token.username, Token.token, active_table);      
+            response.then(function(query) {
+                let response_query = JSON.parse(query);
+                
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else{
+                    showDialog("Ok.", "Order confirmed successfully");
+                    reladData(); 
+                }
+            });     
+        });       
+        
+        document.querySelector('#cleanNewOrder').addEventListener('click', function () {
+            cleanOperation();
+        });           
+
+        document.querySelector('#button_neworder').addEventListener('click', function () {     
+
+            clasifications_input.style.display = "block";
+            clasifications_input.disabled = true;
+
+            subClasifications_input.style.display = "block";
+            subClasifications_input.disabled = true;
+
+            menuClasifications_input.style.display = "block";
+            menuClasifications_input.disabled = true;            
+ 
+            cleanOperation();
+            // ShowClasification();
+        });
+        
+
+        document.querySelector('#button_save').addEventListener('click', function () {
+
+            var order = {
+                Id: document.getElementById('id').value,
+                Table: active_table,
+                Person: document.getElementById('order_person').value,
+                Observations: document.getElementById('observations').value,
+                Sku: document.getElementById('sku').value
+            };
+
+            let response = SaveTableOrder(Token.username, Token.token, order);
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    showDialog("Ok.", "The data was saved correctly");
+                    closeElement('order_modify');
+                    reladData();                    
+                }
+            });
+            
+        });
+
+        document.querySelector('#button_delete').addEventListener('click', function () {
+            showDialogQuestion("Confirmation", "Are you sure you want to delete the command?", function() {
+                // Si el usuario confirma, procede con la eliminación
+                var order = {
+                    Id: document.getElementById('id').value
+                };
+                
+                let response = DeleteTableOrder(Token.username, Token.token, order);
+                response.then(function (query) {
+                    let response_query = JSON.parse(query);
+
+                    if (response_query.result.startsWith("Error:")) {
+                        showDialog("Alert", response_query.result);
+                    } else {
+                        showDialog("Ok.", "Data was deleted successfully");   
+                        closeElement('order_modify');
+                        reladData();         
+                    }
+                });
+            });
+        });
+
+
+        function closeElement(dialog) {
+            document.getElementById(dialog).close();
+        }        
+        
+        function ShowClasification() {
+            ordersContainerClasif.innerHTML = '';
+
+            let response = GetClassifications(Token.username, Token.token, active_table);
+            //console.log(response);
+
+            response.then(function (query) {
+
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {        
+
+                    let orders = JSON.parse(response_query.result);
+                    orders.forEach(element => {                                         
+                        clasifications_buttons("", "", element.clasificacion, "btn btn-primary btn-sm boton-3d form-control", function () { ShowSubClasification(element.clasificacion); }, "rgb(142, 155, 151)");
+                    });
+                    
+                }
+            });
+            document.querySelector('#order_new').showModal();
+        }
+
+        function ShowSubClasification(clasification) {
+            ordersContainerSubClasif.innerHTML = ''; 
+            ordersContainerMenuClasif.innerHTML = ''; 
+
+            subClasifications_input.value = '';
+            menuClasifications_input.value = '';
+            observationClasifiacion_input.value = '';
+
+            let response = GetSubClassifications(Token.username, Token.token, clasification.trim());
+
+            response.then(function(query) {
+                let response_query = JSON.parse(query);
+                
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    let subClassifications = JSON.parse(response_query.result);
+
+                    clasifications_input.value = clasification;
+                    subClassifications.forEach(element => {
+                        // console.log(element.subclasificacion)
+                        subclasifications_buttons("", "", element.descripcion, "btn btn-primary btn-sm boton-3d form-control", function() { ShowMenu(element.subclasificacion) }, "rgb(229, 152, 102)");
+                    });
+                }
+            });
+        }   
+
+        function ShowMenu(subclasificacion) {     
+            ordersContainerMenuClasif.innerHTML = ''; 
+
+            let response = GetMenuClassifications(Token.username, Token.token, subclasificacion.trim());
+            
+            response.then(function(query) {
+                let response_query = JSON.parse(query);
+                
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+
+                    let menu = JSON.parse(response_query.result);  
+                    subClasifications_input.value = subclasificacion;
+                    menu.forEach(element => {
+                        menu_buttons("", "", element.descripcion1, "btn btn-primary btn-sm boton-3d form-control", function() { selectedMenu(element.articulo) }, "rgb(166, 143, 124)");
+                    });
+                }
+            });
+        }        
+
+        function selectedMenu(meal) {          
+            menuClasifications_input.value = meal;      
+        }
+
+        function optionsMenu(selectionOp, columnId) {
+            if (columnId == "1") {
+                selection1Input.value = selectionOp;
+            } else if (columnId == "2") {
+                selection2Input.value = selectionOp;
+            } else if (columnId == "3") {
+                selection3Input.value = selectionOp;
+            } else if (columnId == "4") {
+                selection4Input.value = selectionOp;
+            } else if (columnId == "5") {
+                selection5Input.value = selectionOp;
+            }
+            
+        }
+
+        function SelectPreference(meal)
+        {
+         
+            id_menu.innerText = "";
+            id_comanda.innerText = "";                   
+            
+            options_buttons1.innerHTML = '';
+            options_buttons2.innerHTML = '';
+            options_buttons3.innerHTML = '';
+            options_buttons4.innerHTML = '';
+            options_buttons5.innerHTML = '';            
+
+            var orderID 
+            var numeroEncontrado = meal.match(/\d+/);
+            if (numeroEncontrado) {
+                var menu_id = parseInt(numeroEncontrado[0], 10).toString();
+            } else {
+                console.log("No se encontró ningún número en la cadena");
+            }
+             
+            let responseId = GetIdOrder(Token.username, Token.token);
+            responseId.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {              
+
+                    let orders = JSON.parse(response_query.result);
+                    orders.forEach(element => {    
+                        orderID = element.OrderID;                     
+                        id_comanda.innerText = orderID;    
+                    });         
+
+                }
+            });               
+
+            id_menu.innerText = menu_id;
+            //id_comanda.innerText = "Comanda: " + document.getElementById('id').value;                
+
+            let response2 = GetMenuOptions(Token.username, Token.token, meal.trim());
+            response2.then(function(query) {
+                let response_query2 = JSON.parse(query);
+                
+                if (response_query2.result.startsWith("Ok.")) {
+                    //showDialog("Alert", response_query.result);
+                } else {
+
+                    let menu = JSON.parse(response_query2.result);  
+                    menu.forEach((element, index) => {
+                        options_buttons(index + 1, "", "", element.articulo, "btn btn-primary btn-sm boton-3d form-control", function() { optionsMenu(element.articulo, index + 1) }, "rgb(112, 123, 124)"); // gris suave
+                        options_buttons(index + 1, "", "", element.opcion1, "btn btn-primary btn-sm boton-3d form-control", function() { optionsMenu(element.opcion1, index + 1) }, "rgb(123, 162, 179)"); // azul suave
+                        options_buttons(index + 1, "", "", element.opcion2, "btn btn-primary btn-sm boton-3d form-control", function() { optionsMenu(element.opcion2, index + 1) }, "rgb(183, 155, 153)"); // rojo suave
+                        options_buttons(index + 1, "", "", element.opcion3, "btn btn-primary btn-sm boton-3d form-control", function() { optionsMenu(element.opcion3, index + 1) }, "rgb(156, 173, 150)"); // verde suave
+                    });
+    
+                    document.querySelector('#order_optionsMenu').showModal();                    
+                }
+            }); 
+            return true;            
+        }
+
+        document.querySelector('#saveNewOrderOption').addEventListener('click', function () {
+
+            if (selection1Input.value == "Opción") {
+                showDialog("Alert", "Error debe seleccionar un opcion diferente");
+                console.log("Aqui 1");
+                return;
+            } 
+            if (selection2Input.value == "Opción") {
+                showDialog("Alert", "Error debe seleccionar un opcion diferente");
+                console.log("Aqui 2");                
+                return;
+            } 
+            if (selection3Input.value == "Opción") {
+                showDialog("Alert", "Error debe seleccionar un opcion diferente");
+                console.log("Aqui 3");                
+                return;
+            } 
+            if (selection4Input.value == "Opción") {
+                showDialog("Alert", "Error debe seleccionar un opcion diferente");
+                console.log("Aqui 4");                
+                return;
+            } 
+            if (selection5Input.value == "Opción") {
+                showDialog("Alert", "Error debe seleccionar un opcion diferente");
+                console.log("Aqui 5");                
+                return;
+            }
+
+            var i = 1       
+            for (let n = 0; n < 5; n++) {
+
+                var order = {
+                    id_comanda: document.getElementById("id_comanda").innerText,
+                    id_menu: document.getElementById("id_menu").innerText,
+                    componente: "",
+                    opcion1: "",
+                    opcion2: "",
+                    opcion3: "",
+                    seleccion: document.getElementById("selection_input_" + i).value,
+                    notas: document.getElementById("observation_input_" + i).value,                                                                
+                    actualizado: "1"            
+                };
+
+                i = i + 1;
+
+                let response = SaveOrderPreference(Token.username, Token.token, order);
+                response.then(function (query) {
+                    let response_query = JSON.parse(query);
+
+                    if (response_query.result.startsWith("Error:")) {
+                        console.log(response_query.result);
+                        showDialog("Alert", response_query.result);
+                    } else {
+                        closeElement('order_optionsMenu');
+                        cleanOperationPref()
+                        reladData();                    
+                    }
+                });      
+                
+            }             
+        });     
+        
+        document.querySelector('#cleanNewOrderOption').addEventListener('click', function () {            
+            cleanOperationPref();
+        });     
+        
+        document.querySelector('#closeNewOrderOption').addEventListener('click', function () {
+            document.querySelector('#order_optionsMenu').close();
+        });             
+
+        function cleanOperationPref() {
+            observation1Input.value = "";        
+            selection1Input.value = "";     
+            
+            observation2Input.value = "";        
+            selection2Input.value = "";     
+            
+            observation3Input.value = "";        
+            selection3Input.value = "";     
+            
+            observation4Input.value = "";        
+            selection4Input.value = "";     
+            
+            observation5Input.value = "";        
+            selection5Input.value = "";                 
+        }          
+   
+        function cleanOperation() {
+            ordersContainerClasif.innerHTML = '';
+            ordersContainerSubClasif.innerHTML = '';        
+            ordersContainerMenuClasif.innerHTML = '';         
+            
+            clasifications_input.value = '';
+            subClasifications_input.value = '';
+            menuClasifications_input.value = '';
+            personClasifications_input.value = "1";
+            observationClasifiacion_input.value = '';
+            
+            ShowClasification() ;
+        }        
+
+        function ShowOrderModifyDialog(id, image, description, Person, sku, observations) {
+            document.getElementById('id').innerHTML = '<h1 class="text-center" style="font-size: 24px; font-weight: bolder;" id="auth_title"> Id: ' + id + '</h1>';
+            document.getElementById('id').value = id;
+            document.getElementById('order_info').innerHTML = '<h1 class="text-center" style="font-size: 24px; font-weight: bolder;" id="auth_title"> ' + description + '</h1>';
+            document.getElementById('order_person').value = Person;
+            document.getElementById('order_image').src = "images/" + image;
+            document.getElementById('order_image').style = "width: 250px;";
+            document.getElementById('observations').value = observations;
+            document.getElementById('sku').innerHTML = '<h1 class="text-center" style="font-size: 24px; font-weight: bolder;" id="auth_title"> Sku: ' + sku + '</h1>';
+            document.getElementById('sku').value = sku;
+            document.querySelector('#order_modify').showModal();
+            document.getElementById('observations').focus();
+        }
+
+        function showDialog(title, message) {
+            document.getElementById('dialogTittle').innerText = title;
+            document.getElementById('dialogMessage').innerText = '⚠️' + message;
+            document.getElementById('myDialog').showModal();
+        }
+
+        function showDialogQuestion(title, message, callback) {
+            document.getElementById('dialogTittleDelete').innerText = title;
+            document.getElementById('dialogMessageDelete').innerText = '⚠️' + message;
+            
+            document.getElementById('myDialogDelete').showModal();
+
+            document.getElementById('dialogConfirmButton').addEventListener('click', function() {
+                if (typeof callback === 'function') {
+                    callback();
+                }
+                document.getElementById('myDialogDelete').close();
+            });
+
+            document.getElementById('dialogCancelButton').addEventListener('click', function() {
+                document.getElementById('myDialogDelete').close();
+            });
+        }
+
+
+        function closeDialog() {
+            document.getElementById('myDialog').close();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            let response = GetTableCommands(Token.username, Token.token, active_table);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                var total = 0;
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    let tables = JSON.parse(response_query.result);
+                    tables.forEach(element => {
+                        var image = "";
+                        if (element.Image != null && element.Image != "") {
+                            image = element.Image;
+                        } else {
+                            image = "order.webp";
+                        }
+                        var description = "Order: " + element.Description + ",  Person " + element.Person + ", Price: " + formatearComoMoneda(element.Price);
+                        total += parseFloat(element.Price);
+                        generateOrder("", image, description, "boton-3d form-control", function () { ShowOrderModifyDialog(element.Id, image, description, element.Person, element.Sku, element.Observations) });
+                    });
+                }
+                var total_div = document.getElementById("total");
+                total_div.innerHTML = '<h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title"> T O T A L: ' + formatearComoMoneda(total) + '</h1>';
+            });
+            translate_menu(language);
+
+        });
+
+        //Agregado
+        function reladData() {
+            var ordersContainer = document.getElementById("buttonszone");
+            ordersContainer.innerHTML = '';
+
+            let response = GetTableCommands(Token.username, Token.token, active_table);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                var total = 0;
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    let tables = JSON.parse(response_query.result);
+                    tables.forEach(element => {
+                        var image = "";
+                        if (element.Image != null && element.Image != "") {
+                            image = element.Image;
+                        } else {
+                            image = "order.webp";
+                        }
+                        var description = "Order: " + element.Description + ",  Person " + element.Person + ", Price: " + formatearComoMoneda(element.Price);
+                        total += parseFloat(element.Price);
+                        generateOrder("", image, description, "boton-3d form-control", function () { ShowOrderModifyDialog(element.Id, image, description, element.Person, element.Sku, element.Observations) });
+                    });
+                }
+                var total_div = document.getElementById("total");
+                total_div.innerHTML = '<h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title"> T O T A L: ' + formatearComoMoneda(total) + '</h1>';
+            });
+            translate_menu(language);            
+        }
+        //Agregado
+    </script>
+
+    <div class="bottom-bar">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

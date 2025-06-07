@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Balance Credit)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <input type="hidden" id="sale_id_hidden" class="form-control" />
+    <input type="hidden" id="payment_id_hidden" class="form-control" />
+    <input type="hidden" id="account_id_hidden" class="form-control" />
+
+
+    <div class="container">
+
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de sales -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="sales.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Sales</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/credit_balance_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Balance
+                Credit)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+
+        <!-- Date range for the report -->
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-4">
+                    <label for="start_date" class="form-label">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <label for="end_date" class="form-label">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn btn-primary form-control" id="btnGetCreditSales"
+                        style="margin-top: 30px; margin-right: 10px;" onclick="GetCreditSales();">Get Sales</button>
+                </div>
+
+            </div>
+
+            <div class="row mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" checked value="" id="chek_onlywithbalance">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Only include sales with balance
+                    </label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-9">
+                    <input type="text" id="search_text" class="form-control" placeholder="Search..."
+                        style="width: 100%; margin-bottom: 10px;">
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-primary form-control" id="btnSearch"
+                        onclick="GetCreditSales();">Search</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="tableContainer"></div>
+
+    </div>
+
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control"
+                onclick="document.getElementById('myDialog').close();">Close</button>
+        </div>
+    </dialog>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;"
+            onclick="document.getElementById('generic_dialog').close();">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;"
+            onclick="document.getElementById('dialog_accept').close();">Close</button>
+    </dialog>
+
+    <dialog id="customer_debt" class="dialog-box">
+
+        <h1 id="customer_debt_title">Payments</h1>
+
+        <div class="form-group">
+
+            <div class="row col-12">
+
+                <div class="col-3">
+                    <label for="sale_id" class="form-label">Sale ID</label>
+                </div>
+                <div class="col-9">
+                    <span id="sale_id" class="form-control" />
+                    </span>
+                </div>
+
+                <div class="col-12" id="sale_data">
+                </div>
+
+                <div class="col-12">
+                    <div id="tablePaymentsContainer"></div>
+                </div>
+
+                <div class="col-6" id="sale_data2">
+                    <button id="customer_debt_new" class="btn btn-primary btn-lg form-control col-6"
+                        style="margin-bottom: 10px; margin-top: 10px;">New
+                        payment</button>
+                </div>
+
+                <div class="col-6">
+                    <button id="customer_debt_close" class="btn btn-warning btn-lg form-control col-6"
+                        style="margin-bottom: 10px; margin-top: 10px;">Close</button>
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </dialog>
+
+    <dialog id="payment_dialog" class="dialog-box" style="width: 60%; overflow-y: auto;">
+
+        <h1 id="payment_edit_title">Payment</h1>
+
+        <div class="form-group">
+
+            <div class="row col-12">
+
+                <div class="col-3">
+                    <label for="payment_id" class="form-label">Payment ID</label>
+                </div>
+                <div class="col-9">
+                    <span id="payment_id" class="form-control" />
+                    </span>
+                </div>
+
+                <div class="col-3">
+                    <label for="payment_date" class="form-label">Date</label>
+                </div>
+                <div class="col-9">
+                    <input type="date" id="payment_date" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="payment_description" class="form-label">Description</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="payment_description" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="Payments" class="form-label">Type</label>
+                </div>
+                <div class="col-9">
+                    <select id="Payments" class="form-control" style="margin-bottom: 10px;">
+                        <option value="cash">Cash</option>
+                        <option value="credit_card">Credit Card</option>
+                        <option value="transfer">Transfer</option>
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="payment_amount" class="form-label">Amount $</label>
+                </div>
+                <div class="col-9">
+                    <input type="number" id="payment_amount" class="form-control"
+                        style="font-family: 'Courier New', Courier, monospace; font-weight: bolder; font-size: xx-large;" />
+                </div>
+
+                <div class="col-3">
+                    <label for="currency_id">Currency</label>
+                </div>
+                <div class="col-9">
+                    <select id="currency_id" data-style="btn-info" class="selectpicker form-control"
+                        style="margin-top: 10px; margin-bottom: 10px;">
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="exchange_rate">Exchange rate</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="number" id="exchange_rate" class="form-control"
+                        style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder; margin-bottom: 10px; text-align: right;">
+                </div>
+
+                <div class="col-4">
+                    <button id="payment_accept" class="btn btn-primary btn-lg form-control col-6"
+                        style="margin-bottom: 10px; margin-top: 10px;">Save</button>
+                </div>
+
+                <div class="col-4">
+                    <button id="payment_delete" class="btn btn-danger btn-lg form-control col-6"
+                        style="margin-bottom: 10px;; margin-top: 10px;" onclick="DeletePayment()">Delete</button>
+                </div>
+
+                <div class="col-4">
+                    <button id="payment_close" class="btn btn-warning btn-lg form-control col-6"
+                        style="margin-bottom: 10px;; margin-top: 10px;">Close</button>
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </dialog>
+
+
+    <script>
+
+        var businessinfo = null;
+
+        /**
+         * BusinessInfo class, used to store the business information
+         */
+        class BusinessInfo {
+            // Business identifier
+            id;
+            // Business Address
+            Address;
+            // Business Name
+            Name;
+            // Business Phone
+            Phone;
+            // Business Email
+            Email;
+            // Business Website
+            Website;
+            // Business Logo
+            Logo;
+            // Business Slogan
+            Slogan;
+            // Currency ID
+            Currency_id;
+            // Currency Name
+            Currency_name;
+        }
+
+        // Función para inicializar las fechas en los campos de fecha
+        function initializeDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const currentDate = `${year}-${month}-${day}`;
+            document.getElementById('start_date').value = "2000-01-01"; // Set to a default value (e.g., 2000-01-01)
+            document.getElementById('end_date').value = currentDate;
+        }
+
+        function GetCreditSales() {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+
+            if (startDate === "" || endDate === "") {
+                ShowDialog("Error", "Please select both start and end dates.");
+                return;
+            }
+
+            var SaleFilter = {
+                "start_date": startDate,
+                "end_date": endDate,
+                "OnlyWithBalance": document.getElementById("chek_onlywithbalance").checked,
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetCreditSales", SaleFilter);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                const jsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-link"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => OpenCreditSaleDialog(val, row),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Account_id":
+                    {
+                        "visible": false
+                    },
+                    "Total":
+                    {
+                        "title": "Total",
+                        "html": (value) => `<strong><span class="badge bg-success">$${ThousandsSeparator(value)}</span></strong>`,
+                        "sum": true,
+                        "sumFormatter": (total) => `$${ThousandsSeparator(total)}`,
+                        "style": "text-align: right;"
+                    },
+                    "Credit_balance":
+                    {
+                        "title": "Credit Balance",
+                        "html": (value) => `<strong><span class="badge bg-secondary">$${ThousandsSeparator(value)}</span></strong>`,
+                        "sum": true,
+                        "sumFormatter": (total) => `$${ThousandsSeparator(total)}`,
+                        "style": "text-align: right;"
+                    },
+                    "Credit_due_date":
+                    {
+                        "title": "Credit Due Date",
+                        "html": (value) => `<strong>${new Date(value).toLocaleDateString()}</strong>`,
+                        "style": "text-align: center;"
+                    },
+                    "Customer_id":
+                    {
+                        "title": "Customer ID",
+                        "html": (value, row) => `<strong>${value}${row.Customer_name ? ' - ' + row.Customer_name : ''}</strong>`,
+                        "style": "text-align: left;"
+                    },
+                    "Customer_name":
+                    {
+                        "visible": false
+                    },
+                };
+
+                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text");
+
+            });
+
+
+        }
+
+        async function OpenCreditSaleDialog(sale_id, row) {
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", "", "GetSale", sale_id);
+
+            if (response === null) {
+                ShowDialog("Error", "Error al obtener los datos de la venta.");
+                return;
+            }
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return null;
+                }
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return null;
+                }
+
+                const sale = JSON.parse(responce_query.result);
+
+                document.getElementById('sale_id_hidden').value = sale.id;
+                document.getElementById('sale_id').innerHTML = `<strong>${sale.id}</strong>`;
+
+                document.getElementById('sale_data').innerHTML = `
+                    <div class="card shadow rounded-4 border-0">
+                        <div class="card-header bg-primary text-white fw-semibold fs-5 d-flex align-items-center">
+                            <i class="bi bi-receipt-cutoff me-2"></i> Sale Information
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-primary" style="font-size: 1.2rem; font-weight: 600;"><i class="bi bi-calendar-event me-1"></i>Receipt:</span>
+                                        <span style="font-size: 1.2rem; font-weight: 600;">${sale.Receipt_serie}-</span><span style="font-size: 1.2rem; font-weight: 600;">${sale.Receipt_number}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <button class="btn btn-info" style="width: 100%;" onclick="ShowSale( '${sale.Account_id}', '${sale.id}' );">
+                                            <i class="bi bi-plus"></i> Show Sale
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-primary"><i class="bi bi-calendar-event me-1"></i>Date Time:</span>
+                                        <span>${sale.DateTime}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-success"><i class="bi bi-person-vcard me-1"></i>Account:</span>
+                                        <span>${sale.Account_id}</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-info"><i class="bi bi-person-badge me-1"></i>User:</span>
+                                        <span>${sale.User_id} ${sale.User_name}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-warning"><i class="bi bi-person-circle me-1"></i>Customer:</span>
+                                        <span>${sale.Customer_id} ${sale.Customer_name}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex">
+                                        <span class="fw-semibold me-2 text-danger"><i class="bi bi-calendar-check me-1"></i>Credit Due Date:</span>
+                                        <span>${new Date(sale.Credit_due_date).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-semibold text-secondary"><i class="bi bi-cash-coin me-1"></i>Credit Balance:</span>
+                                        <span class="fw-bold text-success">$${ThousandsSeparator(sale.Credit_balance)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                ShowPaymentsFromSale(sale.id, sale);
+                document.getElementById('customer_debt').showModal();
+
+
+            });
+
+        };
+
+
+        async function ShowPaymentsFromSale(sale_id, sale = null) {
+
+            if (sale === null) {
+                var response = await sendToAngelPOST(Token.User, "pos_backend/pos_backend", "", "GetSale", sale_id);
+
+                if (response === null) {
+                    ShowDialog("Error", "Error al obtener los datos de la venta.");
+                    return;
+                }
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", response);
+                    return null;
+                }
+
+                let responce_query = JSON.parse(response);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return null;
+                }
+
+                sale = JSON.parse(responce_query.result);
+            }
+
+            // Parse the Payments JSON string
+            if (sale.Payments === null || sale.Payments === undefined || sale.Payments === "[]" || sale.Payments === "") {
+                return null;
+            }
+
+            document.getElementById('tablePaymentsContainer').innerHTML = "";
+
+            const payments = JSON.parse(sale.Payments);
+
+            const customPaymentCols =
+            {
+                "id":
+                {
+                    "title": "ID",
+                    "html": (value) => `<button class="btn btn-link"><strong>${value.substring(32)}</strong></button>`,
+                    "onclick": (val, row) => CapturePayment(`${val}`),
+                    "style": "color: blue; cursor: pointer;"
+                },
+                "ReferenceID":
+                {
+                    visible: false
+                },
+                "ReferenceType":
+                {
+                    visible: false
+                },
+                "Sale_id":
+                {
+                    visible: false
+                },
+                "User_name":
+                {
+                    visible: false
+                },
+                "Amount":
+                {
+                    "title": "Amount",
+                    html: (value) => `<span class="badge bg-success">$${ThousandsSeparator(value)}</span>`,
+                    "sum": true,
+                    "sumFormatter": (total) => `$${ThousandsSeparator(total)}`,
+                    "style": "text-align: right;"
+                },
+                "Account_id":
+                {
+                    visible: false
+                },
+                "Exchange_rate":
+                {
+                    "title": "Exchange Rate",
+                    "html": (value) => `<span class="badge bg-info">${value}</span>`,
+                    "style": "text-align: right;"
+                },
+                "Currency_id":
+                {
+                    "title": "Currency",
+                    "html": (value) => `<span class="badge bg-secondary">${value}</span>`,
+                    "style": "text-align: center;"
+                },
+                "User_id":
+                {
+                    "title": "User",
+                    "style": "text-align: center;"
+                },
+            };
+
+            renderPaginatedTable(payments, "tablePaymentsContainer", 20, customPaymentCols, null, false);
+
+
+        }
+
+        function CapturePayment(payment_id) {
+
+            if (payment_id === "new") {
+                document.getElementById('payment_id_hidden').value = "New";
+                document.getElementById('payment_id').innerHTML = `<strong>New</strong>`;
+                document.getElementById('payment_id').value = "New";
+                document.getElementById('payment_date').value = new Date().toISOString().split("T")[0];
+                document.getElementById('payment_description').value = "";
+                document.getElementById('Payments').value = "cash";
+                document.getElementById('payment_amount').value = 0;
+                document.getElementById('currency_id').value = businessinfo.Currency_id;
+                document.getElementById('exchange_rate').value = 1;
+                document.getElementById('payment_edit_title').innerText = "New Payment";
+                document.getElementById('payment_delete').disabled = true; // Disable delete button for new payments
+
+                document.getElementById('payment_dialog').showModal();
+                return;
+            }
+
+
+            document.getElementById('payment_delete').disabled = false; // Disable delete button for new payments
+
+            var payment = {
+                "payment_id": payment_id,
+                "sale_id": document.getElementById('sale_id_hidden').value,
+            };
+
+            document.getElementById('payment_dialog').showModal();
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetPayment", payment);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const payment = JSON.parse(responce_query.result);
+                document.getElementById('payment_id_hidden').value = payment.id;
+                document.getElementById('payment_id').innerHTML = `<strong>${payment.id}</strong>`;
+                document.getElementById('payment_date').value = payment.DateTime.split("T")[0];
+                document.getElementById('payment_description').value = payment.Description;
+                document.getElementById('Payments').value = payment.Type;
+                document.getElementById('payment_amount').value = payment.Amount;
+                document.getElementById('currency_id').value = payment.Currency_id;
+                document.getElementById('exchange_rate').value = payment.Exchange_rate;
+                document.getElementById('payment_edit_title').innerText = "Payment";
+
+            });
+
+        }
+
+
+        function SavePayment() {
+            // Recopilar datos del formulario
+            const payment = {
+                id: document.getElementById('payment_id_hidden').value,
+                Sale_id: document.getElementById('sale_id_hidden').value,
+                DateTime: document.getElementById('payment_date').value,
+                Description: document.getElementById('payment_description').value,
+                Type: document.getElementById('Payments').value,
+                Amount: parseFloat(document.getElementById('payment_amount').value),
+                Currency_id: document.getElementById('currency_id').value,
+                Exchange_rate: parseFloat(document.getElementById('exchange_rate').value)
+            };
+
+            // Validar datos
+            if (!payment.Sale_id || !payment.DateTime || !payment.Description || !payment.Type || isNaN(payment.Amount) || payment.Amount <= 0) {
+                ShowDialog("Error", "Please fill in all required fields and ensure the amount is greater than 0.");
+                return;
+            }
+
+            // Enviar datos al backend
+            const response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "SavePayment", payment);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                const responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                ShowDialog("Success", "Payment saved successfully!");
+                document.getElementById('payment_dialog').close();
+                ShowPaymentsFromSale(document.getElementById('sale_id_hidden').value, null);
+                GetCreditSales(); // Actualizar la lista de ventas con crédito
+            });
+        }
+
+        function DeletePayment() {
+
+            const payment_id = document.getElementById('payment_id_hidden').value;
+            const sale_id = document.getElementById('sale_id_hidden').value;
+
+            if (payment_id === "New") {
+                ShowDialog("Error", "Cannot delete a new payment.");
+                return;
+            }
+
+            const response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "DeletePayment", { Payment_id: payment_id, Sale_id: sale_id });
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                const responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                ShowDialog("Success", "Payment deleted successfully!");
+                document.getElementById('payment_dialog').close();
+                ShowPaymentsFromSale(sale_id, null);
+                GetCreditSales(); // Actualizar la lista de ventas con crédito
+            });
+        }
+
+
+        document.getElementById("customer_debt_close").addEventListener("click", function () {
+            document.getElementById('customer_debt').close();
+        });
+
+        document.getElementById("customer_debt_new").addEventListener("click", function () {
+            CapturePayment("new");
+        });
+
+        document.getElementById("payment_close").addEventListener("click", function () {
+            document.getElementById('payment_dialog').close();
+        });
+
+        document.getElementById("payment_accept").addEventListener("click", function () {
+            SavePayment();
+        });
+
+        async function GetCurrencies() {
+
+            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetCurrencies", "");
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", response);
+                return;
+            }
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", response);
+                return; // Devolver el objeto predeterminado en caso de error
+            }
+
+            let responce_query = JSON.parse(response);
+
+            if (responce_query.result.startsWith("Error:")) {
+                ShowDialog("Alert", responce_query.result);
+                return; // Devolver el objeto predeterminado en caso de error
+            }
+
+            currencies = JSON.parse(responce_query.result);
+
+            for (var i = 0; i < currencies.length; i++) {
+                //Agregando cada moneda al select currency_id
+                var cur = document.createElement("option");
+                cur.text = currencies[i].id + "," + currencies[i].Symbol + "," + currencies[i].Description;
+                cur.value = currencies[i].id;
+                document.getElementById("currency_id").add(cur);
+            }
+
+            document.getElementById("currency_id").onchange = function () {
+
+                var selectedCurrency = document.getElementById("currency_id").value;
+
+                for (var i = 0; i < currencies.length; i++) {
+                    if (currencies[i].id == selectedCurrency) {
+                        document.getElementById("exchange_rate").value = currencies[i].Exchange_rate;
+                        break;
+                    }
+                }
+            }
+
+            document.getElementById("currency_id").value = businessinfo.Currency_id;
+            document.getElementById("exchange_rate").value = 1;
+
+        }
+
+        document.getElementById("currency_id").onchange = function () {
+
+            var selectedCurrency = document.getElementById("currency_id").value;
+
+            for (var i = 0; i < currencies.length; i++) {
+                if (currencies[i].id == selectedCurrency) {
+                    document.getElementById("exchange_rate").value = currencies[i].Exchange_rate;
+                    break;
+                }
+            }
+        }
+
+        async function GetBusinessInfo() {
+
+            // Crear un objeto BusinessInfo predeterminado
+            let bi = new BusinessInfo(
+                "1",
+                "",
+                "Kiosko",
+                "",
+                "info@angelsql.net",
+                "https://angelsql.net",
+                "images/Kiosko_logo.png",
+                "The best helper for your business",
+                "USD",
+                "US Dollar"
+            );
+
+            try {
+                // Llamar al backend
+                const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return bi; // Devolver el objeto predeterminado en caso de error
+                }
+
+                const responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return bi; // Devolver el objeto predeterminado en caso de error
+                }
+
+                if (responce_query.result == "[]") {
+                    return bi; // Devolver el objeto predeterminado si no hay datos
+                }
+
+                // Actualizar el objeto bi con los datos recibidos
+                bi = JSON.parse(responce_query.result);
+                return bi; // Devolver el objeto actualizado
+
+            } catch (error) {
+
+                console.error("Error fetching business info:", error);
+                ShowDialog("Alert", "An error occurred while fetching business info.");
+                return bi; // Devolver el objeto predeterminado en caso de excepción
+
+            }
+        }
+
+
+        function ShowSale(Account_id, sale_id) {
+
+            var url = "";
+
+            if (typeof clientKey !== 'undefined' && clientKey) {
+                url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/kiosko/";
+            }
+            else {
+                url = window.location.protocol + '//' + window.location.host + "/kiosko/";
+            }
+
+            openCenteredWindow(url + `ticket.html?account=${Account_id}&sale_id=${sale_id}`);
+        }
+
+
+        window.onload = async function () {
+
+            const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="search"], input[type="tel"], input[type="url"], textarea');
+
+            inputs.forEach(input => {
+                input.addEventListener("focus", function () {
+                    this.select();
+                });
+            });
+
+            businessinfo = await GetBusinessInfo();
+            GetCurrencies();
+            initializeDates();
+            GetCreditSales();
+        };
+
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

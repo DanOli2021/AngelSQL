@@ -1,0 +1,416 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Profitability analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="./js/translate.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script> <!-- Adaptador de fechas -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.0.0"></script> <!-- Plugin para heatmap -->
+
+    <script>
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+        let myChart;
+
+        // Función para inicializar las fechas en los campos de fecha
+        function initializeDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const firstDayOfYear = new Date(year, 0, 1).toISOString().split('T')[0];
+            const currentDate = today.toISOString().split('T')[0];
+
+            document.getElementById('start_date').value = firstDayOfYear;
+            document.getElementById('end_date').value = currentDate;
+        }
+
+        // Ejecutar la generación del reporte al cargar la página
+        window.onload = function () {
+            initializeDates();
+            document.getElementById('btnGenerateReport').click();
+        };
+
+    </script>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row" style="margin-top: 10px;">
+
+            <div class="container-fluid d-flex justify-content-between">
+                <a class="btn btn-primary" href="index.html" style="flex-grow: 1; margin-right: 10px;"
+                    id="menu_navigation_logout">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+
+                <a class="btn btn-secondary" href="menu.html" style="flex-grow: 1; margin-right: 10px;">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="users_groups_menu">Menu</span>
+                </a>
+
+                <a class="btn btn-primary" href="Sales.html" style="flex-grow: 1;">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">Sale Reports</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+
+            <div class="d-flex justify-content-between align-items-center" style="margin-top: 20px;">
+                <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">
+                    Profitability analysis
+                </h1>
+                <img src="./images/MyBusinessLogo.png" alt="logo" class="img-fluid" style="width: 150px;">
+
+            </div>
+
+            <!-- Date range for the report -->
+            <div class="container-fluid">
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="start_date" class="form-label">Start Date:</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control">
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="end_date" class="form-label">End Date:</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary btn-lg" id="btnGenerateReport" style="flex-grow: 1; margin-right: 10px;">
+                    Generate Report
+                </button>
+            </div>
+
+            <!-- Sales by Classification -->
+            <div class="table-container">
+
+                <h2>Sales Statistics Data</h2>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classification-table">
+                    </tbody>
+                </table>
+
+                <!-- Sales by Month Chart -->
+                <div class="chart-container">
+                    <h2>Sales by Day</h2>
+                    <canvas id="salesUtilityChart"></canvas>
+                </div>
+
+                <!-- Sales by Month Chart -->
+                <div class="chart-container">
+                    <h2>Sales by Day of the Week</h2>
+                    <canvas id="salesHeatMap"></canvas>
+                </div>
+
+                <!-- Sales by Month Chart -->
+                <div class="chart-container">
+
+                    <canvas id="ForCast"></canvas>
+                </div>
+
+                <h2>Forecast Next 30 Days</h2>
+
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecast-table">
+                    </tbody>
+                </table>
+
+
+
+            </div>
+
+            <script>
+
+                btnGenerateReport.onclick = function () {
+                    // Get the sales by classification
+                    GetAnalysisReport();
+                };
+
+                function fillForecastTable(data) {
+                    const table = document.getElementById("forecast-table");
+
+                    data.forEach(item => {
+                        const row = table.insertRow();
+                        const dayCell = row.insertCell(0);
+                        const totalCell = row.insertCell(1);
+                        dayCell.textContent = item.Day.substring(0,10);
+                        totalCell.style.textAlign = "right";
+                        var opciones = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+                        totalCell.textContent = item.Total.toLocaleString('en-US', opciones); // Redondear a 2 decimales
+                        
+                    });
+                }
+
+
+                let scatterChart = null;
+
+                function createScatterPlot(data) {
+
+
+                    // Si ya existe un gráfico, destruirlo antes de crear uno nuevo
+                    if (scatterChart !== null) {
+                        scatterChart.destroy();
+                    }
+
+                    // Transformar los datos del JSON para que se ajusten al formato esperado por Chart.js
+                    const scatterData = data.map(item => {
+                        return {
+                            x: new Date(item.Day),
+                            y: item.Total
+                        };
+                    });
+
+                    const ctx = document.getElementById('salesUtilityChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'Sales by Day',
+                                data: scatterData,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Date'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Sale Total'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                let heatmapChart = null; // Variable para almacenar la instancia del gráfico
+
+                function createHeatmap(data) {
+                    // Si ya existe un gráfico, destruirlo antes de crear uno nuevo
+                    if (heatmapChart !== null) {
+                        heatmapChart.destroy();
+                    }
+
+                    // Obtener el total por cada día de la semana
+                    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    const heatmapData = daysOfWeek.map(day => {
+                        const filteredData = data.filter(item => item.weekday === day);
+                        const totalSales = filteredData.reduce((sum, item) => sum + item.Total, 0);
+                        return {
+                            day,
+                            totalSales
+                        };
+                    });
+
+                    // Buscar el valor máximo y mínimo para normalizar colores
+                    const maxValue = Math.max(...heatmapData.map(item => item.totalSales));
+                    const minValue = Math.min(...heatmapData.map(item => item.totalSales));
+
+                    // Función para obtener el color entre verde y rojo según el valor
+                    function getColor(value) {
+                        const ratio = (value - minValue) / (maxValue - minValue); // Normaliza el valor entre 0 y 1
+                        const red = Math.floor(255 * ratio); // Más ventas, más rojo
+                        const green = Math.floor(255 * (1 - ratio)); // Menos ventas, más verde
+                        return `rgb(${red}, ${green}, 0)`; // Genera el color en formato rgb
+                    }
+
+                    // Transformar los datos para el gráfico
+                    const matrixData = heatmapData.map((item, index) => ({
+                        x: index, // Índice del día de la semana (0 = Domingo, 6 = Sábado)
+                        y: 0, // Solo una fila, ya que es por día de la semana
+                        v: item.totalSales // Valor (total de ventas)
+                    }));
+
+                    const ctx = document.getElementById('salesHeatMap').getContext('2d');
+                    heatmapChart = new Chart(ctx, {
+                        type: 'matrix',
+                        data: {
+                            datasets: [{
+                                label: 'Heat Map by Day of the Week',
+                                data: matrixData,
+                                backgroundColor: function (context) {
+                                    const value = context.dataset.data[context.dataIndex].v;
+                                    return getColor(value); // Usa la función de colores
+                                },
+                                borderWidth: 1,
+                                width: ({ chart }) => (chart.chartArea || {}).width / 7 - 1, // Ancho del cuadrado
+                                height: ({ chart }) => (chart.chartArea || {}).height - 2,   // Alto del cuadrado
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'category',
+                                    labels: daysOfWeek, // Nombres de los días de la semana
+                                    title: {
+                                        display: true,
+                                        text: 'Day of the week'
+                                    }
+                                },
+                                y: {
+                                    display: false // Solo una fila en el eje Y
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        title: function (context) {
+                                            return daysOfWeek[context[0].dataIndex];
+                                        },
+                                        label: function (context) {
+                                            const value = context.dataset.data[context.dataIndex].v;
+                                            return `Total: ${value}`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    display: true,
+                                    formatter: function (value, context) {
+                                        return value.v.toFixed(2); // Mostrar el valor de ventas dentro del cuadro
+                                    },
+                                    color: '#000'
+                                }
+                            }
+                        }
+                    });
+                }
+                function AddRow(table, key, value, align, decimals, currency, bold) {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+
+                    if (bold) {
+                        cell1.style.fontWeight = "bold";
+                        cell2.style.fontWeight = "bold";
+                    }
+
+                    cell1.innerHTML = key;
+                    cell2.style.textAlign = align;
+
+                    var opciones = { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+                    cell2.innerHTML = value.toLocaleString('en-US', opciones);
+                }
+
+                // Function to get the sales by classification
+                function GetAnalysisReport(start_date, end_date) {
+
+                    var start_date = document.getElementById('start_date').value;
+                    var end_date = document.getElementById('end_date').value;
+
+                    if (start_date === '' || end_date === '') {
+                        showDialog('Alert', 'Please select a date range.');
+                        return;
+                    }
+
+                    var data_result = ProfitabilityAnalysis(Token.username, Token.token, start_date, end_date);
+
+                    data_result.then(function (query) {
+
+                        let responce_query = JSON.parse(query);
+
+                        if (responce_query.result.startsWith("Error:")) {
+                            showDialog("Error:", responce_query.result);
+                            console.log(responce_query.result);
+                            return;
+                        }
+
+                        if (responce_query.result == "[]") {
+                            showDialog("Alert", "No data found for the selected date range.");
+                            return;
+                        }
+
+                        var analysis_data = JSON.parse(responce_query.result);
+
+                        // Create the table with the sales by classification
+                        var table = document.getElementById('classification-table');
+                        table.innerHTML = '';
+
+                        AddRow(table, "Receipts Count", analysis_data.Receipts, "right", 0, "", false);
+                        AddRow(table, "Items sold", analysis_data.Number_of_items, "right", 0, "", false);
+                        AddRow(table, "Total sales $", analysis_data.Total, "right", 0, "", false);
+                        AddRow(table, "Total cost $", analysis_data.Cost, "right", 0, "", false);
+                        AddRow(table, "Total profit $", analysis_data.Total - analysis_data.Cost, "right", 0, "", false);
+                        AddRow(table, "Average products per receipt", analysis_data.Number_of_items / analysis_data.Receipts, "right", 4, "", false);
+                        AddRow(table, "Average sale per receipt $", analysis_data.Total / analysis_data.Receipts, "right", 4, "", false);
+                        AddRow(table, "Average cost per receipt $", analysis_data.Cost / analysis_data.Receipts, "right", 4, "", false);
+
+                        createScatterPlot(analysis_data.SaleByDay);
+                        createHeatmap(analysis_data.SaleByDay);
+
+                        fillForecastTable(analysis_data.Forecast);
+
+                    });
+                }
+
+            </script>
+
+
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <div class="bottom-bar">
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

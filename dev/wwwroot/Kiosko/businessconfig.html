@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kiosko Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+    </script>
+</head>
+
+<body>
+    <div class="container mt-4">
+
+        <div class="row col-12">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de configuration -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="configuration.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_configuration">Configuration</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Logo y título -->
+        <div class="text-center mb-4">
+            <img src="./images/BusinessConfiguration_small.png" id="logo_image" alt="logo" class="img-fluid"
+                style="width:200px; margin-top: 20px;">
+            <h1 class="fw-bold mt-3" id="auth_title">Kiosko Admin (Business Configuration)</h1>
+        </div>
+
+        <!-- Formulario Business Info -->
+        <div class="card p-4 shadow">
+            <h3 class="mb-4" id="dialogTittle">Business Info</h3>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name">
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <textarea class="form-control" id="address"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="text" class="form-control" id="phone">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email">
+            </div>
+            <div class="mb-3">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" class="form-control" id="website">
+            </div>
+            <div class="mb-3">
+                <label for="slogan" class="form-label">Slogan</label>
+                <textarea class="form-control" id="slogan"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="logoUpload" class="form-label">Upload Logo</label>
+                <input type="file" class="form-control" id="logoUpload" accept="image/*">
+                <input type="hidden" id="logo">
+            </div>
+
+            <button class="btn btn-success w-100" id="saveButton">Save Changes</button>
+        </div>
+    </div>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <script>
+
+        document.getElementById('logoUpload').addEventListener('change', function () {
+            const file = this.files[0];
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                document.getElementById('logo').value = event.target.result;
+            };
+            if (file) reader.readAsDataURL(file);
+        });
+
+        document.getElementById('saveButton').addEventListener('click', function () {
+            const businessInfo = {
+                Name: document.getElementById('name').value,
+                Address: document.getElementById('address').value,
+                Phone: document.getElementById('phone').value,
+                Email: document.getElementById('email').value,
+                Website: document.getElementById('website').value,
+                Slogan: document.getElementById('slogan').value,
+                Logo: document.getElementById('logo').value
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                if (responce_query.result == "Ok.") {
+                    ShowDialog("Alert", "Business info saved successfully.");
+                    window.location.href = "menu.html";
+                } else {
+                    ShowDialog("Alert", "Failed to save business info.");
+                }
+
+            });
+
+        });
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", {});
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    if (responce_query.result == "Error: No data found.") {
+                        return;
+                    }
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                var bi = JSON.parse(responce_query.result);
+
+                document.getElementById('name').value = bi.Name;
+                document.getElementById('address').value = bi.Address;
+                document.getElementById('phone').value = bi.Phone;
+                document.getElementById('email').value = bi.Email;
+                document.getElementById('website').value = bi.Website;
+                document.getElementById('slogan').value = bi.Slogan;
+                document.getElementById('logo').value = bi.Logo;
+
+                translate_menu(language);
+
+                if (bi.Logo) {
+                    const img = document.getElementById('logo_image');
+                    img.src = bi.Logo  + "?" + new Date().getTime(); // Agregar timestamp para evitar caché
+                    img.alt = 'Logo';
+                }
+
+            });
+
+        };
+
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (catalogs)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- ** Navigation menu -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-6">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-6">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+        </div>
+        <!-- ** Navigation menu -->
+
+        <div class="row justify-content-center">
+            <img src="./images/Kiosko_logo.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Catalogs)</h1>
+            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for small businesses</h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <script>
+
+        function showDialog(title, message) {
+
+            document.getElementById('dialogTittle').innerText = title;
+            document.getElementById('dialogMessage').innerText = '⚠️' + message;
+
+            document.getElementById('myDialog').showModal();
+        }
+
+        function closeDialog() {
+            document.getElementById('myDialog').close();
+        }
+
+        document.querySelector('#closeButton').addEventListener('click', function () {
+            document.querySelector('#myDialog').close();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                    generateButtons();
+                }
+            });
+
+            translate_menu(language);
+
+        });
+
+        function generateButtons() {
+
+            if (sessionStorage.getItem("user_groups") != null) {
+
+                let user_groups = JSON.parse(sessionStorage.getItem("user_groups"));
+
+                if( findInString(user_groups.groups, "SUPERVISORS") )  
+                {
+
+                    generateButton("skus.html", "images/SkuCatalog_small.png", "Skus Catalog", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("skus_classification.html", "images/skus_classification_small.png", "Skus Classification", "btn btn-success btn-block btn-lg form-control");
+                    generateButton("customers.html", "images/Customers_small.png", "Customers Catalog", "btn btn-secondary btn-block btn-lg form-control");
+                }
+            }
+        }
+
+    </script>
+
+    <div class="bottom-bar">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (MyBusiness POS for small businesses)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+            const Token = JSON.parse(sessionStorage.getItem("Token"));  
+
+    </script>
+
+    <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon">                                                                                              
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row" style="margin-top: 10px;">
+            <div class="container-fluid">
+                <a class="btn btn-primary btn-block" href="index.html" style="width: 100%;" id="menu_navigation_logout">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">
+                        Log Out
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/Kiosko_logo.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin</h1>
+            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for small businesses</h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <div style="margin-bottom: 20px;"></div>
+
+    <script>
+
+        function showDialog(title, message) {
+
+            document.getElementById('dialogTittle').innerText = title;
+            document.getElementById('dialogMessage').innerText = '⚠️' + message;
+
+            document.getElementById('myDialog').showModal();
+        }
+
+        function closeDialog() {
+            document.getElementById('myDialog').close();
+        }
+
+        document.querySelector('#closeButton').addEventListener('click', function () {
+            document.querySelector('#myDialog').close();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                    generateButtons();
+                }
+            });
+
+            translate_menu(language);
+
+        });
+
+        function generateButtons() {
+
+            if (sessionStorage.getItem("user_groups") != null) {
+
+                let user_groups = JSON.parse(sessionStorage.getItem("user_groups"));
+
+                console.log(user_groups);
+                console.log(user_groups.groups.split(",").length);
+
+                if( user_groups.groups.split(",").length == 1) {
+                    if (user_groups.groups == "CASHIER") {
+                        generateButton("pos.html", "images/pos_small.png", "POS", "btn btn-secondary btn-block btn-lg form-control");
+                        generateButton("orders.html", "images/Orders_small.png", "Orders", "btn btn-success btn-block btn-lg form-control");
+                    }
+                    return;
+                }
+
+                if (findInString(user_groups.groups, "SUPERVISORS")) {
+                    generateButton("configuration.html", "images/configuration_small.png", "Configuration", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("inventory.html", "images/inventory_small.png", "Inventory", "btn btn-success btn-block btn-lg form-control");
+                    generateButton("sales.html", "images/sales_small.png", "Sales", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("purchases.html", "images/purchases_small.png", "Purchases", "btn btn-success btn-block btn-lg form-control");
+                    generateButton("reports.html", "images/reports_small.png", "Reports", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("datascience.html", "images/datascience_small.png", "Data Science", "btn btn-success btn-block btn-lg form-control");
+                }
+            }
+        }
+
+        document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
+    </script>
+
+    <div class="bottom-bar">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

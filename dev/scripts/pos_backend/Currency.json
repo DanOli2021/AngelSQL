@@ -1,0 +1,5 @@
+[
+    {"cc":"EUR","symbol":"\u20ac","name":"European Euro","Exchange_rate": 22.1400},
+    {"cc":"MXN","symbol":"$","name":"Mexican peso","Exchange_rate": 1},
+    {"cc":"USD","symbol":"US$","name":"United States dollar","Exchange_rate": 19.6100}
+  ]

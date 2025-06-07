@@ -1,0 +1,24 @@
+.boton-3d {
+    background-color: #f5f8f7; /* Color de fondo */
+    border: none;
+    color: black;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 4px #999; /* Sombra para efecto 3D */
+}
+
+.boton-3d:hover {
+    background-color: #d4dbd4;
+}
+
+.boton-3d:active {
+    background-color: #3e8e41;
+    box-shadow: 0 2px #666; /* Reducimos la sombra para el efecto de presionado */
+    transform: translateY(2px); /* Mueve ligeramente el botón hacia abajo */
+}

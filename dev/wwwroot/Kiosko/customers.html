@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Customers)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+
+
+    <div class="container">
+
+        <!-- ** Navigation menu -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de catalogs -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="sales.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Sales</span>
+                </a>
+            </div>
+
+        </div>
+        <!-- ** Navigation menu -->
+
+
+        <!-- ** Logo and title of the module -->
+        <div class="row justify-content-center">
+            <img src="./images/Customers_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin
+                (Customers)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+        </div>
+        <!-- ** Logo and title of the module -->
+
+
+        <!-- ** Action button area -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="ImporFromSpreadSheet()">
+                    <img src="images/importfromexcel_small.png" alt="logo" style="width:48px;" class="me-2">
+                    <span id="menu_log_out">Imports from spreadsheet</span>
+                </a>
+            </div>
+
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="Edit('New')">
+                    <img src="images/icons/new.png" alt="logo" style="width:48px;" class="me-2">
+                    <span id="menu_menu">New customer</span>
+                </a>
+            </div>
+        </div>
+        <!-- ** Action button area -->
+
+
+        <!-- ** Application body -->
+        <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+
+            <div class="col-9">
+                <input type="text" id="search_text" class="form-control" style="width: 100%;" placeholder="Search..." />
+            </div>
+
+            <!-- ** Search button in the results table -->
+            <div class="col-3">
+                <button id="search_button" class="btn btn-primary" style="width: 100%;">Search</button>
+            </div>
+            <!-- ** Search button in the results table -->
+
+            <!-- ** Results table -->
+            <div id="tableContainer"></div>
+            <!-- ** Results table -->
+
+        </div>
+        <!-- ** Application body -->
+
+
+    </div>
+
+
+    <!-- ** Generic warning dialogue -->
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+    <!-- ** Generic warning dialogue -->
+
+
+    <!-- ** Dialog to edit the properties of a record -->
+    <dialog id="customer_edit" class="dialog-box" style="width: 70%; max-width: 100%; overflow-y: auto;">
+        <div class="form-group">
+            <h1 id="edit_title" class="form-group">Edit customer</h1>
+
+            <div class="row col-12">
+
+                <div class="col-3">
+                    <label for="customer_id" class="form-label">Customer ID</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_id" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_name" class="form-label">Name</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_name" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_rfc" class="form-label">RFC</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_rfc" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_cp" class="form-label">CP</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_cp" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_email" class="form-label">Email</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_email" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_phone" class="form-label">Phone</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_phone" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_address" class="form-label">Address</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_address" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_city" class="form-label">City</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_city" class="form-control" />
+                </div>
+                
+                <div class="col-3">
+                    <label for="customer_state" class="form-label">State</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_state" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_country" class="form-label">Country</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_country" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_creditlimit" class="form-label">Credit Limit</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_creditlimit" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_creditdays" class="form-label">Credit Days</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_creditdays" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_creditstatus" class="form-label">Credit Status</label>
+                </div>
+                <div class="col-9">
+                    <select id="customer_creditstatus" class="form-select">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_type" class="form-label">Type</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="customer_type" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_discount" class="form-label">Discount</label>
+                </div>
+                <div class="col-9">
+                    <input type="number" id="customer_discount" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_discounttype" class="form-label">Discount Type</label>
+                </div>
+                <div class="col-9">
+                    <select id="customer_discounttype" class="form-select">
+                        <option value="Percentage">Wholesaler</option>
+                        <option value="Amount">Retailer</option>
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_currency" class="form-label">Currency</label>
+                </div>
+                <div class="col-9">
+                    <select id="customer_currency" class="form-select">
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_businesssline" class="form-label">Business Line</label>
+                </div>
+                <div class="col-9">
+                    <select id="customer_businesssline" class="form-select">
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_status" class="form-label">Status</label>
+                </div>
+                <div class="col-9">
+                    <select id="customer_status" class="form-select">
+                        <option value="Active">Active</option>
+                        <option value="Suspended">Suspended</option>
+                    </select>
+                </div>
+
+                <div class="col-3">
+                    <label for="customer_observations" class="form-label">Observations</label>
+                </div>
+                <div class="col-9">
+                    <textarea id="customer_observations" class="form-control"></textarea>
+                </div>
+
+                <button id="edit_save_button" class="btn btn-success btn-lg form-control col-6"
+                    style="margin-bottom: 10px; margin-top: 20px;" onclick="Save();">Save</button>
+
+                <button id="edit_delete_button" class="btn btn-warning btn-lg form-control col-6"
+                    style="margin-bottom: 10px;" onclick="ConfirmDelete();">Delete</button>
+
+                <button id="edit_cancel_button" class="btn btn-danger btn-lg form-control col-6"
+                    style="margin-bottom: 10px;">Cancel</button>
+
+            </div>
+        </div>
+    </dialog>
+    <!-- ** Dialog to edit the properties of a record -->
+
+
+    <!-- ** Footer bar-->
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+    <!-- ** Footer bar-->
+
+    <!-- ** Generic Dialog to confirm -->
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+    <!-- ** Generic Dialog to confirm -->
+
+
+    <script>
+
+        // Import from Excel
+        function ImporFromSpreadSheet() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".xlsx,.xls";
+            input.click();
+
+            input.onchange = async (e) => {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function (event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                    var response = sendToAngelPOST(Token.User, "pos_backend/pos_customers", Token.Token, "SaveImport", json);
+
+                    response.then(function (query) {
+
+                        if (query.startsWith("Error:")) {
+                            ShowDialog("Alert", query);
+                            return;
+                        }
+
+                        let responce_query = JSON.parse(query);
+
+                        if (responce_query.result.startsWith("Error:")) {
+                            ShowDialog("Alert", responce_query.result);
+                            return;
+                        }
+
+                        if (responce_query.result == "Ok.") {
+                            ShowDialog("Alert", "Customers imported correctly.");
+                            Search(":ALL");
+                        } else {
+                            ShowDialog("Alert", "Failed to save skus info.");
+                        }
+
+                    });
+
+                };
+
+                reader.readAsArrayBuffer(file);
+
+            };
+        }
+
+        document.getElementById("search_button").addEventListener("click", async function () {
+            const searchValue = document.getElementById("search_text").value.trim();
+            Search(searchValue);
+
+        });
+
+        function Search(searchValue) {
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_customers", Token.Token, "GetMany", searchValue);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary form-control"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => Edit(`${val}`),
+                    }
+                };
+
+                if (responce_query.result == "[]") {
+                    ShowDialog("Alert", "No Data found.");
+                    return;
+                }
+
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+
+                document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
+
+            });
+
+        }
+
+
+        function Edit(Id_customer) {
+
+            document.getElementById("customer_id").disabled = true;
+
+            if (Id_customer == "New") {
+                document.getElementById("customer_id").disabled = false;
+
+                document.getElementById("customer_id").onblur = function () {
+                    this.value = this.value.trim().toUpperCase();
+                    Edit(this.value);
+                };
+
+                document.getElementById("edit_title").innerText = "New customer";
+                document.getElementById("customer_id").value = "";
+                document.getElementById("customer_name").value = "";
+                document.getElementById("customer_rfc").value = "";
+                document.getElementById("customer_cp").value = "";
+                document.getElementById("customer_email").value = "";
+                document.getElementById("customer_phone").value = "";
+                document.getElementById("customer_address").value = "";
+                document.getElementById("customer_city").value = "";
+                document.getElementById("customer_state").value = "";
+                document.getElementById("customer_country").value = "";
+                document.getElementById("customer_creditlimit").value = "";
+                document.getElementById("customer_creditdays").value = "";
+                document.getElementById("customer_type").value = "";
+                document.getElementById("customer_discount").value = "";
+                document.getElementById("customer_discounttype").value = "";
+                document.getElementById("customer_currency").value = "";
+                document.getElementById("customer_businesssline").value = "";
+                document.getElementById("customer_status").value = "Active";
+                document.getElementById("customer_observations").value = "";
+                document.getElementById("customer_creditstatus").value = "Active";
+                document.getElementById("customer_edit").showModal();
+                return;
+
+            }
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_customers", Token.Token, "Get", Id_customer);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    if (responce_query.result == "Error: No data found.") {
+                        return;
+                    }
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                const customer = JSON.parse(responce_query.result);
+
+                console.log(customer);
+
+                document.getElementById("edit_title").innerText = "Edit customer";
+                document.getElementById("customer_id").disabled = true;
+                document.getElementById("customer_id").value = customer.id;
+                document.getElementById("customer_name").value = customer.Name;
+                document.getElementById("customer_rfc").value = customer.RFC;
+                document.getElementById("customer_cp").value = customer.CP;
+                document.getElementById("customer_email").value = customer.Email;
+                document.getElementById("customer_phone").value = customer.Phone;
+                document.getElementById("customer_address").value = customer.Address;
+                document.getElementById("customer_city").value = customer.City;
+                document.getElementById("customer_state").value = customer.State;
+                document.getElementById("customer_country").value = customer.Country;
+                document.getElementById("customer_creditlimit").value = customer.Credit_limit;
+                document.getElementById("customer_creditdays").value = customer.Credit_days;
+                document.getElementById("customer_type").value = customer.Type;
+                document.getElementById("customer_discount").value = customer.Discount;
+                document.getElementById("customer_discounttype").value = customer.Discount_type;
+                document.getElementById("customer_currency").value = customer.Currency;
+                document.getElementById("customer_businesssline").value = customer.BusinessLine_id;
+                document.getElementById("customer_status").value = customer.Status;
+                document.getElementById("customer_currency").value = customer.Currency_id; 
+                document.getElementById("customer_status").value = customer.Status;
+                document.getElementById("customer_observations").value = customer.Observations;
+                document.getElementById("customer_creditstatus").value = customer.Credit_status;
+
+                // Mostrar el diálogo de edición
+                document.getElementById("customer_edit").showModal();
+
+            });
+
+        }
+
+
+        function Save() {
+
+            var customer = {
+                Customer_id: document.getElementById("customer_phone").value,
+                Name: document.getElementById("customer_name").value,
+                RFC: document.getElementById("customer_rfc").value,
+                CP: document.getElementById("customer_cp").value,
+                Email: document.getElementById("customer_email").value,
+                Phone: document.getElementById("customer_phone").value,
+                Address: document.getElementById("customer_address").value,
+                City: document.getElementById("customer_city").value,
+                State: document.getElementById("customer_state").value,
+                Country: document.getElementById("customer_country").value,
+                Credit_limit: document.getElementById("customer_creditlimit").value,
+                Credit_days: document.getElementById("customer_creditdays").value,
+                Type: document.getElementById("customer_type").value,
+                Discount: document.getElementById("customer_discount").value,
+                Discount_type: document.getElementById("customer_discounttype").value,
+                Currency_id: document.getElementById("customer_currency").value,
+                Business_line: document.getElementById("customer_businesssline").value,
+                Observations: document.getElementById("customer_observations").value,
+                Credit_status: document.getElementById("customer_creditstatus").value,                
+                Status: document.getElementById("customer_status").value,
+                Seller_id: Token.User,
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_customers", Token.Token, "SaveImport", JSON.stringify(customer));
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                Search(":ALL");
+                document.getElementById("customer_edit").close();
+
+            });
+
+
+        }
+
+        function ConfirmDelete() {
+            const customerId = document.getElementById("customer_id").value;
+
+            ShowAcceptCancelDialog("Delete customer", "Are you sure you want to delete the customer: " + customerId + "?",
+                function () {
+                    Delete(customerId);
+                });
+        }
+
+        function Delete(customerId) {
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_customers", Token.Token, "Delete", customerId);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                customerId = customerId.trim().toUpperCase();
+
+                // Eliminar el renglón de la tabla
+                const rowToDelete = document.getElementById(customerId);
+
+                if (rowToDelete) {
+                    rowToDelete.parentNode.removeChild(rowToDelete);
+                }
+
+                ShowDialog("Alert", "customer deleted correctly: " + customerId);
+                document.getElementById("dialog_accept").close();
+                document.getElementById("customer_edit").close();
+
+                Search(":ALL"); // Refresh the customer list after deletion
+
+            });
+        }
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("edit_cancel_button").onclick = function () {
+                document.getElementById("customer_edit").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                }
+            });
+
+            try {
+
+                var result = await sendToAngelPOST(Token.User, "pos_backend/pos_currencies", Token.Token, "GetMany", ":ALL");
+
+                if (result.startsWith("Error:")) {
+                    ShowDialog("Alert", result);
+                    return;
+                }
+
+                let responce_query = JSON.parse(result);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const select = document.getElementById("customer_currency");
+                select.innerHTML = ""; // Clear existing options
+
+                JsonData.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.Description;
+                    select.appendChild(option);
+                });
+                
+            } catch (error) {
+
+                console.error("Error fetching :", error);
+
+            }
+
+            try {
+
+                var result = await sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetBusinessLines", "");
+
+                if (result.startsWith("Error:")) {
+                    ShowDialog("Alert", result);
+                    return;
+                }
+
+                let responce_query = JSON.parse(result);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const select = document.getElementById("customer_businesssline");
+                select.innerHTML = ""; // Clear existing options
+
+                JsonData.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.Description;
+                    select.appendChild(option);
+                });
+                
+            } catch (error) {
+
+                console.error("Error fetching :", error);
+
+            }
+
+            translate_menu(language);
+
+            Search(":ALL");
+
+            document.getElementById("search_text").focus();
+
+        };
+
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

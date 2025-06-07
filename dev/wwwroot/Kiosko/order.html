@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Seguimiento de Pedido</title>
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <script src="js/main.js"></script>
+    <script src="../js/account.js"></script>
+    <script src="../proxy.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 2rem;
+        }
+
+        .branding {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .branding img {
+            max-height: 100px;
+            margin-bottom: 0.5rem;
+        }
+
+        .card {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .badge {
+            font-size: 1rem;
+            padding: 0.5em 0.75em;
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .dialog-box {
+            max-width: 90vw;
+            margin: auto;
+        }
+
+        #orderQR {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="businessinfo" class="branding"></div>
+
+    <h2 class="text-center mb-4 text-primary">Tracking your Order</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Order Information</h5>
+            <div class="row g-3">
+                <div class="col-12 col-md-6"><strong>Name:</strong> <span id="orderName"></span></div>
+                <div class="col-12 col-md-6"><strong>Phone:</strong> <span id="orderPhone"></span></div>
+                <div class="col-12 col-md-6"><strong>Order Date:</strong> <span id="orderDate"></span></div>
+                <div class="col-12 col-md-6"><strong>Shipping Method:</strong> <span id="shippingMethod"></span></div>
+                <div class="col-12"><strong>Address:</strong> <span id="shippingAddress"></span></div>
+                <div class="col-12 col-md-6 mt-2"><strong>Total:</strong> $<span id="totalAmount"></span> MXN</div>
+                <div class="col-12 col-md-6 mt-2"><strong>Status:</strong> <span id="status"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Productos</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItems"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Payments</h5>
+            <ul id="payments" class="list-group list-group-flush"></ul>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">Scan this QR code to track your order on your phone</h5>
+            <div id="orderQR" class="mx-auto" style="padding: 1em; border: 1px dashed #ccc; display: inline-block;"></div>
+        </div>
+    </div>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning w-100">Cerrar</button>
+    </dialog>
+
+    <script>
+        async function loadOrder() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const OrderId = urlParams.get('OrderId');
+            const PartitionId = urlParams.get('PartitionId');
+
+            if (!OrderId || OrderId === "undefined") return ShowDialog("Error", "ID de pedido no válido.");
+            if (!PartitionId || PartitionId === "undefined") return ShowDialog("Error", "ID de partición no válido.");
+
+            const user = "user@" + angelsql_account;
+            const orderData = { Id: OrderId, PartitionKey: PartitionId };
+            let response = await sendToAngelPOST(user, "pos_backend/pos_orderusers", "", "GetOrder", orderData);
+
+            if (response.startsWith("Error:")) return ShowDialog("Error", "Error al obtener el pedido: " + response);
+
+            const query = JSON.parse(response);
+            if (query.result.startsWith("Error:")) return ShowDialog("Error", "No se encontró información del pedido.");
+
+            const order = JSON.parse(query.result);
+            const statusColors = {
+                "Pending": "bg-secondary",
+                "Confirmed": "bg-primary",
+                "On the way": "bg-warning text-dark",
+                "Delivered": "bg-success",
+                "Cancelled": "bg-danger"
+            };
+
+            document.getElementById("orderName").innerText = order.OrderName;
+            document.getElementById("orderPhone").innerText = order.OrderPhone;
+            document.getElementById("orderDate").innerText = order.OrderDate;
+            document.getElementById("shippingMethod").innerText = order.ShippingMethod || "No especificado";
+            document.getElementById("shippingAddress").innerText = order.ShippingAddress || "No especificada";
+            document.getElementById("totalAmount").innerText = order.TotalAmount.toFixed(2);
+
+            const statusElement = document.getElementById("status");
+            statusElement.innerText = order.Status;
+            statusElement.className = "badge " + (statusColors[order.Status] || "bg-dark");
+
+            const itemsContainer = document.getElementById("orderItems");
+            itemsContainer.innerHTML = "";
+            order.OrderItems.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.Sku_Id}</td>
+                    <td>${item.Sku_Description}</td>
+                    <td>${item.Quantity}</td>
+                    <td>$${item.Price.toFixed(2)}</td>
+                `;
+                itemsContainer.appendChild(row);
+            });
+
+            const paymentsContainer = document.getElementById("payments");
+            paymentsContainer.innerHTML = "";
+            order.Payments.forEach(pay => {
+                const item = document.createElement("li");
+                item.className = "list-group-item";
+                item.textContent = `Pago con ${pay.Type} - $${pay.Amount.toFixed(2)} ${pay.Currency_id}`;
+                paymentsContainer.appendChild(item);
+            });
+
+            response = await sendToAngelPOST(user, "pos_backend/pos_businessinfo", "", "GetBusinessInfo", "");
+            if (response.startsWith("Error:")) return alert("Error al obtener información del negocio: " + response);
+
+            const business = JSON.parse(JSON.parse(response).result);
+            document.getElementById('businessinfo').innerHTML = `
+                <img src="${business.Logo}" alt="Logo">
+                <div><strong>${business.Name}</strong></div>
+                <div>${business.Slogan}</div>
+                <div>${business.Address}</div>
+                <div>${business.Phone}</div>
+                <div>${business.Email}</div>
+                <div><a href="${business.Website}" target="_blank">${business.Website}</a></div>
+            `;
+        }
+
+        loadOrder();
+        setInterval(loadOrder, 30000);
+    </script>
+
+    <script>
+        if (window.opener) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = "btn btn-warning w-100 mb-3";
+            closeBtn.textContent = "Cerrar esta ventana";
+            closeBtn.onclick = () => window.close();
+            const businessInfoDiv = document.getElementById("businessinfo");
+            businessInfoDiv.parentNode.insertBefore(closeBtn, businessInfoDiv);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <script>
+        new QRCode(document.getElementById("orderQR"), {
+            text: window.location.href,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

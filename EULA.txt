@@ -1,0 +1,48 @@
+End User License Agreement (EULA)
+MyBusiness POS Desarrollos, S.A. de C.V.
+AngelSQL
+This End User License Agreement ("Agreement") is a legal agreement between you ("Licensee" or "you") and MyBusiness POS Desarrollos, S.A. de C.V. ("Licensor" or "we") for the use of the AngelSQL software product, which includes software, associated media, printed materials, and "online" or electronic documentation ("Software").
+
+1. Grant of License
+Subject to the terms and conditions of this Agreement, Licensor grants you a limited, non-exclusive, non-transferable license to use the Software solely for your internal business operations. You may install and use the Software on a single computer or on multiple computers within your organization.
+
+2. License Restrictions
+You shall not:
+a. Modify, adapt, translate, or create derivative works based on the Software.
+b. Decompile, reverse engineer, disassemble, or otherwise attempt to derive source code from the Software.
+c. Rent, lease, loan, resell, distribute, or otherwise transfer the Software to any third party.
+d. Remove, alter, or obscure any proprietary notices, labels, or marks on the Software.
+
+3. Intellectual Property Rights
+The Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties. All title, ownership rights, and intellectual property rights in and to the Software and any copies thereof are owned by Licensor or its suppliers.
+
+4. Termination
+This Agreement is effective until terminated. Your rights under this Agreement will terminate automatically without notice from Licensor if you fail to comply with any term(s) of this Agreement. Upon termination of this Agreement, you must cease all use of the Software and destroy all copies, full or partial, of the Software.
+
+5. Limited Warranty
+Licensor warrants that the Software will perform substantially in accordance with the accompanying materials for a period of ninety (90) days from the date of receipt. If the Software does not meet this warranty, Licensor's sole and exclusive liability and your sole and exclusive remedy will be at Licensor's option, to either (i) return the price paid, if any, or (ii) repair or replace the Software.
+
+6. Disclaimer of Warranties
+EXCEPT FOR THE LIMITED WARRANTY SET FORTH ABOVE, THE SOFTWARE IS PROVIDED "AS IS". LICENSOR DISCLAIMS ALL OTHER WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+7. Limitation of Liability
+IN NO EVENT SHALL LICENSOR BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. IN ANY CASE, LICENSOR'S ENTIRE LIABILITY UNDER ANY PROVISION OF THIS AGREEMENT SHALL BE LIMITED TO THE AMOUNT ACTUALLY PAID BY YOU FOR THE SOFTWARE.
+
+8. Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of Mexico, without regard to its conflict of laws principles. Any disputes arising out of or in connection with this Agreement shall be resolved in the courts of Mexico.
+
+9. Miscellaneous
+a. This Agreement constitutes the entire agreement between you and Licensor concerning the subject matter hereof and supersedes all prior agreements and understandings, whether written or oral, relating to such subject matter.
+b. If any provision of this Agreement is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall be enforced.
+c. Licensor's failure to enforce any right or provision in this Agreement shall not constitute a waiver of such right or provision unless acknowledged and agreed to by Licensor in writing.
+
+By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this Agreement. If you do not agree to the terms of this Agreement, do not install or use the Software.
+
+Contact Information
+If you have any questions about this Agreement, please contact:
+
+MyBusiness POS Desarrollos, S.A. de C.V.
+Ciprés Norte #12, Santa Ana, Ixtapan de la Sal
+Estado de México, 51900
+contacto@angelsql.net
++52 (720) 122-6901

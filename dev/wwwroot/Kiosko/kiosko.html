@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kiosko - Orders</title>
+    <script src="../js/main.js"></script>
+    <script src="../js/account.js"></script>
+    <script src="../proxy.js"></script>
+
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <style>
+        body {
+            background-color: #f9f9f9;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: white;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            margin-top: 30px;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .search-bar {
+            margin-top: 20px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-click {
+            animation: pulse 0.6s ease;
+        }
+
+        .qty-animated {
+            transition: transform 0.2s ease;
+            transform: scale(1.3);
+        }
+
+        .modal-backdrop.show {
+            background-color: rgba(0, 0, 0, 0.75) !important;
+            backdrop-filter: blur(2px);
+        }
+
+        #dialog_sale_confirm {
+            width: 70%;
+            max-width: 100%;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            #dialog_sale_confirm {
+                width: 90%;
+            }
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div
+        class="bg-light p-3 border-bottom shadow rounded d-flex flex-column flex-md-row justify-content-center align-items-center text-start">
+        <img id="companyLogo" src="logo.png" alt="Company Logo" class="img-fluid mb-3 mb-md-0 me-md-4"
+            style="height: 120px; max-width: 100%;">
+        <div>
+            <h2 class="mb-1" id="companyName">Company Name</h2>
+            <h5 class="mb-0" id="companySlogan">Company Description</h5>
+        </div>
+    </div>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">🛒 Kiosko Orders</a>
+
+
+            <button class="btn btn-outline-light ms-auto" style="height: 60px;" onclick="showCart()">
+                Carrito <span class="badge bg-danger" id="cartCount">0</span>
+            </button>
+
+            <button id="langToggleBtn" class="btn btn-outline-light ms-auto" style="height: 60px; margin-right: 10px;"
+                onclick="toggleLanguage()">
+                <img src="images/icons/us-flag.ico" id="langIcon" alt="" style="width: 40px;">
+                <span id="langText">🇺🇸 English</span>
+            </button>
+
+            <button class="btn btn-outline-light me-2" id="button_login" style="height: 60px;"
+                onclick="showLogin()">Login</button>
+            <span class="text-white" id="currentUser" style="display:none;"></span>
+
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row search-bar">
+            <div class="col-md-12">
+                <input id="searchInput" type="text" class="form-control" placeholder="Search products..."
+                    autocomplete="off" oninput="renderProducts()" />
+            </div>
+        </div>
+
+        <div id="productList" class="row mt-4">
+            <!-- Aquí se cargan los productos -->
+        </div>
+    </div>
+
+    <!-- Modal del Carrito -->
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel">Your cart</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="cartItems">
+                    <!-- Aquí van los productos del carrito -->
+                </div>
+                <div class="modal-footer">
+                    <h5 class="me-auto">Total: $<span id="cartTotal">0.00</span></h5>
+                    <button type="button" class="btn btn-secondary" style="height: 50px;"
+                        data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" style="height: 50px;"
+                        onclick="showCheckout()">Finalize Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;"
+            onclick="document.getElementById('generic_dialog').close()">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;"
+            onclick="document.getElementById('dialog_accept').close()">Close</button>
+    </dialog>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Email">
+                    <input type="password" id="loginPassword" class="form-control mb-2" placeholder="Password">
+                    <button class="btn btn-success w-100 mb-2" onclick="login()">Sign in</button>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-link p-0" onclick="register()">Sign up</button>
+                        <button class="btn btn-link p-0" onclick="recoverPassword()">Forgot password?</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="email" id="registerEmail" class="form-control mb-2" placeholder="Email">
+                    <input type="password" id="registerPassword" class="form-control mb-2" placeholder="Password"
+                        autocomplete="off">
+                    <input type="password" id="retypePassword" class="form-control mb-2" placeholder="Retype Password"
+                        autocomplete="off">
+                    <input type="text" id="registerName" class="form-control mb-2" placeholder="Full Name">
+                    <input type="text" id="registerPhone" class="form-control mb-2" placeholder="Phone Number">
+                    <button class="btn btn-primary w-100" onclick="doRegister()">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Recovery Modal -->
+    <div class="modal fade" id="recoverModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Recover Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="email" id="recoverEmail" class="form-control mb-3" placeholder="Enter your email">
+                    <button class="btn btn-primary w-100" onclick="doRecoverPassword()">Send recovery email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div id="anonymousFields">
+                        <input type="text" id="checkoutName" class="form-control mb-2"
+                            placeholder="Full Name (required)">
+                        <input type="text" id="checkoutPhone" class="form-control mb-2" placeholder="Phone">
+                        <input type="text" id="checkoutEmail" class="form-control mb-2" placeholder="Email">
+                    </div>
+
+                    <select id="checkoutDeliveryType" class="form-select mb-2">
+                        <option value="Local">Pickup at location</option>
+                        <option value="Home">Home delivery</option>
+                    </select>
+
+                    <input type="text" id="checkoutPayment" class="form-control mb-2"
+                        placeholder="Payment Method (optional)">
+
+                    <textarea cols="30" rows="5" id="checkoutAddress" class="form-control mb-2"
+                        placeholder="Delivery Address (optional)">
+                    </textarea>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success w-100" id="buttonSubmitOrder" style="height: 50px;"
+                        onclick="submitOrder()">Submit
+                        Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar notas -->
+    <div class="modal fade" id="notesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="noteModalTitle">Notes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="noteText" class="form-control" rows="4"
+                        placeholder="Escribe una nota para este producto..."></textarea>
+                    <input type="hidden" id="noteProductId">
+                </div>
+                <div class="modal-footer">
+                    <button id="noteSaveBtn" class="btn btn-primary w-100" onclick="saveNote()">Guardar Nota</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let skus = [];
+        let categories = [];
+        let cart = [];
+        let username = "any@" + angelsql_account;
+        let cartModalInstance;
+        let loginModalInstance;
+        let businessinfo = undefined;
+        let loginMail;
+        let loginPassword;
+        let taskGuid;
+        let setIntervalId;
+        let htmlbutton;
+        let submitBtn;
+        let numberOfTrys = 0;
+
+        function register() {
+            const modal = new bootstrap.Modal(document.getElementById("registerModal"));
+            modal.show();
+        }
+
+        async function doRegister() {
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
+            const retype = document.getElementById("retypePassword").value;
+            const name = document.getElementById("registerName").value;
+            const Phone = document.getElementById("registerPhone").value;
+
+            if (password !== retype) {
+                ShowDialog("Alert", "The passwords do not match.");
+                return;
+            }
+
+            const data = {
+                Email: email,
+                Password: password,
+                Retype: retype,
+                Name: name,
+                Phone: Phone
+            };
+
+            const response = await sendToAngelPOST(username, "pos_backend/pos_orderusers", "", "SaveOrderUser", data);
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", "Could not register: " + response);
+                return;
+            }
+
+            const query = JSON.parse(response);
+
+            if (query.result.startsWith("Error:")) {
+                ShowDialog("Alert", "Could not register: " + query.result);
+                return;
+            }
+
+            ShowDialog("Alert", "Successful registration!");
+            const modal = bootstrap.Modal.getInstance(document.getElementById("registerModal"));
+            modal.hide();
+
+            document.getElementById("loginEmail").value = email;
+            document.getElementById("loginPassword").value = password;
+
+        }
+
+        function recoverPassword() {
+            const modal = new bootstrap.Modal(document.getElementById("recoverModal"));
+            modal.show();
+        }
+
+        async function doRecoverPassword() {
+            const email = document.getElementById("recoverEmail").value;
+
+            if (!email.includes("@")) {
+                ShowDialog("Alert", "Please enter a valid email.");
+                return;
+            }
+
+            // Simula la lógica de recuperación
+            const response = await sendToAngelPOST(email, "pos_backend/users", "", "RecoverPassword", "");
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", "Could not send recovery instructions: " + response);
+                return;
+            }
+
+            alert("Recovery instructions have been sent to " + email);
+            const modal = bootstrap.Modal.getInstance(document.getElementById("recoverModal"));
+            modal.hide();
+        }
+
+
+        function showLogin() {
+
+            if (loginMail) {
+
+                ShowAcceptCancelDialog("Logout", "Are you sure you want to log out?", function () {
+                    loginMail = undefined;
+
+                    document.getElementById("currentUser").style.display = "none";
+                    document.getElementById("button_login").innerText = "Login";
+                    cart = [];
+                    saveCart();
+                    updateCartCount();
+                    document.getElementById("dialog_accept").close();
+                    return;
+                });
+
+                return;
+
+            }
+
+            if (!loginModalInstance) {
+                loginModalInstance = new bootstrap.Modal(document.getElementById("loginModal"));
+            }
+            loginModalInstance.show();
+        }
+
+        async function login() {
+
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const data = {
+                Email: email,
+                Password: password
+            };
+
+            document.getElementById("searchInput").value = ""
+            renderCategories();
+
+            const response = await sendToAngelPOST(username, "pos_backend/pos_orderusers", "", "Login", data);
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", "The session could not be started: " + response);
+                return;
+            }
+
+            const query = JSON.parse(response);
+
+            if (query.result.startsWith("Error:")) {
+                ShowDialog("Alert", "The session could not be started: " + query.result);
+                return;
+            }
+
+            loginMail = email;
+            loginPassword = password;
+
+            document.getElementById("currentUser").textContent = loginMail;
+            document.getElementById("currentUser").style.display = "inline";
+            document.getElementById("button_login").innerText = "Logout";
+            loginModalInstance.hide();
+        }
+
+
+        async function loadBusinessInfo() {
+            const businessinfo_result = await sendToAngelPOST(username, "pos_backend/pos_businessinfo", "", "GetBusinessInfo", ":ALL");
+            if (businessinfo_result.startsWith("Error:")) return ShowDialog("Alert", businessinfo_result);
+
+            const query = JSON.parse(businessinfo_result);
+            if (query.result.startsWith("Error:")) return ShowDialog("Alert", query.result);
+
+            businessinfo = JSON.parse(query.result);
+            document.getElementById("companyName").textContent = businessinfo.Name;
+            document.getElementById("companyLogo").src = businessinfo.Logo;
+            document.getElementById("companySlogan").textContent = businessinfo.Slogan;
+
+        }
+
+        async function loadData() {
+            const respCat = await sendToAngelPOST(username, "pos_backend/pos_classifications", "", "GetMany", ":ALL");
+            if (respCat.startsWith("Error:")) return ShowDialog("Alert", respCat);
+
+            const resultCat = JSON.parse(respCat);
+            if (resultCat.result.startsWith("Error:")) return ShowDialog("Alert", resultCat.result);
+
+            categories = JSON.parse(resultCat.result);
+            renderCategories();
+        }
+
+        async function loadSkus(filter = "") {
+            const respSku = await sendToAngelPOST(username, "pos_backend/pos_skus", "", "GetPublicSkus", filter);
+            if (respSku.startsWith("Error:")) return ShowDialog("Alert", respSku);
+
+            const resultSku = JSON.parse(respSku);
+            if (resultSku.result.startsWith("Error:")) return ShowDialog("Alert", resultSku.result);
+
+            skus = JSON.parse(resultSku.result);
+        }
+
+        function renderCategories(filtered = categories) {
+            const container = document.getElementById("productList");
+            container.innerHTML = "";
+
+            filtered.forEach(cat => {
+                const div = document.createElement("div");
+                div.className = "col-md-4 mb-4";
+                div.innerHTML = `
+                <div class="card h-100" style="cursor:pointer;" onclick="selectCategory('${cat.id}')">
+                    ${cat.Image ? `<img src="${cat.Image}" class="card-img-top" style="max-height:200px;object-fit:contain;">` : ''}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">${cat.id || cat.Description}</h5>
+                    </div>
+                </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        async function selectCategory(categoryId) {
+            await loadSkus(categoryId);
+            renderProducts(skus.filter(s => JSON.parse(s.SkuClassification)[0].Id === categoryId), categoryId);
+        }
+
+        function renderProducts(filteredSkus, categoryTitle = "") {
+            const container = document.getElementById("productList");
+            container.innerHTML = "";
+
+            const backBtn = document.createElement("div");
+            backBtn.className = "col-12 mb-3";
+            backBtn.innerHTML = `<button class="btn btn-outline-secondary" onclick="renderCategories()">← Return to categories</button>`;
+            container.appendChild(backBtn);
+
+            if (filteredSkus == "undefined" || filteredSkus == null) {
+                container.innerHTML += `<p>No products to display.</p>`;
+                return;
+            }
+
+            if (filteredSkus.length === 0) {
+                container.innerHTML += `<p>No products to display.</p>`;
+                return;
+            }
+
+            if (categoryTitle) {
+                container.innerHTML += `<div class="col-12 category-title">${categoryTitle}</div>`;
+            }
+
+            filteredSkus.forEach(prod => {
+                const card = document.createElement("div");
+                card.className = "col-md-4";
+                card.innerHTML = `
+                <div class="product-card">
+                    ${prod.Image ? `<img src="${prod.Image}" class="w-100 mb-2" style="max-height:150px;object-fit:contain;">` : ""}
+                    <h5>${prod.Description}</h5>
+                    <p><strong>$${prod.Price.toFixed(2)}</strong></p>
+                    <button class="btn btn-success btn-sm" onclick="addToCart('${prod.id}')">${t("addToCart")}</button>
+                </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById("searchInput").addEventListener("input", async function () {
+            const term = this.value.trim().toLowerCase();
+            if (term.length < 3) {
+                renderCategories();
+                return;
+            }
+
+            await loadSkus(term);
+
+            const filteredByCategory = {};
+
+            skus.forEach(sku => {
+                const classObj = JSON.parse(sku.SkuClassification)[0];
+                if (sku.Description.toLowerCase().includes(term)) {
+                    if (!filteredByCategory[classObj.Id]) {
+                        filteredByCategory[classObj.Id] = [];
+                    }
+                    filteredByCategory[classObj.Id].push(sku);
+                }
+            });
+
+            const container = document.getElementById("productList");
+            container.innerHTML = "";
+
+            const categoryIds = Object.keys(filteredByCategory);
+            if (categoryIds.length === 0) {
+                container.innerHTML = `<p>No hay resultados para "${term}"</p>`;
+                return;
+            }
+
+            categoryIds.forEach(catId => {
+                const cat = categories.find(c => c.id === catId);
+                if (!cat) return;
+
+                const title = document.createElement("div");
+                title.className = "col-12 category-title";
+                title.textContent = cat.Description || cat.id;
+                container.appendChild(title);
+
+                filteredByCategory[catId].forEach(prod => {
+                    const card = document.createElement("div");
+                    card.className = "col-md-4";
+                    card.innerHTML = `
+                    <div class="product-card">
+                        ${prod.Image ? `<img src="${prod.Image}" class="w-100 mb-2" style="max-height:150px;object-fit:contain;">` : ""}
+                        <h5>${prod.Description}</h5>
+                        <p><strong>$${prod.Price.toFixed(2)}</strong></p>
+                        <button class="btn btn-success btn-sm" onclick="addToCart('${prod.id}')">Add to cart</button>
+                    </div>`;
+                    container.appendChild(card);
+                });
+            });
+        });
+
+        function addToCart(skuId) {
+            const btn = event.target;
+            btn.classList.add("animate-click");
+            setTimeout(() => btn.classList.remove("animate-click"), 300);
+
+            const existing = cart.find(item => item.id === skuId);
+            if (existing) {
+                existing.qty++;
+            } else {
+                const sku = skus.find(s => s.id === skuId);
+                cart.push({ ...sku, qty: 1 });
+            }
+            updateCartCount();
+            saveCart();
+        }
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById("cartCount").innerText = totalItems;
+        }
+
+
+        function showCart() {
+            if (!cartModalInstance) {
+                cartModalInstance = new bootstrap.Modal(document.getElementById('cartModal'));
+            }
+            updateCartDisplay();
+            cartModalInstance.show();
+        }
+
+        function updateCartDisplay() {
+            const container = document.getElementById("cartItems");
+            const total = document.getElementById("cartTotal");
+
+            container.innerHTML = "";
+            let totalAmount = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = "<p>No hay productos en el carrito.</p>";
+                total.innerText = "0.00";
+            } else {
+                cart.forEach(item => {
+                    totalAmount += item.Price * item.qty;
+                    container.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                <div>
+                    <strong>${item.Description}</strong><br>
+                    <small>
+                        Cantidad: 
+                        <button class="btn btn-sm btn-outline-secondary" onclick="changeQty('${item.id}', -1)">−</button>
+                        <span class="mx-2">${item.qty}</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="changeQty('${item.id}', 1)">+</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" onclick="openNoteModal('${item.id}')">Notes</button>
+                        ${item.Notas ? `<div class="mt-1"><small>📝 ${item.Notas}</small></div>` : ""}
+                    </small>
+                </div>
+                <div>
+                    <span>$${(item.Price * item.qty).toFixed(2)}</span>
+                    <button class="btn btn-sm btn-danger ms-2" onclick="removeFromCart('${item.id}')">✕</button>
+                </div>
+            </div>`;
+                });
+                total.innerText = totalAmount.toFixed(2);
+            }
+        }
+
+
+        function removeFromCart(skuId) {
+            cart = cart.filter(item => item.id !== skuId);
+            updateCartCount();
+            saveCart();
+            showCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem("kiosko_cart", JSON.stringify(cart));
+        }
+
+        function loadCartFromStorage() {
+            const saved = localStorage.getItem("kiosko_cart");
+            if (saved) {
+                try {
+                    cart = JSON.parse(saved);
+                    updateCartCount();
+                } catch {
+                    cart = [];
+                }
+            }
+        }
+
+
+        function changeQty(skuId, delta) {
+            const item = cart.find(i => i.id === skuId);
+            if (!item) return;
+
+            item.qty += delta;
+            if (item.qty <= 0) {
+                removeFromCart(skuId);
+            } else {
+                saveCart();
+                updateCartCount();
+                updateCartDisplay();
+
+                // Agrega animación a la cantidad recién modificada
+                setTimeout(() => {
+                    const qtySpans = document.querySelectorAll("#cartItems span");
+                    qtySpans.forEach(span => {
+                        if (span.textContent === item.qty.toString()) {
+                            span.classList.add("qty-animated");
+                            setTimeout(() => span.classList.remove("qty-animated"), 200);
+                        }
+                    });
+                }, 50);
+            }
+        }
+
+
+        function showCheckout() {
+
+            if (!cart.length) {
+                ShowDialog("Alert", "Your cart is empty.");
+                return;
+            }
+
+            // Mostrar campos anónimos solo si no hay login
+            const anonFields = document.getElementById("anonymousFields");
+            anonFields.style.display = loginMail ? "none" : "block";
+
+            // Reset campos
+            document.getElementById("checkoutName").value = "";
+            document.getElementById("checkoutPhone").value = "";
+            document.getElementById("checkoutEmail").value = "";
+            document.getElementById("checkoutAddress").value = "";
+            document.getElementById("checkoutPayment").value = "";
+            document.getElementById("checkoutDeliveryType").value = "Local";
+            document.getElementById("checkoutAddress").placeholder = "Delivery Address (optional)";
+            document.getElementById("checkoutAddress").required = false;
+
+            if (!loginMail) {
+                document.getElementById("checkoutAddress").style.display = "none";
+                document.getElementById("checkoutDeliveryType").style.display = "none";
+                document.getElementById("checkoutPayment").style.display = "none";
+            } else {
+                document.getElementById("checkoutAddress").style.display = "block";
+                document.getElementById("checkoutDeliveryType").style.display = "block";
+                document.getElementById("checkoutPayment").style.display = "block";
+            }
+
+            // Manejar cambio de tipo de entrega
+            document.getElementById("checkoutDeliveryType").addEventListener("change", function () {
+                const addressInput = document.getElementById("checkoutAddress");
+                if (this.value === "Home") {
+                    addressInput.placeholder = "Delivery Address (required)";
+                    addressInput.required = true;
+                } else {
+                    addressInput.placeholder = "Delivery Address (optional)";
+                    addressInput.required = false;
+                }
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById("checkoutModal"));
+            modal.show();
+        }
+
+        async function submitOrder() {
+
+            try {
+
+                submitBtn = document.getElementById("buttonSubmitOrder");
+                htmlbutton = submitBtn.innerHTML;
+                submitBtn.innerHTML = t("submitOrder");
+                submitBtn.disabled = true;
+
+                submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t("submitOrder")}`;
+
+                let name = "", phone = "", address = "", payment = "";
+
+                if (!loginMail) {
+
+                    name = document.getElementById("checkoutName").value.trim();
+                    phone = document.getElementById("checkoutPhone").value.trim();
+                    if (!name || !phone) {
+                        ShowDialog("Alert", "Please enter your name and phone.");
+                        return;
+                    }
+                }
+
+                const deliveryType = document.getElementById("checkoutDeliveryType").value;
+                address = document.getElementById("checkoutAddress").value.trim();
+                payment = document.getElementById("checkoutPayment").value.trim();
+
+                if (deliveryType === "Home" && address === "") {
+                    ShowDialog("Alert", "Please enter your delivery address.");
+                    return;
+                }
+
+                for (const item of cart) {
+                    cart.qty = Number(item.qty);
+                    cart.Price = Number(item.Price);
+                }
+
+                const data = {
+                    Email: loginMail || document.getElementById("checkoutEmail").value.trim(),
+                    Password: loginPassword || "",
+                    Anonymous: !loginMail,
+                    Name: name,
+                    Phone: phone,
+                    Address: address,
+                    Payment: payment,
+                    DeliveryType: deliveryType,
+                    OrderItems: cart
+                };
+
+                taskGuid = generateGUID();
+                const response = await sendAsyncToAngelPOST(username, "pos_backend/pos_orderusers", "", "SaveOrderFromKiosk", data, taskGuid);
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", "Error submitting order: " + response);
+                    return;
+                }
+
+                const query = JSON.parse(response);
+                if (query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", "Error submitting order: " + query.result);
+                    return;
+                }
+
+                setTimeout(() => {
+                    setIntervalId = setInterval(() => {
+                        checkTaskStatus();
+                    }, 2000);
+                }, 1000);
+
+            }
+            catch (e) {
+                ShowDialog("Alert", "Error submitting order: " + e);
+            }
+        }
+
+        async function checkTaskStatus() {
+
+            numberOfTrys++;
+
+            if (numberOfTrys > 100) {
+                ShowDialog("Alert", "The order is taking too long to process. Please try again later.");
+                clearInterval(setIntervalId);
+                numberOfTrys = 0;
+                return;
+            }
+
+            if (!taskGuid) return;
+
+            var response = await  getResult(taskGuid);
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", "Error checking task status: " + response);
+                clearInterval(setIntervalId);
+                return;
+            }
+
+            var query = JSON.parse(response);
+
+            if ( query.type == "DELAYED" ) {
+                submitBtn.innerText = query.result;
+                return; // Task is still processing, do nothing
+            }
+
+            numberOfTrys = 0;
+
+            if (query.result.startsWith("Error:")) {
+                ShowDialog("Alert", "Error checking task status: " + query.result);
+                clearInterval(setIntervalId);
+                return;
+            }
+
+            clearInterval(setIntervalId);
+
+            ShowDialog("Success", "Order placed successfully!");
+            cart = [];
+            saveCart();
+            updateCartCount();
+
+            //openCenteredWindow(query.result);
+
+            bootstrap.Modal.getInstance(document.getElementById("checkoutModal")).hide();
+            cartModalInstance.hide();
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = htmlbutton;
+
+
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === "en" ? "es" : "en";
+            localStorage.setItem("kiosko_lang", currentLang);
+            updateLangButton(); // actualiza el texto del botón
+            applyTranslations();
+        }
+
+        function updateLangButton() {
+            const lang_text = document.getElementById("langText");
+            lang_text.textContent = currentLang === "en" ? "🇺🇸 English" : "🇲🇽 Español";
+
+            const lang_icon = document.getElementById("langIcon");
+            lang_icon.src = currentLang === "en" ? "images/icons/us-flag.ico" : "images/icons/mexico-flag.ico";
+        }
+
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        function applyTranslations() {
+            document.querySelector('button[onclick="showCart()"]').innerHTML = `${t("cart")} <span class="badge bg-danger" id="cartCount">${cart.length}</span>`;
+            document.getElementById("button_login").innerText = loginMail ? t("logout") : t("login");
+            document.getElementById("cartModalLabel").innerText = t("yourCart");
+            document.querySelector('#cartModal .btn-secondary').innerText = t("close");
+            document.querySelector('#cartModal .btn-success').innerText = t("finalizeOrder");
+            document.querySelector('#checkoutModal .modal-title').innerText = t("confirmOrder");
+            document.getElementById("checkoutName").placeholder = t("fullName");
+            document.getElementById("checkoutPhone").placeholder = t("phone");
+            document.getElementById("checkoutPayment").placeholder = t("payment");
+            document.getElementById("checkoutAddress").placeholder = t("address");
+            document.querySelector('#checkoutModal .btn-success').innerText = t("submitOrder");
+            document.getElementById("checkoutDeliveryType").options[0].text = t("pickup");
+            document.getElementById("checkoutDeliveryType").options[1].text = t("delivery");
+            // Login modal
+            document.querySelector('#loginModal .modal-title').innerText = t("loginTitle");
+            document.getElementById("loginEmail").placeholder = t("email");
+            document.getElementById("loginPassword").placeholder = t("password");
+            document.querySelector('#loginModal .btn-success').innerText = t("signIn");
+            document.querySelector('#loginModal .btn-link:nth-child(1)').innerText = t("signUp");
+            document.querySelector('#loginModal .btn-link:nth-child(2)').innerText = t("forgotPassword");
+
+            // Register modal
+            document.querySelector('#registerModal .modal-title').innerText = t("createAccount");
+            document.getElementById("registerEmail").placeholder = t("email");
+            document.getElementById("registerPassword").placeholder = t("password");
+            document.getElementById("retypePassword").placeholder = t("retypePassword");
+            document.getElementById("registerName").placeholder = t("fullName");
+            document.getElementById("registerPhone").placeholder = t("phone");
+            document.querySelector('#registerModal .btn-primary').innerText = t("register");
+
+            // Recover modal
+            document.querySelector('#recoverModal .modal-title').innerText = t("recoverTitle");
+            document.getElementById("recoverEmail").placeholder = t("recoverEmail");
+            document.querySelector('#recoverModal .btn-primary').innerText = t("sendRecovery");
+
+            // Traducir texto del modal de carrito si está visible
+            const totalLabel = document.querySelector('#cartModal .modal-footer h5');
+            if (totalLabel) totalLabel.innerHTML = `${t("total")}: $<span id="cartTotal">0.00</span>`;
+
+            document.getElementById("noteModalTitle").innerText = t("notes");
+            document.getElementById("noteText").placeholder = t("addNote");
+            document.getElementById("noteSaveBtn").innerText = t("saveNote");
+
+            renderCategories();
+
+        }
+
+        function openNoteModal(skuId) {
+            const item = cart.find(i => i.id === skuId);
+            if (!item) return;
+
+            document.getElementById("noteText").value = item.Notas || "";
+            document.getElementById("noteProductId").value = skuId;
+
+            const modal = new bootstrap.Modal(document.getElementById("notesModal"));
+            modal.show();
+        }
+
+        function saveNote() {
+            const skuId = document.getElementById("noteProductId").value;
+            const note = document.getElementById("noteText").value.trim();
+
+            const item = cart.find(i => i.id === skuId);
+            if (!item) return;
+
+            item.Notas = note;
+            saveCart();
+            updateCartDisplay();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("notesModal"));
+            modal.hide();
+        }
+
+
+
+        const translations = {
+            en: {
+                cart: "Cart",
+                login: "Login",
+                logout: "Logout",
+                yourCart: "Your cart",
+                close: "Close",
+                finalizeOrder: "Finalize Order",
+                confirmOrder: "Confirm Order",
+                fullName: "Full Name (required)",
+                phone: "Phone",
+                pickup: "Pickup at location",
+                delivery: "Home delivery",
+                payment: "Payment Method (optional)",
+                address: "Delivery Address (optional)",
+                requiredAddress: "Delivery Address (required)",
+                submitOrder: "Submit Order",
+                noProducts: "No products to display.",
+                returnCategories: "← Return to categories",
+                addToCart: "Add to Cart",
+                emptyCart: "Your cart is empty.",
+                quantity: "Quantity",
+                total: "Total",
+                loginTitle: "Login",
+                email: "Email",
+                password: "Password",
+                signIn: "Sign in",
+                signUp: "Sign up",
+                forgotPassword: "Forgot password?",
+                createAccount: "Create Account",
+                retypePassword: "Retype Password",
+                fullName: "Full Name",
+                phone: "Phone Number",
+                register: "Register",
+                recoverTitle: "Recover Password",
+                recoverEmail: "Enter your email",
+                sendRecovery: "Send recovery email",
+                notes: "Notes",
+                addNote: "Add a note for this product...",
+                saveNote: "Save Note"
+            },
+            es: {
+                cart: "Carrito",
+                login: "Iniciar sesión",
+                logout: "Cerrar sesión",
+                yourCart: "Tu carrito",
+                close: "Cerrar",
+                finalizeOrder: "Finalizar pedido",
+                confirmOrder: "Confirmar pedido",
+                fullName: "Nombre completo (obligatorio)",
+                phone: "Teléfono",
+                pickup: "Recoger en tienda",
+                delivery: "Entrega a domicilio",
+                payment: "Forma de pago (opcional)",
+                address: "Dirección de entrega (opcional)",
+                requiredAddress: "Dirección de entrega (obligatoria)",
+                submitOrder: "Enviar pedido",
+                noProducts: "No hay productos para mostrar.",
+                returnCategories: "← Volver a categorías",
+                addToCart: "Agregar al carrito",
+                emptyCart: "No hay productos en el carrito.",
+                quantity: "Cantidad",
+                total: "Total",
+                loginTitle: "Iniciar sesión",
+                email: "Correo electrónico",
+                password: "Contraseña",
+                signIn: "Entrar",
+                signUp: "Registrarse",
+                forgotPassword: "¿Olvidaste tu contraseña?",
+                createAccount: "Crear cuenta",
+                retypePassword: "Repetir contraseña",
+                fullName: "Nombre completo",
+                phone: "Teléfono",
+                register: "Registrar",
+                recoverTitle: "Recuperar contraseña",
+                recoverEmail: "Ingresa tu correo",
+                sendRecovery: "Enviar correo de recuperación",
+                notes: "Notas",
+                addNote: "Agrega una nota para este producto...",
+                saveNote: "Guardar Nota"
+            }
+        };
+
+        let currentLang = "en";
+
+        const savedLang = localStorage.getItem("kiosko_lang");
+        if (savedLang && translations[savedLang]) {
+            currentLang = savedLang;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        var account = urlParams.get('account');
+
+        if (account)
+        {
+           username = "any@" + account;
+        }
+
+        updateLangButton(); // nuevo
+        applyTranslations();
+
+        loadBusinessInfo();
+        loadCartFromStorage();
+        loadData();
+
+
+    </script>
+
+</body>
+
+</html>

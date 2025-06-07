@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sale per month</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="./js/translate.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+        let myChart;
+
+        // Función para inicializar las fechas en los campos de fecha
+        function initializeDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const firstDayOfYear = new Date(year, 0, 1).toISOString().split('T')[0];
+            const currentDate = today.toISOString().split('T')[0];
+
+            document.getElementById('start_date').value = firstDayOfYear;
+            document.getElementById('end_date').value = currentDate;
+        }
+
+        // Ejecutar la generación del reporte al cargar la página
+        window.onload = function () {
+            initializeDates();
+            document.getElementById('btnGenerateReport').click();
+        };
+
+        // Función para descargar el gráfico como imagen
+        function downloadChart() {
+            const link = document.createElement('a');
+            link.href = myChart.toBase64Image();
+            link.download = 'chart.png';
+            link.click();
+        }
+
+    </script>
+
+    <style>
+        /* Ocultar el gráfico inicialmente */
+        #myChart {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row" style="margin-top: 10px;">
+
+            <div class="container-fluid d-flex justify-content-between">
+                <a class="btn btn-primary" href="index.html" style="flex-grow: 1; margin-right: 10px;"
+                    id="menu_navigation_logout">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+
+                <a class="btn btn-secondary" href="menu.html" style="flex-grow: 1; margin-right: 10px;">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="users_groups_menu">Menu</span>
+                </a>
+
+                <a class="btn btn-primary" href="Sales.html" style="flex-grow: 1;">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">Sale Reports</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+
+            <div class="d-flex justify-content-between align-items-center" style="margin-top: 20px;">
+                <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Sale per month
+                </h1>
+                <img src="./images/MyBusinessLogo.png" alt="logo" class="img-fluid" style="width: 150px;">
+
+            </div>
+
+            <!-- Date range for the report -->
+            <div class="container-fluid">
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <label for="start_date" class="form-label">Start Date:</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control">
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="end_date" class="form-label">End Date:</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary btn-lg" id="btnGenerateReport"
+                    style="flex-grow: 1; margin-right: 10px;">Generate Report</button>
+
+                <!-- New button to download chart -->
+                <button class="btn btn-success btn-lg" id="btnDownloadChart"
+                    style="flex-grow: 1; display: none;">Download Chart</button>
+            </div>
+
+            <!-- chart -->
+            <h2 id="chart1">Monthly Totals</h2>
+            <canvas id="myChart" width="400" height="200"></canvas>
+
+            <script>
+
+                document.getElementById('btnGenerateReport').addEventListener('click', function () {
+                    document.getElementById('myChart').style.display = 'block';
+
+                    var start_date = document.getElementById('start_date').value + " 00:00:00";
+                    var end_date = document.getElementById('end_date').value + " 23:59:59";
+
+                    var chart_title = document.getElementById('chart1');
+                    chart_title.innerText = "Monthly Totals from " + document.getElementById('start_date').value + " to " + document.getElementById('end_date').value;
+
+                    var data_result = GetSalePerMonth(Token.username, Token.token, start_date, end_date);
+
+                    data_result.then(function (query) {
+
+                        let responce_query = JSON.parse(query);
+
+                        if (responce_query.result.startsWith("Error:")) {
+                            showDialog("Error:", responce_query.result);
+                            console.log(responce_query.result);
+                            return;
+                        }
+
+                        if (responce_query.result == "[]") {
+                            showDialog("Alert", "No data found for the selected date range.");
+                            return;
+                        }
+
+                        var jsonData = JSON.parse(responce_query.result);
+
+                        const labels = jsonData.map(item => item.Month);
+                        const data = jsonData.map(item => item.Total);
+
+                        const formatValue = (value) => {
+                            if (value >= 1e6) {
+                                return (value / 1e6).toFixed(1) + 'M';
+                            } else if (value >= 1e3) {
+                                return (value / 1e3).toFixed(1) + 'K';
+                            } else {
+                                return value; // Si el valor es menor a 1000, lo mostramos tal cual
+                            }
+                        };
+                        const createGradient = (ctx) => {
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(0, 255, 0, 1)');
+                            gradient.addColorStop(0.5, 'rgba(255, 165, 0, 1)');
+                            gradient.addColorStop(1, 'rgba(255, 0, 0, 1)');
+                            return gradient;
+                        };
+
+                        const ctx = document.getElementById('myChart').getContext('2d');
+                        const maxValue = Math.max(...data);
+
+                        if (myChart) {
+                            myChart.destroy();
+                        }
+
+                        myChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Total per Month',
+                                    data: data,
+                                    backgroundColor: createGradient(ctx),
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function (value) {
+                                                return formatValue(value);
+                                            }
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: true
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (tooltipItem) {
+                                                return formatValue(tooltipItem.raw);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        // Show the download button once the chart is generated
+                        document.getElementById('btnDownloadChart').style.display = 'block';
+
+                    });
+
+                });
+
+                // Add event listener to download button
+                document.getElementById('btnDownloadChart').addEventListener('click', downloadChart);
+
+            </script>
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <div class="bottom-bar">
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

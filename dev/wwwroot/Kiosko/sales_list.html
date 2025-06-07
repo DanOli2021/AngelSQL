@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Sales)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de sales -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="sales.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Sales</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/Sales_list_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Sales)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+
+        <!-- Date range for the report -->
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-4">
+                    <label for="start_date" class="form-label">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <label for="end_date" class="form-label">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn btn-primary form-control" id="btnGetSales"
+                        style="margin-top: 30px; margin-right: 10px;" onclick="GetSales();">Get Sales</button>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-9">
+                    <input type="text" id="search_text" class="form-control" placeholder="Search..."
+                        style="width: 100%; margin-bottom: 10px;">
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-primary form-control" id="btnSearch">Search</button>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div id="tableContainer"></div>
+
+    </div>
+
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <script>
+
+        // Función para inicializar las fechas en los campos de fecha
+        function initializeDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const currentDate = `${year}-${month}-${day}`;
+            document.getElementById('start_date').value = currentDate;
+            document.getElementById('end_date').value = currentDate;
+        }
+
+        function GetSales() {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+
+            if (startDate === "" || endDate === "") {
+                ShowDialog("Error", "Please select both start and end dates.");
+                return;
+            }
+
+            var SaleFilter = {
+                "start_date": startDate,
+                "end_date": endDate
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetSales", SaleFilter);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                const jsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary"><strong>${value.substring(32)}</strong></button>`,
+                        "onclick": (val, row) => OpenSalePage(val, row["Account_id"]),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Account_id":
+                    {
+                        "visible": false
+                    },
+                    "Total":
+                    {
+                        "title": "Total",
+                        "html": (value) => `<span class="badge bg-success"><strong>$${ThousandsSeparator(value)}</strong></span>`,
+                        "sum": true,
+                        "sumFormatter": (total) => `$${ThousandsSeparator(total)}`,
+                        "style": "text-align: right;"
+                    },
+                };
+
+                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text");
+
+            });
+
+
+        }
+
+        function OpenSalePage(sale_id, account) {
+            if (typeof clientKey !== 'undefined' && clientKey) {
+                url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/kiosko/";
+            }
+            else {
+                url = window.location.protocol + '//' + window.location.host + "/kiosko/";
+            }
+
+            window.open( url + `ticket.html?account=${account}&sale_id=${sale_id}`, "_blank");
+        }
+
+        window.onload = function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            translate_menu(language);
+
+            initializeDates();
+            GetSales();
+
+        };
+
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

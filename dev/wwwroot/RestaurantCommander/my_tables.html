@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Tables</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="./css/3dButtons.css">
+
+    <script src="./js/index_translate.js"></script>
+    <script src="./js/main.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+    
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="col-sm-12">
+            <a class="btn btn-primary btn-block" href="menu.html" id="nav_link"
+                style="width: 100%; margin-bottom: 10px; margin-top: 10px;">
+                <span style="float: left;">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px">
+                </span>
+                <span id="assign_tables_menu">
+                    Menu
+                </span>
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/logo.webp" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:256px">
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Restaurant Commander (My Tables)</h1>
+
+            <div id="user_name" class="row" style="margin-top: 10px;">
+            </div>
+        
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <script>
+
+        var user_div = document.getElementById("user_name");
+        user_div.innerHTML = '<h1 class="text-center" style="font-size: 24px; font-weight: bolder;" id="auth_title"> User: ' + Token.username + '</h1>';
+ 
+        function showDialog(title, message) {
+            document.getElementById('dialogTittle').innerText = title;
+            document.getElementById('dialogMessage').innerText = '⚠️' + message;
+            document.getElementById('myDialog').showModal();
+        }
+
+        function closeDialog() {
+            document.getElementById('myDialog').close();
+        }
+
+        document.querySelector('#closeButton').addEventListener('click', function () {
+            document.querySelector('#myDialog').close();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            let response = GetWaiterTables(Token.username, Token.token, Token.username);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    showDialog("Alert", response_query.result);
+                } else {
+
+                    let tables = JSON.parse(response_query.result);
+
+                    tables.forEach(element => {
+                        if( element.Status == "EN USO" ) 
+                        {
+                            generateButton("table_bill.html?table=" + element.TableName, "table_used.webp", "Table: " + element.TableName + " " + element.Status, "boton-3d form-control", {}, "LightGreen");
+                        } else {
+                            generateButton("table_bill.html?table=" + element.TableName, "table_used.webp", "Table: " + element.TableName + " " + element.Status, "boton-3d form-control", {}, "lightgray");
+                        }
+                        
+                    });
+
+                    
+                }
+            });
+
+            translate_menu(language);
+        });
+
+    </script>
+
+    <div class="bottom-bar">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

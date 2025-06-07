@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Sku Classification)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+    </script>
+
+    <style>
+        #classification_edit {
+            width: 50%;
+            max-width: 100%;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            #classification_edit {
+                width: 90%;
+            }
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Navigation -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de catalogs -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="inventory.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Inventory</span>
+                </a>
+            </div>
+            
+        </div>
+
+        <!-- Logo & title -->
+        <div class="row justify-content-center">
+            <img src="./images/skus_classification_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;">Kiosko Admin (Sku Classification)</h1>
+            <div class="col-sm-12" id="buttonszone"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" onclick="ImporFromSpreadSheet()">
+                    <img src="images/importfromexcel_small.png" alt="logo" style="width:48px;" class="me-2">
+                    <span>Import from spreadsheet</span>
+                </a>
+            </div>
+            <div class="col-6">
+                <a class="btn btn-success w-100" href="#" onclick="Edit('New')">
+                    <img src="images/icons/new.png" alt="logo" style="width:48px;" class="me-2">
+                    <span>New Classification</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="col-9">
+                <input type="text" id="search_text" class="form-control" placeholder="Search..." />
+            </div>
+            <div class="col-3">
+                <button id="search_button" class="btn btn-primary w-100">Search</button>
+            </div>
+            <div id="tableContainer"></div>
+        </div>
+    </div>
+
+    <!-- Edit Dialog -->
+    <dialog id="classification_edit">
+        <div class="form-group">
+
+            <h1 id="edit_title">Edit Classification</h1>
+
+            <table class="table table-striped table-bordered table-hover">
+                <tr>
+                    <td>
+                        <label for="classification_id" class="form-label">ID</label>
+                    </td>
+                    <td colspan="2">
+                        <input type="text" id="classification_id" class="form-control" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="classification_description" class="form-label">Description</label>
+                    </td>
+                    <td colspan="2">
+                        <input type="text" id="classification_description" class="form-control" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="classification_type" class="form-label">Type</label>
+                    </td>
+                    <td colspan="2">
+                        <input type="text" id="classification_type" class="form-control" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="classification_image" class="form-label">Image</label>
+                    </td>
+                    <td colspan="3">
+                        <img id="classification_image" src="" alt="Image Preview"
+                            style="width: 100px; display: none;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <input type="file" id="image_upload" accept="image/*" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="classification_url" class="form-label">Image Url</label>
+                    </td>
+                    <td colspan="3">
+                        <input type="text" id="image_url" class="form-control" placeholder="Enter Image Url" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button id="edit_save_button" class="btn btn-success btn-lg form-control" onclick="Save();">Save</button>
+                    </td>
+                    <td>
+                        <button id="edit_cancel_button" class="btn btn-danger btn-lg form-control">Cancel</button>
+                    </td>
+                    <td>
+                        <button id="edit_delete_button" class="btn btn-warning btn-lg form-control" onclick="ConfirmDelete();">Delete</button>
+                    </td>
+                </tr>
+
+
+            </table>
+
+        </div>
+
+    </dialog>
+
+    <!-- Footer -->
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank">Privacy Policy</a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank">About us...</a>
+    </div>
+
+    <!-- Genérico y JS -->
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning w-100">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success w-100 mb-2">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning w-100">Close</button>
+    </dialog>
+
+    <script>
+
+        document.getElementById('image_url').addEventListener('change', function () {
+            const url = this.value;
+            const mainImage = document.getElementById('classification_image');
+
+            if (url) {
+                mainImage.src = url;
+                mainImage.hidden = false;
+            } else {
+                mainImage.hidden = true;
+            }
+        });
+
+        document.getElementById('image_url').addEventListener('input', function () {
+            const url = this.value;
+            const mainImage = document.getElementById('classification_image');
+
+            if (url) {
+                mainImage.src = url;
+                mainImage.hidden = false;
+            } else {
+                mainImage.hidden = true;
+            }
+        });        
+
+
+        document.getElementById('image_upload').addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                const file = this.files[0];
+                if (!file) return;
+
+                const maxSizeMB = 2;
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                    ShowDialog("Error", `The image exceeds the ${maxSizeMB} MB limit.`);
+                    this.value = "";
+                    return;
+                }
+
+                compressAndPreviewImage(file, "classification_image", "image_upload", "image_url");
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+
+            }
+        });
+
+        // Import from Excel
+        function ImporFromSpreadSheet() {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".xlsx,.xls";
+            input.click();
+
+            input.onchange = async (e) => {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function (event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                    var response = sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "SaveImport", json);
+
+                    response.then(function (query) {
+
+                        if (query.startsWith("Error:")) {
+                            ShowDialog("Alert", query);
+                            return;
+                        }
+
+                        let responce_query = JSON.parse(query);
+
+                        if (responce_query.result.startsWith("Error:")) {
+                            ShowDialog("Alert", responce_query.result);
+                            return;
+                        }
+
+                        if (responce_query.result == "Ok.") {
+                            ShowDialog("Alert", "Classifications imported correctly.");
+                            Search(":ALL");
+                        } else {
+                            ShowDialog("Alert", "Failed to save Classifications info.");
+                        }
+
+                    });
+
+                };
+
+                reader.readAsArrayBuffer(file);
+
+            };
+        }
+
+        document.getElementById("search_button").addEventListener("click", async function () {
+            const searchValue = document.getElementById("search_text").value.trim();
+            Search(searchValue);
+
+        });
+
+        function Search(searchValue) {
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "GetMany", searchValue);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary form-control"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => Edit(`${val}`),
+                    },
+                    "Description":
+                    {
+                        "title": "Description",
+                        "html": (value) => `<strong>${value}</strong>`,
+                    },
+                    "PartitionKey":
+                    {
+                        "visible": false
+                    },
+                    "timestamp":
+                    {
+                        "title": "Last Modified"
+                    },
+                };
+
+                if (responce_query.result == "[]") {
+                    ShowDialog("Alert", "No Data found.");
+                    return;
+                }
+
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+
+                document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
+
+            });
+
+        }
+
+
+        function Edit(Id_classification) {
+
+            document.getElementById("classification_id").disabled = true;
+
+            if (Id_classification == "New") {
+                document.getElementById("classification_id").disabled = false;
+
+                document.getElementById("classification_id").onblur = function () {
+                    this.value = this.value.trim().toUpperCase();
+                    Edit(this.value);
+                };
+
+                document.getElementById("edit_title").innerText = "New Classification";
+                document.getElementById("classification_id").value = ""; 
+                document.getElementById("classification_description").value = ""; 
+                document.getElementById("classification_type").value = "";
+                document.getElementById("classification_image").src = ""; 
+                document.getElementById("classification_image").style.display = "none";
+                document.getElementById("image_url").value = "";
+                document.getElementById("classification_edit").showModal();
+                return;
+
+            }
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "Get", Id_classification);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+
+                    if (responce_query.result == "Error: No data found.") {
+                        return;
+                    }
+
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                const classification = JSON.parse(responce_query.result);
+
+                if (classification.Image == null || classification.Image == "") {
+                    document.getElementById("classification_image").src = ""; // Updated to classification_image
+                    document.getElementById("classification_image").style.display = "none"; // Updated to classification_image
+                } else {
+                    document.getElementById("classification_image").style.display = "block";
+                    document.getElementById("classification_image").src = classification.Image + `?t=${Date.now()}`;;
+                }
+
+                document.getElementById("edit_title").innerText = "Edit Classification";
+                document.getElementById("classification_id").disabled = true;
+                document.getElementById("classification_id").value = classification.id; // Updated to classification.id
+                document.getElementById("classification_description").value = classification.Description;
+                document.getElementById("classification_type").value = classification.Type;
+                document.getElementById("image_url").value = classification.Image; // Updated to classification_url
+                // Mostrar el diálogo de edición
+                document.getElementById("classification_edit").showModal();
+
+            });
+
+        }
+
+        function Save() {
+
+            try {
+                const classificationId = document.getElementById("classification_id").value; // Updated to classification_id
+                if (classificationId == "") {
+                    ShowDialog("Alert", "Please enter a Classification ID.");
+                    return;
+                }
+            } catch (error) {
+                console.error("Error in Save function:", error);
+            } finally {
+                // Handle the error gracefully, e.g., show an alert or log it
+                //console.error("An error occurred while saving the classification:", error);
+            }
+
+            const classificationId = document.getElementById("classification_id").value; // Updated to classification_id
+            const classificationDescription = document.getElementById("classification_description").value; // Updated to classification_description
+
+            var imageSrc = document.getElementById("classification_image").src; // Updated to classification_image
+
+            if (document.getElementById("classification_image").src.toUpperCase().includes("BASE64") == true) {
+                imageSrc = document.getElementById("classification_image").src // Updated to classification_image   
+            } else {
+                imageSrc = "" // Updated to classification_image
+            }
+
+            if( document.getElementById("image_url").value != "") {
+                imageSrc = document.getElementById("image_url").value; // Updated to classification_image
+            }
+
+            var classification = {
+                classification_id: classificationId, // Updated to classification_id
+                Description: classificationDescription,
+                Type: document.getElementById("classification_type").value, // Updated to classification_type
+                Image: imageSrc // Updated to classification_image
+            };
+
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "SaveImport", JSON.stringify(classification));
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                //ShowDialog("Alert", "Classification saved correctly: " + classificationId); // Updated variable name
+                Search(":ALL");
+                document.getElementById("classification_edit").close();
+
+
+            });
+
+        }
+
+        function ConfirmDelete() {
+            const classificationId = document.getElementById("classification_id").value;
+
+            ShowAcceptCancelDialog("Delete Classification", "Are you sure you want to delete the Classification: " + classificationId + "?",
+                function () {
+                    Delete(classificationId);
+                });
+        }
+
+        function Delete(classificationId) {
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_classifications", Token.Token, "Delete", classificationId); // Fixed endpoint name
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                classificationId = classificationId.trim().toUpperCase(); // Updated variable name
+
+                // Eliminar el renglón de la tabla
+                const rowToDelete = document.getElementById(classificationId); // Updated variable name
+
+                if (rowToDelete) {
+                    rowToDelete.parentNode.removeChild(rowToDelete);
+                }
+
+                ShowDialog("Alert", "Classification deleted correctly: " + classificationId); // Updated variable name
+                document.getElementById("dialog_accept").close();
+                document.getElementById("classification_edit").close();
+
+                Search(":ALL"); 
+
+            });
+        }
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("edit_cancel_button").onclick = function () {
+                document.getElementById("classification_edit").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            let response = GetGroupsUsingTocken(Token.username, Token.token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                }
+            });
+
+            translate_menu(language);
+
+            Search(":ALL");
+
+            document.getElementById("search_text").focus();
+
+        };
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

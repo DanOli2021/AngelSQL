@@ -1,0 +1,588 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (pages)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ** Navigation menu -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de configuration -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="configuration.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_configuration">Configuration</span>
+                </a>
+            </div>
+            <!-- ** Navigation menu -->
+
+
+            <!-- ** Logo and title of the module -->
+            <div class="row justify-content-center">
+                <img src="./images/AI_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                    style="margin-top: 20px;width:200px">
+
+                <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin
+                    (pages)
+                </h1>
+
+                <div class="col-sm-12" id="buttonszone">
+                </div>
+            </div>
+            <!-- ** Logo and title of the module -->
+
+
+            <!-- ** Action button area -->
+            <div class="row col-12" style="margin-top: 10px;">
+                <div class="col-6">
+                    <a class="btn btn-success w-100" href="#" id="menu_navigation_logout"
+                        onclick="ImporFromSpreadSheet()">
+                        <img src="images/importfromexcel_small.png" alt="logo" style="width:48px;" class="me-2">
+                        <span id="menu_log_out">Imports from spreadsheet</span>
+                    </a>
+                </div>
+
+                <div class="col-6">
+                    <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="Edit('New')">
+                        <img src="images/icons/new.png" alt="logo" style="width:48px;" class="me-2">
+                        <span id="menu_menu">New page</span>
+                    </a>
+                </div>
+            </div>
+            <!-- ** Action button area -->
+
+
+            <!-- ** Application body -->
+            <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+
+                <div class="col-9">
+                    <input type="text" id="search_text" class="form-control" style="width: 100%;"
+                        placeholder="Search..." />
+                </div>
+
+                <!-- ** Search button in the results table -->
+                <div class="col-3">
+                    <button id="search_button" class="btn btn-primary" style="width: 100%;">Search</button>
+                </div>
+                <!-- ** Search button in the results table -->
+
+                <!-- ** Results table -->
+                <div id="tableContainer"></div>
+                <!-- ** Results table -->
+
+            </div>
+            <!-- ** Application body -->
+
+
+        </div>
+
+
+        <!-- ** Generic warning dialogue -->
+        <dialog id="generic_dialog" class="dialog-box">
+            <h1 id="generic_dialog_title">Title</h1>
+            <p id="generic_dialog_message">Message</p>
+            <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+        </dialog>
+        <!-- ** Generic warning dialogue -->
+
+
+        <!-- ** Dialog to edit the properties of a record -->
+        <dialog id="page_edit">
+            <div class="form-group">
+                <h1 id="edit_title" class="form-group">Edit page</h1>
+
+                <div class="row col-12">
+
+                    <div class="col-3">
+                        <label for="page_id" class="form-label">Page ID</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="page_id" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="page_title" class="form-label">Title</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="page_title" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="page_prompt" class="form-label">Prompt</label>
+                    </div>
+                    <div class="col-9">
+                        <textarea id="page_prompt" class="form-control" rows="3"
+                            style="margin-top: 10px; margin-bottom: 10px;" placeholder="Prompt"></textarea>
+                    </div>
+
+                    <div class="col-3">
+                    </div>
+
+                    <div class="col-9">
+                        <button id="edit_ia_button" class="btn btn-success form-control" onclick="CreatePage();">Generate</button>
+                    </div>
+
+                    <div class="col-3">
+                        <label for="page_html_code" class="form-label">HTML</label>
+                    </div>
+                    <div class="col-9">
+                        <textarea id="page_html_code" class="form-control" rows="15"
+                            style="margin-top: 10px; margin-bottom: 10px;" placeholder="HTML"></textarea>
+                    </div>
+
+                    <div class="col-4">
+                        <button id="edit_save_button" class="btn btn-success btn-lg form-control col-4"
+                            style="margin-bottom: 10px;" onclick="Save();">Save</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button id="edit_delete_button" class="btn btn-warning btn-lg form-control col-4"
+                            style="margin-bottom: 10px;" onclick="ConfirmDelete();">Delete</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button id="edit_cancel_button" class="btn btn-danger btn-lg form-control col-4"
+                            style="margin-bottom: 10px;">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </dialog>
+        <!-- ** Dialog to edit the properties of a record -->
+
+
+        <!-- ** Footer bar-->
+        <div class="bottom-bar" style="margin-top: 20px;">
+            <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+                <span id="index_privacy_policy">
+                    Privacy Policy
+                </span>
+            </a>
+            <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+            <a href="about.html" target="_blank" id="index_about_url">
+                <span id="index_about_us">
+                    About us...
+                </span>
+            </a>
+        </div>
+        <!-- ** Footer bar-->
+
+        <!-- ** Generic Dialog to confirm -->
+        <dialog id="dialog_accept" class="dialog-box">
+            <h1 id="dialog_accept_title">Title</h1>
+            <p id="dialog_accept_message">Message</p>
+            <button id="dialog_button_accept" class="btn btn-success"
+                style="width: 100%; margin-bottom: 10px;">Accept</button>
+            <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+        </dialog>
+        <!-- ** Generic Dialog to confirm -->
+
+
+        <script>
+
+            // Import from Excel
+            function ImporFromSpreadSheet() {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".xlsx,.xls";
+                input.click();
+
+                input.onchange = async (e) => {
+
+                    const file = e.target.files[0];
+
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = async function (event) {
+                        const data = new Uint8Array(event.target.result);
+                        const workbook = XLSX.read(data, { type: "array" });
+
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                        var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "SaveImport", json);
+
+                        response.then(function (query) {
+
+                            if (query.startsWith("Error:")) {
+                                ShowDialog("Alert", query);
+                                return;
+                            }
+
+                            let responce_query = JSON.parse(query);
+
+                            if (responce_query.result.startsWith("Error:")) {
+                                ShowDialog("Alert", responce_query.result);
+                                return;
+                            }
+
+                            if (responce_query.result == "Ok.") {
+                                ShowDialog("Alert", "pages imported correctly.");
+                                Search(":ALL");
+                            } else {
+                                ShowDialog("Alert", "Failed to save pages info.");
+                            }
+
+                        });
+
+                    };
+
+                    reader.readAsArrayBuffer(file);
+
+                };
+            }
+
+            document.getElementById("search_button").addEventListener("click", async function () {
+                const searchValue = document.getElementById("search_text").value.trim();
+                Search(searchValue);
+
+            });
+
+            function Search(searchValue) {
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "GetMany", searchValue);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    const JsonData = JSON.parse(responce_query.result);
+
+                    const customCols =
+                    {
+                        "id":
+                        {
+                            "title": "ID",
+                            "html": (value) => `<button class="btn btn-primary form-control"><strong>${value}</strong></button>`,
+                            "onclick": (val, row) => Edit(`${val}`),
+                        },
+                        "Title":
+                        {
+                            "title": "Title",
+                            "html": (value) => `<strong>${value}</strong>`,
+                        },
+                    };
+
+                    if (responce_query.result == "[]") {
+                        ShowDialog("Alert", "No Data found.");
+                        return;
+                    }
+
+                    renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+
+                    document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
+
+                });
+
+            }
+
+
+            function Edit(Id_page) {
+
+                //document.getElementById("page_id").disabled = true;
+
+                if (Id_page == "New") {
+                    //document.getElementById("page_id").disabled = false;
+
+                    document.getElementById("page_id").onblur = function () {
+                        this.value = this.value.trim().toLowerCase();
+                        Edit(this.value);
+                    };
+
+                    document.getElementById("page_id").value = "";
+                    document.getElementById("page_title").value = "";
+                    document.getElementById("page_html_code").value = "";
+                    document.getElementById("page_prompt").value = "";
+                    document.getElementById("page_edit").showModal();
+                    return;
+
+                }
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "Get", Id_page);
+
+                response.then(function (query) {
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert 1", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+
+                        if (responce_query.result == "Error: No data found.") {
+                            return;
+                        }
+
+                        ShowDialog("Alert 2", responce_query.result);
+                        return;
+                    }
+
+                    const page = JSON.parse(responce_query.result);
+
+                    document.getElementById("edit_title").innerText = "Edit page";
+                    document.getElementById("page_id").disabled = true;
+                    document.getElementById("page_id").value = page.id;
+                    document.getElementById("page_title").value = page.Title;
+                    document.getElementById("page_html_code").value = page.Html_code;
+                    document.getElementById("page_prompt").value = page.Prompt;
+
+                    // Mostrar el diálogo de edición
+                    document.getElementById("page_edit").showModal();
+
+                });
+
+            }
+
+
+            function Save() {
+
+                const pageId = document.getElementById("page_id").value;
+                const pageTitle = document.getElementById("page_title").value;
+                const pageHtmlCode = document.getElementById("page_html_code").value;
+                const pagePrompt = document.getElementById("page_prompt").value;
+
+                if (pageId.trim() == "") {
+                    ShowDialog("Alert", "Page ID cannot be empty.");
+                    return;
+                }
+
+                if (pageTitle.trim() == "") {
+                    ShowDialog("Alert", "Page Title cannot be empty.");
+                    return;
+                }
+
+                if( pagePrompt.trim() == "") {
+                    ShowDialog("Alert", "Page Prompt cannot be empty.");
+                    return;
+                }
+
+                var page = {
+                    page_id: document.getElementById("page_id").value,
+                    Title: pageTitle,
+                    Html_code: pageHtmlCode,
+                    Prompt: pagePrompt
+                };
+
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "SaveImport", JSON.stringify(page));
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    Search(":ALL");
+                    document.getElementById("page_edit").close();
+
+                });
+
+
+            }
+
+
+            function CreatePage() {
+
+                const pageId = document.getElementById("page_id").value;
+                const pageTitle = document.getElementById("page_title").value;
+                const pageHtmlCode = document.getElementById("page_html_code").value;
+                const pagePrompt = document.getElementById("page_prompt").value;
+
+                if (pageId.trim() == "") {
+                    ShowDialog("Alert", "Page ID cannot be empty.");
+                    return;
+                }
+
+                if (pageTitle.trim() == "") {
+                    ShowDialog("Alert", "Page Title cannot be empty.");
+                    return;
+                }
+
+                if( pagePrompt.trim() == "") {
+                    ShowDialog("Alert", "Page Prompt cannot be empty.");
+                    return;
+                }
+
+                var page = {
+                    page_id: document.getElementById("page_id").value,
+                    Title: pageTitle,
+                    Html_code: pageHtmlCode,
+                    Prompt: pagePrompt
+                };
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "CreatePageWithIA", page);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    document.getElementById("page_html_code").value = responce_query.result;
+
+                });
+
+
+            }
+
+
+
+            function ConfirmDelete() {
+                const pageId = document.getElementById("page_id").value;
+
+                ShowAcceptCancelDialog("Delete page", "Are you sure you want to delete the page: " + pageId + "?",
+                    function () {
+                        Delete(pageId);
+                    });
+            }
+
+            function Delete(pageId) {
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "Delete", pageId);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    pageId = pageId.trim().toLowerCase();
+
+                    // Eliminar el renglón de la tabla
+                    const rowToDelete = document.getElementById(pageId);
+
+                    if (rowToDelete) {
+                        rowToDelete.parentNode.removeChild(rowToDelete);
+                    }
+
+                    ShowDialog("Alert", "page deleted correctly: " + pageId);
+                    document.getElementById("dialog_accept").close();
+                    document.getElementById("page_edit").close();
+
+                    Search(":ALL"); // Refresh the page list after deletion
+
+                });
+            }
+
+            window.onload = async function () {
+
+                document.getElementById("dialog_button_close").onclick = function () {
+                    document.getElementById("generic_dialog").close();
+                };
+
+                document.getElementById("edit_cancel_button").onclick = function () {
+                    document.getElementById("page_edit").close();
+                };
+
+                document.getElementById("dialog_button_close1").onclick = function () {
+                    document.getElementById("dialog_accept").close();
+                };
+
+                let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+                response.then(function (query) {
+                    let response_query = JSON.parse(query);
+
+                    if (response_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", response_query.result);
+                    } else {
+                        sessionStorage.setItem('user_groups', response_query.result);
+                    }
+                });
+
+                translate_menu(language);
+
+                Search(":ALL");
+
+                document.getElementById("search_text").focus();
+
+            };
+
+
+        </script>
+
+
+        <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

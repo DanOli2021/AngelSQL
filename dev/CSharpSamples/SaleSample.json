@@ -1,0 +1,99 @@
+{
+    "api": "pos_backend/pos_backend",
+    "account": "kiosko",
+    "language": "C#",
+    "message": {
+        "OperationType": "UpsertSale",
+        "account": "kiosko",
+        "Token": "default_token",
+        "User": "daniel@kiosko",
+        "DataMessage": {
+            "Id": "d6416f0a-8f83-46d4-868c-6e3cd94d4d66",
+            "DateTime": "2025-06-06 20:31:20",
+            "Receipt_serie": "A",
+            "Receipt_number": 0,
+            "Sale_type": "POS",
+            "Exchange_rate": 1,
+            "Total": "20.000000",
+            "Subtotal": "17.241379",
+            "Cost": "0.000000",
+            "Consumption_tax": "2.758621",
+            "For_credit": 0,
+            "ReferenceID": "",
+            "ReferenceType": "",
+            "User_id": "daniel@kiosko",
+            "User_name": "daniel@kiosko",
+            "Customer_id": "SYS",
+            "Customer_name": "",
+            "Seller_id": "daniel@kiosko",
+            "Seller_name": "daniel@kiosko",
+            "POS_ID": "WEB_POS",
+            "Account_id": "",
+            "Location": "",
+            "Business_data": "",
+            "Number_of_items": 1,
+            "Change": 0,
+            "Total_payments": 20,
+            "Sale_detail": [
+                {
+                    "Id": "a7b2877e-45df-40ec-9d78-8facbfe10e84",
+                    "Sale_id": "d6416f0a-8f83-46d4-868c-6e3cd94d4d66",
+                    "Sku_id": "7501022014615",
+                    "Description": "7 UP 1.75L",
+                    "Qty": 1,
+                    "Price": "17.241379",
+                    "Original_price": 20,
+                    "Discount": 0,
+                    "Import": "20.000000",
+                    "Cost": "0.000000",
+                    "Consumption_tax_percentages": 16,
+                    "Consumption_tax": "2.758621",
+                    "Price_with_taxes": "20.000000",
+                    "PromotionCode": "",
+                    "DateTime": "2025-06-06 20:31:20",
+                    "User_id": "daniel@kiosko",
+                    "Sku_dictionary_id": "",
+                    "Qty_equivalence": 1,
+                    "Description_equivalence": "",
+                    "ClaveProdServ": "",
+                    "ClaveUnidad": "",
+                    "Observations": "",
+                    "Preferential_Classification": "",
+                    "Classifications": [],
+                    "Consumption_taxes": [
+                        {
+                            "Id": "IVA",
+                            "Description": "IVA",
+                            "Rate": 16,
+                            "Type": ""
+                        },
+                        {
+                            "Id": "",
+                            "Description": "",
+                            "Rate": 0,
+                            "Type": ""
+                        }
+                    ]
+                }
+            ],
+            "Payments": [
+                {
+                    "id": "496e4f75-ff2c-4894-9138-82f3244bac4a",
+                    "Sale_id": "d6416f0a-8f83-46d4-868c-6e3cd94d4d66",
+                    "Account_id": "",
+                    "Description": "                            ",
+                    "Type": "cash",
+                    "ReferenceType": "",
+                    "ReferenceID": "",
+                    "DateTime": "2025-06-06 20:31:28",
+                    "Amount": 20,
+                    "Currency_id": "MXN",
+                    "User_id": "daniel@kiosko",
+                    "User_name": "daniel@kiosko",
+                    "Exchange_rate": 1
+                }
+            ]
+        },
+        "UserLanguage": "us"
+    }
+}

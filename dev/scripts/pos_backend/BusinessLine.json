@@ -1,0 +1,170 @@
+[
+    {
+        "id":  "01 Otros",
+        "Description": "Otros"
+    },
+    {
+        "id":  "02 Abarrotes",
+        "Description": "Tiendas de abarrotes y conveniencia"
+    },
+    {
+        "id":  "03 Farmacias",
+        "Description": "Farmacias y productos de salud"
+    },
+    {
+        "id":  "04 Ropa",
+        "Description": "Tiendas de ropa y calzado"
+    },
+    {
+        "id":  "05 Electrónica",
+        "Description": "Electrónica y tecnología"
+    },
+    {
+        "id":  "06 Alimentos",
+        "Description": "Alimentos frescos y preparados"
+    },
+    {
+        "id":  "07 Supermercados",
+        "Description": "Supermercados y almacenes"
+    },
+    {
+        "id":  "08 Tiendas",
+        "Description": "Tianguis y mercados"
+    },
+    {
+        "id":  "09 Tiendas",
+        "Description": "Tiendas especializadas"
+    },
+    {
+        "id":  "10 Papelería",
+        "Description": "Papelería y oficina"
+    },
+    {
+        "id":  "11 Hogar",
+        "Description": "Hogar y decoración"
+    },
+    {
+        "id":  "12 Belleza",
+        "Description": "Belleza y cuidado personal"
+    },
+    {
+        "id":  "13 Juguetes",
+        "Description": "Juguetes y entretenimiento"
+    },
+    {
+        "id":  "14 Automotriz",
+        "Description": "Automotriz y motocicletas"
+    },
+    {
+        "id":  "15 Deportes",
+        "Description": "Deportes y aire libre"
+    },
+    {
+        "id":  "16 Mascotas",
+        "Description": "Mascotas y veterinarias"
+    },
+    {
+        "id":  "17 Librerías",
+        "Description": "Librerías y entretenimiento"
+    },
+    {
+        "id":  "18 Ferreterías",
+        "Description": "Contabilidad y asesoría financiera"
+    },
+    {
+        "id":  "19 Restaurantes",
+        "Description": "Restaurantes y bares"
+    },
+    {
+        "id":  "20 Salud",
+        "Description": "Salud y bienestar"
+    },
+    {
+        "id":  "21 Educación",
+        "Description": "Educación y capacitación"
+    },
+    {
+        "id":  "22 Finanzas",
+        "Description": "Servicios financieros"
+    },
+    {
+        "id":  "23 Transporte",
+        "Description": "Servicios de transporte"
+    },
+    {
+        "id":  "24 Comunicación",
+        "Description": "Servicios de comunicación"
+    },
+    {
+        "id":  "25 Construcción",
+        "Description": "Servicios de construcción"
+    },
+    {
+        "id":  "26 Mantenimiento",
+        "Description": "Servicios de mantenimiento"
+    },
+    {
+        "id":  "27 Limpieza",
+        "Description": "Servicios de limpieza"
+    },
+    {
+        "id":  "28 Salud",
+        "Description": "Servicios de salud"
+    },
+    {
+        "id":  "29 Belleza",
+        "Description": "Servicios de belleza"
+    },
+    {
+        "id":  "30 Educación",
+        "Description": "Servicios de educación"
+    },
+    {
+        "id":  "31 Entretenimiento",
+        "Description": "Servicios de entretenimiento"
+    },
+    {
+        "id":  "32 Turismo",
+        "Description": "Servicios de turismo"
+    },
+    {
+        "id":  "33 Deportes",
+        "Description": "Servicios de deporte"
+    },
+    {
+        "id":  "34 Mascotas",
+        "Description": "Servicios de mascotas"
+    },
+    {
+        "id":  "35 Seguridad",
+        "Description": "Servicios de seguridad"
+    },
+    {
+        "id":  "36 Gobierno",
+        "Description": "Servicios de emergencia"
+    },
+    {
+        "id":  "37 Transporte",
+        "Description": "Servicios de gobierno"
+    },
+    {
+        "id":  "38 Comunicación",
+        "Description": "Servicios de transporte"
+    },
+    {
+        "id":  "39 Tecnología",
+        "Description": "Servicios de comunicación"
+    },
+    {
+        "id":  "40 Desarrollo",
+        "Description": "Servicios de tecnología"
+    },
+    {
+        "id":  "41 Desarrollo Software",
+        "Description": "Servicios de desarrollo de Software"
+    },
+    {
+        "id":  "42 Distribuidor",
+        "Description": "Distribuidor MyBusiness POS"
+    }
+]

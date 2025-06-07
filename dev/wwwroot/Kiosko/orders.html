@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Orders)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        if (sessionStorage.getItem("Token") == null) {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ** Navigation menu -->
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de sales -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="sales.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Sales</span>
+                </a>
+            </div>
+
+        </div>
+        <!-- ** Navigation menu -->
+
+
+        <!-- ** Logo and title of the module -->
+        <div class="row justify-content-center">
+            <img src="./images/Orders_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin
+                (Orders)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+        </div>
+        <!-- ** Logo and title of the module -->
+
+
+        <!-- ** Application body -->
+        <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+
+            <div class="col-9">
+                <input type="text" id="search_text" class="form-control" style="width: 100%;" placeholder="Search..." />
+            </div>
+
+            <!-- ** Search button in the results table -->
+            <div class="col-3">
+                <button id="search_button" class="btn btn-primary" style="width: 100%;">Search</button>
+            </div>
+            <!-- ** Search button in the results table -->
+
+            <div class="col-6" id="check_pending" style="margin-top: 20px; margin-bottom: 20px;">
+                <input type="checkbox" id="check_pending_orders" checked>
+                <label for="check_pending_orders">Show Pending Orders</label>
+            </div>
+
+            <div class="col-6" id="check_completed" style="margin-top: 20px; margin-bottom: 20px;">
+                <input type="checkbox" id="check_refresh" checked>
+                <label for="check_refresh">Refresh Automatic</label>
+            </div>
+
+            <!-- ** Filtering by date -->
+            <div class="col-12" id="filter_date" style="margin-top: 20px; margin-bottom: 20px;">
+
+                <div class="row col-12" style="margin-bottom: 10px;">
+
+                    <div class="col-3">
+                        <label for="start_date">Start Date:</label>
+                    </div>
+
+                    <div class="col-3">
+                        <input type="date" id="start_date" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="end_date">End Date:</label>
+                    </div>
+
+                    <div class="col-3">
+                        <input type="date" id="end_date" class="form-control" />
+                    </div>
+                    <!-- ** Filtering by date -->
+                    <div style="margin-top: 10px;"></div>
+
+                    <div class="col-6">
+                        <button class="btn btn-success form-control" onclick="Search(':ALL');">Search All</button>
+                    </div>
+
+                    <div class="col-6">
+                        <button class="btn btn-warning form-control" onclick="Search(':PENDING');">Search
+                            Pending</button>
+                    </div>
+
+                </div>
+
+
+                <!-- ** Results table -->
+                <div id="tableContainer"></div>
+                <!-- ** Results table -->
+
+            </div>
+            <!-- ** Application body -->
+
+
+        </div>
+
+
+        <!-- ** Generic warning dialogue -->
+        <dialog id="generic_dialog" class="dialog-box">
+            <h1 id="generic_dialog_title">Title</h1>
+            <p id="generic_dialog_message">Message</p>
+            <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+        </dialog>
+        <!-- ** Generic warning dialogue -->
+
+
+        <!-- ** Dialog to edit the properties of a record -->
+        <dialog id="order_edit" style=" width: 70%; max-width: 100%; overflow-y: auto;">
+            <div class="form-group">
+                <h1 id="edit_title">Edit Order</h1>
+                <div class="row col-12">
+                    <div class="col-3">
+                        <label for="order_id" class="form-label">Order ID</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="order_id" class="form-control" disabled />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="order_name" class="form-label">Customer Name</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="order_name" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="order_phone" class="form-label">Phone</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="order_phone" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="order_status" class="form-label">Status</label>
+                    </div>
+                    <div class="col-9">
+                        <select id="order_status" class="form-control">
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="On the way">On the way</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                    </div>
+
+                    <div id="OrderItems"></div>
+
+                    <div class="col-4">
+                        <button class="btn btn-success form-control" onclick="SaveOrder();">Save</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button id="dialog_credit_credit" class="btn btn-danger" style="width: 100%;" onclick="SaveOrder(false, true);">For Credit</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button class="btn btn-warning form-control"
+                            onclick="document.getElementById('order_edit').close();">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </dialog>
+        <!-- ** Dialog to edit the properties of a record -->
+
+
+
+        <!-- ** Dialog to edit an item in the order -->
+        <dialog id="dialog_edit_item" class="dialog-box" style="width: 50%; max-width: 100%; overflow-y: auto;">
+
+            <div class="form-group">
+
+                <h1 id="dialog_edit_item_title">Edit Item</h1>
+
+                <div class="row col-12">
+                    <div class="col-3">
+                        <label for="item_id" class="form-label">Item Id</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="text" id="item_id" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="item_quantity" class="form-label">Quantity</label>
+                    </div>
+                    <div class="col-3">
+                        <input type="number" id="item_quantity" class="form-control" />
+                    </div>
+                    <div class="col-3">
+                        <button id="btn_item_total" class="badge bg-success form-control"
+                            style="width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; font-size:large;"
+                            onclick="IncreaseItemQuantity()">
+                            <span id="item_plus">+</span>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button id="btn_item_total" class="badge bg-success form-control"
+                            style="width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; font-size:large;"
+                            onclick="DecreaseItemQuantity()">
+                            <span id="item_minus">-</span>
+                        </button>
+                    </div>
+
+
+                    <div class="col-3">
+                        <label for="item_price" class="form-label">Price $</label>
+                    </div>
+                    <div class="col-9">
+                        <input type="number" id="item_price" class="form-control" />
+                    </div>
+
+                    <div class="col-3">
+                        <label for="btn_item_total" class="form-label">Total</label>
+                    </div>
+                    <div class="col-9">
+                        <button id="btn_item_total" class="badge bg-primary form-control">
+                            $<span id="item_total">0.00</span>
+                        </button>
+                    </div>
+
+                    <div class="col-3">
+                        <label for="item_notes" class="form-label">Notes</label>
+                    </div>
+                    <div class="col-9">
+                        <textarea id="item_notes" rows="3" class="form-control"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 20px;"></div>
+
+                    <div class="col-4">
+                        <button class="btn btn-success form-control" onclick="SaveItem();">Save</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button class="btn btn-danger form-control" onclick="DeleteItem();">Delete</button>
+                    </div>
+
+                    <div class="col-4">
+                        <button class="btn btn-warning form-control"
+                            onclick="document.getElementById('dialog_edit_item').close();">Cancel</button>
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+
+        </dialog>
+        <!-- ** Dialog to edit an item in the order -->
+
+        <!-- ** Dialog to confirm sale -->
+        <dialog id="dialog_sale_confirm">
+            <h1 id="confirm_sale_title"></h1>
+
+            <div class="container col-12 align-content-center">
+                <div class="row mb-3 justify-content-center" style="margin-top: 5px;">
+
+                    <h1 id="total_confirm" style="margin-bottom: 20px;"></h1>
+
+                    <div class="col-2">
+                        <label for="pay"
+                            style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Pay
+                            $</label>
+                    </div>
+                    <div class="col-4">
+                        <input type="number" id="pay" class="form-control"
+                            style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder; margin-bottom: 10px; text-align: right;">
+                    </div>
+
+                    <div class="col-2">
+                        <label for="payment_method">Payment Method</label>
+                    </div>
+
+                    <div class="col-4">
+                        <select id="payment_method" data-style="btn-primary" class="selectpicker form-control"
+                            style="margin-bottom: 10px;">
+                            <option value="cash">Cash</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-3">
+                        <button id="button_accept"
+                            class="btn btn-info d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                            style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                            <img src="images/Accept_small.png" alt="Cash" style="width: 60px; height: auto;">
+                            <span style="font-weight: bold;">Accept</span>
+                        </button>
+                    </div>
+
+
+                    <div class="col-3">
+                        <button id="button_cash"
+                            class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                            style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                            <img src="images/Cash_small.png" alt="Cash" style="width: 60px; height: auto;">
+                            <span style="font-weight: bold;">Cash</span>
+                        </button>
+                    </div>
+
+                    <div class="col-3">
+                        <button id="button_credit_card"
+                            class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                            style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                            <img src="images/CreditCard_small.png" alt="Credit Card" class="float-left"
+                                style="width: 60px; height: auto;">
+                            <span style="font-weight: bold;">Credit Card</span>
+                        </button>
+                    </div>
+
+                    <div class="col-3">
+                        <button id="button_transfer"
+                            class="btn btn-light d-flex align-items-center gap-2 rounded-3 shadow-sm hover-scale"
+                            style="width: 100%; height: 60px; margin-bottom: 10px; justify-content: flex-start;">
+                            <img src="images/BankTransfer_small.png" alt="Transfer" class="float-left"
+                                style="width: 60px; height: auto;">
+                            <span style="font-weight: bold;">Transfer</span>
+                        </button>
+                    </div>
+
+                    <div class="col-2">
+                        <label for="currency_id"
+                            style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Currency</label>
+                    </div>
+                    <div class="col-4">
+                        <select id="currency_id" data-style="btn-info" class="selectpicker form-control"
+                            style="margin-top: 10px; margin-bottom: 10px;">
+                        </select>
+                    </div>
+
+                    <div class="col-2">
+                        <label for="exchange_rate"
+                            style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder;">Exchange
+                            rate</label>
+                    </div>
+
+                    <div class="col-4">
+                        <input type="number" id="exchange_rate" class="form-control"
+                            style="font-family: 'Courier New', Courier, monospace; font-size: x-large; font-weight: bolder; margin-bottom: 10px; text-align: right;">
+                    </div>
+
+                    <div class="col-3">
+                        <label for="payment_comments">Payment comments</label>
+                    </div>
+                    <div class="col-9">
+                        <textarea id="payment_comments" class="form-control" style="margin-bottom: 10px;">
+                            </textarea>
+                    </div>
+
+                    <hr style="border: 1px solid #000; margin-top: 10px; margin-bottom: 10px;">
+
+                    <div id="tablePaymentsContainer"></div>
+
+                    <div class="col-6">
+                        <button id="dialog_confirm_accept" class="btn btn-success"
+                            style="width: 100%; height: 60px; margin-bottom: 10px;">Confirm</button>
+                    </div>
+
+                    <div class="col-6">
+                        <button id="dialog_confirm_cancel" class="btn btn-warning"
+                            style="width: 100%; height: 60px; margin-bottom: 10px;"
+                            onclick="document.getElementById('dialog_sale_confirm').close();">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </dialog>
+        <!-- ** Dialog to confirm sale -->
+
+        <!-- ** Footer bar-->
+        <div class="bottom-bar" style="margin-top: 20px;">
+            <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+                <span id="index_privacy_policy">
+                    Privacy Policy
+                </span>
+            </a>
+            <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+            <a href="about.html" target="_blank" id="index_about_url">
+                <span id="index_about_us">
+                    About us...
+                </span>
+            </a>
+        </div>
+        <!-- ** Footer bar-->
+
+        <!-- ** Generic Dialog to confirm -->
+        <dialog id="dialog_accept" class="dialog-box">
+            <h1 id="dialog_accept_title">Title</h1>
+            <p id="dialog_accept_message">Message</p>
+            <button id="dialog_button_accept" class="btn btn-success"
+                style="width: 100%; margin-bottom: 10px;">Accept</button>
+            <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+        </dialog>
+        <!-- ** Generic Dialog to confirm -->
+
+
+        <script>
+
+            let active_order = null;
+            let active_order_items = [];
+            let OrderPayments = [];
+            let Total_payments = 0;
+            let Total = 0;
+            let Change = 0;
+            let businessinfo = undefined;
+            let default_currency = undefined;
+
+            document.getElementById("order_edit").addEventListener("close", function () {
+                OrderPayments = [];
+                document.getElementById("payment_comments").value = "";
+                document.getElementById("pay").value = "";
+                document.getElementById("currency_id").value = default_currency.Id;
+                document.getElementById("exchange_rate").value = 1;
+                document.getElementById("payment_method").value = "cash";
+                document.getElementById("tablePaymentsContainer").innerHTML = "";
+            });
+
+            document.getElementById("search_button").addEventListener("click", async function () {
+                const searchValue = document.getElementById("search_text").value.trim();
+                Search(searchValue);
+
+            });
+
+            document.getElementById("check_pending_orders").addEventListener("change", function () {
+                if (this.checked) {
+                    Search(":PENDING");
+                } else {
+                    Search(":ALL");
+                }
+            });
+
+            document.getElementById("start_date").valueAsDate = getFirstDateOfPreviousMonth();
+            document.getElementById("end_date").valueAsDate = new Date();
+
+            function ShowConfirmDialog() {
+
+                ShowPayments();
+
+                document.getElementById("total_confirm").innerHTML = "Total: $" + ThousandsSeparator(Total);
+                CalculatePayment();
+                var dialog = document.getElementById("dialog_sale_confirm");
+                dialog.showModal();
+            }
+
+            document.getElementById("button_accept").addEventListener("click", function () {
+                SavePaymentMethod();
+            });
+
+            document.getElementById("button_cash").addEventListener("click", function () {
+                document.getElementById("payment_method").value = "cash";
+                SavePaymentMethod();
+            });
+
+            document.getElementById("button_credit_card").addEventListener("click", function () {
+                document.getElementById("payment_method").value = "credit_card";
+                SavePaymentMethod();
+            });
+
+            document.getElementById("button_transfer").addEventListener("click", function () {
+                document.getElementById("payment_method").value = "transfer";
+                SavePaymentMethod();
+            });
+
+            document.getElementById("dialog_confirm_accept").addEventListener("click", function () {
+
+                if (active_order == null) {
+                    ShowDialog("Alert", "No active order to save.");
+                    return;
+                }
+
+                if (Change < 0) {
+                    ShowDialog("Alert", "Payment amount is less than total amount.");
+                    return;
+                }
+
+                SaveOrder(false);
+                document.getElementById("dialog_sale_confirm").close();
+                document.getElementById("order_edit").close();
+            });
+
+            document.getElementById("dialog_confirm_cancel").addEventListener("click", function () {
+                document.getElementById("dialog_sale_confirm").close();
+            });
+
+            function SavePaymentMethod() {
+
+                var payment_method = document.getElementById("payment_method").value;
+
+                if (payment_method == "") {
+                    ShowDialog("Alert", "Payment method is empty");
+                    return;
+                }
+
+                if (Number(document.getElementById("pay").value) <= 0) {
+                    ShowDialog("Alert", "Payment amount must be greater than zero");
+                    return;
+                }
+
+                if (OrderPayments == undefined) {
+                    OrderPayments = [];
+                }
+
+                var payment = {
+                    Id: generateGUID(),
+                    User_id: active_order.User_id,
+                    Account_id: active_order.Account_id,
+                    User_name: active_order.User_name,
+                    Amount: Number(document.getElementById("pay").value),
+                    DateTime: formatDate(new Date()),
+                    Currency_id: document.getElementById("currency_id").value,
+                    Exchange_rate: Number(document.getElementById("exchange_rate").value),
+                    Description: document.getElementById("payment_comments").value,
+                    Type: document.getElementById("payment_method").value
+                };
+
+                console.log("Payment: ", OrderPayments);
+                OrderPayments.push(payment);
+                ShowPayments();
+
+            }
+
+            function ShowPayments() {
+                localpayments = [];
+
+                if (OrderPayments == undefined) {
+                    OrderPayments = [];
+                }
+
+                for (let i = 0; i < OrderPayments.length; i++) {
+                    var localpayment = new LocalPayments();
+                    var id = i + 1;
+                    localpayment.id = id.toString();
+                    localpayment.Payment_id = OrderPayments[i].id;
+                    localpayment.Amount = OrderPayments[i].Amount;
+                    localpayment.Description = OrderPayments[i].Description;
+                    localpayment.Currency_id = OrderPayments[i].Currency_id;
+                    localpayment.Exchange_rate = OrderPayments[i].Exchange_rate;
+                    localpayment.Type = OrderPayments[i].Type;
+                    localpayments.push(localpayment);
+                }
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-success" style="width:100%"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => DeletePayment(`${row.Payment_id}`),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Payment_id":
+                    {
+                        "visible": false
+                    },
+                };
+
+                if (localpayments.length == 0) {
+                    document.getElementById("tablePaymentsContainer").innerHTML = "";
+                    return;
+                }
+
+                renderPaginatedTable(localpayments, "tablePaymentsContainer", 5, customCols, null, false);
+
+                CalculatePayment();
+
+                if (Change >= 0) {
+                    document.getElementById("pay").value = "";
+                    document.getElementById("dialog_confirm_accept").focus();
+                }
+                else {
+                    document.getElementById("pay").value = "";
+                    document.getElementById("pay").focus();
+                }
+
+            }
+
+            function CalculatePayment() {
+
+                var total = 0;
+
+                for (let i = 0; i < active_order.OrderItems.length; i++) {
+                    total += Number(active_order.OrderItems[i].Price * active_order.OrderItems[i].Quantity);
+                }
+
+                var remaining = 0;
+
+                var total_payments = 0;
+
+                if (OrderPayments == undefined) {
+                    total_payments = 0;
+                }
+                else {
+                    for (let i = 0; i < OrderPayments.length; i++) {
+                        total_payments += Number(OrderPayments[i].Amount) * Number(OrderPayments[i].Exchange_rate);
+                    }
+                }
+
+                Total_payments = total_payments;
+
+                remaining = Number(total) - Number(total_payments);
+
+                if (remaining > 0) {
+                    Change = remaining * -1;
+                    document.getElementById("total_confirm").innerHTML = "<strong>Total: $" + ThousandsSeparator(total) + "</strong>  Remaining: $" + ThousandsSeparator(remaining);
+                }
+                else {
+                    Change = Math.abs(remaining);
+                    document.getElementById("total_confirm").innerHTML = "<strong>Total: $" + ThousandsSeparator(total) + "</strong>  Change: $" + ThousandsSeparator(Change);
+                }
+
+            }
+
+            function formatDate(fecha) {
+                const year = fecha.getFullYear();
+                const month = ('0' + (fecha.getMonth() + 1)).slice(-2);
+                const day = ('0' + fecha.getDate()).slice(-2);
+                const hours = ('0' + fecha.getHours()).slice(-2);
+                const minutes = ('0' + fecha.getMinutes()).slice(-2);
+                const seconds = ('0' + fecha.getSeconds()).slice(-2);
+
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+
+
+            document.getElementById("pay").addEventListener("keydown", function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    SavePaymentMethod();
+                }
+            });
+
+            function getFirstDateOfMonth() {
+                const today = new Date();
+                return new Date(today.getFullYear(), today.getMonth(), 1);
+            }
+
+            // Function to get first Date of the Previous month
+            function getFirstDateOfPreviousMonth() {
+                const today = new Date();
+                return new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            }
+
+
+            function SaveOrder(CheckPayment = true, IsForCredit = false) {
+
+                if (active_order == null) {
+                    ShowDialog("Alert", "No active order to save.");
+                    return;
+                }
+
+                active_order.OrderName = document.getElementById("order_name").value;
+                active_order.OrderPhone = document.getElementById("order_phone").value;
+                active_order.Status = document.getElementById("order_status").value;
+
+                active_order.OrderItems = active_order_items;
+                active_order.Payments = OrderPayments;
+
+                if (active_order.OrderItems.length == 0) {
+                    ShowDialog("Alert", "No items in the order to save.");
+                    return;
+                }
+
+                if (CheckPayment) {
+                    if (active_order.Status == "Confirmed") {
+                        ShowConfirmDialog();
+                        return;
+                    }
+                }
+
+                if (IsForCredit) {
+                    if (active_order.Status != "Confirmed") {
+                        ShowDialog("Alert", "Order must be confirmed to save for credit.");
+                        return;
+                    }
+                }
+
+                let html = document.getElementById("dialog_credit_credit").innerHTML;
+                document.getElementById("dialog_credit_credit").disabled = true;
+                document.getElementById("dialog_credit_credit").innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>For Credit...`;
+
+                let html1 = document.getElementById("dialog_confirm_accept").innerHTML;
+                document.getElementById("dialog_confirm_accept").disabled = true;
+                document.getElementById("dialog_confirm_accept").innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Confirming...`;
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_orderusers", Token.Token, "SaveOrder", active_order);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    ShowDialog("Alert", "Order saved successfully.");
+                    document.getElementById("order_edit").close();
+                    
+                    document.getElementById("dialog_credit_credit").disabled = false;
+                    document.getElementById("dialog_credit_credit").innerHTML = html;
+
+                    document.getElementById("dialog_confirm_accept").innerHTML = html1;
+                    document.getElementById("dialog_confirm_accept").disabled = false;
+
+                    if (document.getElementById("check_pending_orders").checked) {
+                        Search(":PENDING");
+                    }
+                    else {
+                        Search(":ALL");
+                    }
+
+                });
+
+            }
+
+
+            function IncreaseItemQuantity() {
+                const itemQuantityInput = document.getElementById("item_quantity");
+                let quantity = parseFloat(itemQuantityInput.value) || 1;
+                quantity++;
+                itemQuantityInput.value = quantity;
+                UpdateItemTotal();
+            }
+
+            function DecreaseItemQuantity() {
+                const itemQuantityInput = document.getElementById("item_quantity");
+                let quantity = parseFloat(itemQuantityInput.value) || 1;
+                if (quantity > 1) {
+                    quantity--;
+                    itemQuantityInput.value = quantity;
+                    UpdateItemTotal();
+                }
+            }
+
+            function UpdateItemTotal() {
+                const itemQuantity = parseFloat(document.getElementById("item_quantity").value) || 1;
+                const itemPrice = parseFloat(document.getElementById("item_price").value) || 0;
+                const itemTotal = itemQuantity * itemPrice;
+                document.getElementById("item_total").innerText = itemTotal.toFixed(2);
+            }
+
+            function Search(searchValue) {
+
+                var parameters =
+                {
+                    "searchValue": searchValue,
+                    "startDate": document.getElementById("start_date").value,
+                    "endDate": document.getElementById("end_date").value
+
+                }
+
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_orderusers", Token.Token, "GetMany", parameters);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    const JsonData = JSON.parse(responce_query.result);
+
+                    const customCols =
+                    {
+                        "id":
+                        {
+                            "title": "ID",
+                            "html": (value) => `<button class="btn btn-primary form-control"><strong>+${value.substring(32)}</strong></button>`,
+                            "onclick": (val, row) => Edit(`${row.PartitionKey}`, `${val}`),
+                        },
+                        "timestamp":
+                        {
+                            "visible": false
+                        },
+                        "PartitionKey":
+                        {
+                            "visible": false
+                        },
+                        "PaymentMethod":
+                        {
+                            "visible": false
+                        },
+                        "Change":
+                        {
+                            "visible": false
+                        },
+                        "ShippingAddress":
+                        {
+                            "visible": false
+                        },
+                        "ShippingAddressId":
+                        {
+                            "visible": false
+                        },
+                        "OrderItems":
+                        {
+                            "visible": false
+                        },
+                        "OrderUserId":
+                        {
+                            title: "User",
+                            html: (value, row) => `<button class="btn btn-light" style="text-align: left; width: 100%">${GetUserData(row)}</button>`,
+                            onclick: (val, row) => ShowOrder(`${row.PartitionKey}`, `${row.id}`),
+                        },
+                        "OrderName":
+                        {
+                            visible: false
+                        },
+                        "OrderPhone":
+                        {
+                            visible: false
+                        },
+                        "OrderDate":
+                        {
+                            title: "Date",
+                        },                                                                                                                          
+                        "TotalAmount":
+                        {
+                            title: "Total",
+                            html: (value) => `<span class="badge bg-success">$${ThousandsSeparator(value)}</span>`,
+                        },
+                        "TrackingNumber":
+                        {
+                            "visible": false,
+                        },
+                        "Anonymous":
+                        {
+                            "visible": false,
+                        },
+                        "ShippingMethod":
+                        {
+                            "title": "Shipping Method",
+                        },
+                        "User_id": {
+                            "visible": false
+                        },
+                        "User_name": {
+                            "visible": false
+                        },
+                        "OrderDateChange":
+                        {
+                            "title": "Last Update",
+                            "html": (value) => `<span class="badge bg-info">${IfNNullDate(value)}</span>`,
+                        },
+                        "Status":
+                        {
+                            "title": "Status",
+                            "html": (value) => StatusHtml(value),
+                        },
+                        "Payments": {
+                            "visible": false
+                        },
+                        "Account_id": {
+                                               "visible": false
+                        },
+                        "Sale_id": {
+                            "visible": false
+                        },
+                    };
+
+                    if (responce_query.result == "[]") {
+                        //ShowDialog("Alert", "No Data found.");
+                        tableContainer.innerHTML = "";
+                        return;
+                    }
+
+                    renderPaginatedTable(JsonData, "tableContainer", 25, customCols, "search_text");
+
+                    document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
+
+                });
+
+            }
+            function Edit(PartitionKey, OrderId) {
+
+                document.getElementById("order_edit").showModal();              
+
+                document.getElementById("order_edit_title").innerText = "Edit Order: " + OrderId;
+
+                active_order = {
+                    PartitionKey: PartitionKey,
+                    id: OrderId,                                                
+                    User_id: "",
+                    User_name: "",
+                    Account_id: "",
+                    OrderName: "",
+                    OrderPhone: "",
+                    Status: "Pending",
+                    OrderItems: [],
+                    Payments: [],
+                    ShippingAddress: "",
+                    ShippingAddressId: "",
+                    PaymentMethod: "cash",
+                    Change: 0,
+                    TrackingNumber: "",
+                    Anonymous: false,
+                    ShippingMethod: ""
+                };
+
+                active_order_items = [];
+                OrderPayments = [];
+
+                document.getElementById("order_name").value = "";
+                document.getElementById("order_phone").value = "";
+                document.getElementById("order_status").value = "Pending";
+
+                GetOrder(PartitionKey, OrderId);
+
+            }           
+
+            function ShowOrder(PartitionKey, OrderId) {
+                // Lógica para mostrar el pedido del usuario
+                window.open('order.html?PartitionId=' + PartitionKey + '&OrderId=' + OrderId, '_blank');
+            }
+
+            function GetUserData(row) {
+
+                if (row == undefined) {
+                    return;
+                }
+
+                user = "";
+                user += "User:  " + row.OrderUserId + "<br>"; // User ID
+                user += "Name:  " + row.OrderName + "<br>"; // User Name
+                user += "Phone: " + row.OrderPhone + "<br>"; // User Email
+                return user;
+
+            }
+
+
+            async function GetCurrencies() {
+
+                var response = await sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetCurrencies", "");
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", response);
+                    return;
+                }
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", response);
+                    return; // Devolver el objeto predeterminado en caso de error
+                }
+
+                let responce_query = JSON.parse(response);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return; // Devolver el objeto predeterminado en caso de error
+                }
+
+                currencies = JSON.parse(responce_query.result);
+
+                for (var i = 0; i < currencies.length; i++) {
+                    //Agregando cada moneda al select currency_id
+                    var cur = document.createElement("option");
+                    cur.text = currencies[i].id + "," + currencies[i].Symbol + "," + currencies[i].Description;
+                    cur.value = currencies[i].id;
+                    document.getElementById("currency_id").add(cur);
+                }
+
+                document.getElementById("currency_id").onchange = function () {
+
+                    var selectedCurrency = document.getElementById("currency_id").value;
+
+                    for (var i = 0; i < currencies.length; i++) {
+                        if (currencies[i].id == selectedCurrency) {
+                            document.getElementById("exchange_rate").value = currencies[i].Exchange_rate;
+                            break;
+                        }
+                    }
+                }
+
+                default_currency = await GetDefaultCurrency();
+
+                document.getElementById("currency_id").value = default_currency.Id;
+                document.getElementById("exchange_rate").value = 1;
+
+            }
+
+
+            async function GetDefaultCurrency() 
+            {
+                    const query = await sendToAngelPOST(Token.User, "pos_backend/pos_parameters", Token.Token, "GetDefaultCurrency", "Currency");
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return "USD"; // Devolver el valor predeterminado en caso de error
+                    }
+
+                    const responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return "USD"; // Devolver el valor predeterminado en caso de error
+                    }
+
+                    if (responce_query.result == "[]") {
+                        return "USD"; // Devolver el valor predeterminado si no hay datos
+                    }
+
+                    default_currency = JSON.parse(responce_query.result);
+
+            }
+
+            async function GetBusinessInfo() {
+
+                // Crear un objeto BusinessInfo predeterminado
+                let bi = new BusinessInfo(
+                    "1",
+                    "",
+                    "Kiosko",
+                    "",
+                    "info@angelsql.net",
+                    "https://angelsql.net",
+                    "images/Kiosko_logo.png",
+                    "The best helper for your business",
+                    "USD",
+                    "US Dollar"
+                );
+
+                try {
+                    // Llamar al backend
+                    const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return bi; // Devolver el objeto predeterminado en caso de error
+                    }
+
+                    const responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return bi; // Devolver el objeto predeterminado en caso de error
+                    }
+
+                    if (responce_query.result == "[]") {
+                        return bi; // Devolver el objeto predeterminado si no hay datos
+                    }
+
+                    // Actualizar el objeto bi con los datos recibidos
+                    bi = JSON.parse(responce_query.result);
+                    return bi; // Devolver el objeto actualizado
+
+                } catch (error) {
+
+                    console.error("Error fetching business info:", error);
+                    ShowDialog("Alert", "An error occurred while fetching business info.");
+                    return bi; // Devolver el objeto predeterminado en caso de excepción
+
+                }
+            }
+
+
+            function StatusHtml(value) {
+                if (value == "Pending") {
+                    return `<span class="badge bg-warning">${value}</span>`;
+                } else if (value == "Confirmed") {
+                    return `<span class="badge bg-success">${value}</span>`;
+                } else if (value == "On the way") {
+                    return `<span class="badge bg-primary">${value}</span>`;
+                } else if (value == "Delivered") {
+                    return `<span class="badge bg-info">${value}</span>`;
+                } else if (value == "Cancelled") {
+                    return `<span class="badge bg-danger">${value}</span>`;
+                }
+                return value;
+            }
+
+            function IfNNullDate(value) {
+                if (value == null || value == "null" || value == "") {
+                    return "";
+                }
+                return value;
+            }
+
+            function SaveItem() {
+                const itemId = document.getElementById("item_id").value;
+                const item = active_order_items.find(i => i.Id === itemId);
+
+                if (!item) {
+                    ShowDialog("Alert", "Item not found.");
+                    return;
+                }
+
+                // Save the current item to be edited
+                item.Quantity = parseFloat(document.getElementById("item_quantity").value);
+                item.Price = parseFloat(document.getElementById("item_price").value);
+                item.Total = item.Quantity * item.Price;
+                item.Notes = document.getElementById("item_notes").value;
+
+                renderItemsTable();
+
+                document.getElementById("dialog_edit_item").close();
+
+            }
+
+            function EditItem(ItemId) {
+
+                document.getElementById("item_id").disabled = true;
+
+                const item = active_order_items.find(i => i.Id === ItemId);
+                if (!item) {
+                    ShowDialog("Alert", "Item not found.");
+                    return;
+                }
+
+                document.getElementById("dialog_edit_item_title").innerText = "Edit Item";
+
+                document.getElementById("item_id").value = item.Id;
+                document.getElementById("item_id").disabled = true;
+
+                document.getElementById("item_quantity").value = item.Quantity || 1;
+                document.getElementById("item_price").value = item.Price || 0;
+                document.getElementById("item_total").innerText = item.Quantity * item.Price || 0;
+                document.getElementById("item_notes").value = item.Notes || "";
+
+                document.getElementById("dialog_edit_item").showModal();
+
+            }
+
+            function Edit(PartitionKey, OrderId) {
+
+                document.getElementById("order_id").disabled = true;
+                document.getElementById("order_id").innerText = OrderId;
+
+                var order = {
+                    PartitionKey: PartitionKey,
+                    Id: OrderId
+                };
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_orderusers", Token.Token, "GetOrder", order);
+
+                response.then(function (query) {
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert 1", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+
+                        if (responce_query.result == "Error: No data found.") {
+                            return;
+                        }
+
+                        ShowDialog("Alert 2", responce_query.result);
+                        return;
+                    }
+
+
+                    const CurrentOrder = JSON.parse(responce_query.result);
+
+                    document.getElementById("edit_title").innerText = "Edit Order";
+                    document.getElementById("order_id").disabled = true;
+                    document.getElementById("order_id").value = CurrentOrder.Id;
+                    document.getElementById("order_name").value = CurrentOrder.OrderName || "";
+                    document.getElementById("order_phone").value = CurrentOrder.OrderPhone || "";
+                    document.getElementById("order_status").value = CurrentOrder.Status || "Pending";
+
+                    var JsonData = CurrentOrder.OrderItems || [];
+
+                    Total = 0;
+
+                    for (let i = 0; i < JsonData.length; i++) {
+                        JsonData[i].Total = JsonData[i].Quantity * JsonData[i].Price;
+                        Total += JsonData[i].Total;
+                    }
+
+                    active_order = CurrentOrder;
+                    active_order_items = JsonData;
+                    active_order.Payments = CurrentOrder.Payments || [];
+                    OrderPayments = CurrentOrder.Payments || [];
+
+                    renderItemsTable();
+
+                    // Mostrar el diálogo de edición
+                    document.getElementById("order_edit").showModal();
+
+                });
+
+            }
+
+            function renderItemsTable() {
+
+                const customCols = {
+                    "Id": {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary form-control"><strong>+</strong></button>`,
+                        "onclick": (val, row) => EditItem(`${val}`),
+                    },
+                    "Quantity": {
+                        title: "Quantity",
+                        html: (value) => `<span class="badge bg-info">${value}</span>`,
+                        "style": "font-size: 1.2em; text-align: right;"
+                    },
+                    "Price": {
+                        title: "Price",
+                        html: (value) => `<span class="badge bg-success">$${ThousandsSeparator(value)}</span>`,
+                        "style": "font-size: 1.2em; text-align: right;"
+                    },
+                    "Total": {
+                        title: "Total",
+                        html: (value) => `<span class="badge bg-primary">$${ThousandsSeparator(value)}</span>`,
+                        "style": "font-size: 1.2em; text-align: right;",
+                        "sum": true,
+                        "sumFormatter": (total) => `<span class="badge bg-primary">$${ThousandsSeparator(total)}</span>`,
+                        "style": "text-align: right;font-size: 1.4em;"
+                    },
+                    "OrderId": {
+                        "visible": false
+                    },
+                    "Sku_Id": {
+                        "title": "SKU",
+                        "style": "text-align: left;"
+                    },
+                    "Sku_Description": {
+                        "html": (value, row) => `${value} ${row.Notes ? `(${row.Notes})` : ""}`,
+                        "title": "Description",
+                        "style": "text-align: left;"
+                    },
+                    "Notes": {
+                        "visible": false
+                    },
+                };
+
+                renderPaginatedTable(active_order_items, "OrderItems", 10, customCols, null, false);
+
+            }
+
+
+            function Save() {
+
+                const OrderId = document.getElementById("Order_id").value;
+                const OrderDescription = document.getElementById("Order_description").value;
+                const OrderSymbol = document.getElementById("Order_symbol").value;
+                const OrderExchangeRate = parseFloat(document.getElementById("Order_exchange_rate").value);
+
+                var Order = {
+                    Order_id: document.getElementById("Order_id").value,
+                    Description: OrderDescription,
+                    Symbol: OrderSymbol,
+                    Exchange_rate: OrderExchangeRate
+                };
+
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_Orders", Token.Token, "SaveImport", JSON.stringify(Order));
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    if (document.getElementById("check_pending_orders").checked) {
+                        Search(":PENDING");
+
+                    }
+                    else {
+                        Search(":ALL");
+                    }
+
+                    document.getElementById("Order_edit").close();
+
+                });
+
+
+            }
+
+
+            function ConfirmDelete() {
+                const OrderId = document.getElementById("Order_id").value;
+
+                ShowAcceptCancelDialog("Delete Order", "Are you sure you want to delete the Order: " + OrderId + "?",
+                    function () {
+                        Delete(OrderId);
+                    });
+            }
+
+            function Delete(OrderId) {
+
+                var response = sendToAngelPOST(Token.User, "pos_backend/pos_Orders", Token.Token, "Delete", OrderId);
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    OrderId = OrderId.trim().toUpperCase();
+
+                    // Eliminar el renglón de la tabla
+                    const rowToDelete = document.getElementById(OrderId);
+
+                    if (rowToDelete) {
+                        rowToDelete.parentNode.removeChild(rowToDelete);
+                    }
+
+                    ShowDialog("Alert", "Order deleted correctly: " + OrderId);
+                    document.getElementById("dialog_accept").close();
+                    document.getElementById("Order_edit").close();
+
+                    Search(":ALL"); // Refresh the Order list after deletion
+
+                });
+            }
+
+            // Payment methods used in each sale
+            class Payments {
+                id;
+                Sale_id;
+                Account_id;
+                Description;
+                Type;
+                ReferenceType;
+                ReferenceID;
+                DateTime;
+                Amount;
+                Currency_id;
+                exchange_rate;
+            }
+
+            // Payment methods used in each sale
+            class LocalPayments {
+                id;
+                Payment_id;
+                Description;
+                Type;
+                Amount;
+                Currency_id;
+                Exchange_rate;  // Instance of Currency
+            }
+
+            /**
+             * BusinessInfo class, used to store the business information
+             */
+            class BusinessInfo {
+                // Business identifier
+                id;
+                // Business Address
+                Address;
+                // Business Name
+                Name;
+                // Business Phone
+                Phone;
+                // Business Email
+                Email;
+                // Business Website
+                Website;
+                // Business Logo
+                Logo;
+                // Business Slogan
+                Slogan;
+                // Currency ID
+                Currency_id;
+                // Currency Name
+                Currency_name;
+            }
+
+            window.onload = async function () {
+
+                document.getElementById("dialog_button_close").onclick = function () {
+                    document.getElementById("generic_dialog").close();
+                };
+
+                document.getElementById("dialog_button_close1").onclick = function () {
+                    document.getElementById("dialog_accept").close();
+                };
+
+                let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+                response.then(function (query) {
+                    let response_query = JSON.parse(query);
+
+                    if (response_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", response_query.result);
+                    } else {
+                        sessionStorage.setItem('user_groups', response_query.result);
+                    }
+                });
+
+                businessinfo = await GetBusinessInfo();
+                await GetCurrencies();
+
+                translate_menu(language);
+
+                if (document.getElementById("check_pending_orders").checked) {
+                    Search(":PENDING");
+                }
+                else {
+                    Search(":ALL");
+                }
+
+                setInterval(() => {
+
+                    if (document.getElementById("check_refresh").checked == false) {
+                        return;
+                    }
+
+                    if (document.getElementById("check_pending_orders").checked) {
+                        Search(":PENDING");
+                    }
+                    else {
+                        Search(":ALL");
+                    }
+                }, 15000);
+
+                document.getElementById("search_text").focus();
+
+            };
+
+
+        </script>
+
+
+        <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

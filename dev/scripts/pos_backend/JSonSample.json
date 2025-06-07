@@ -1,0 +1,74 @@
+{
+    "Id": "3611ec33-6670-4dcb-aa3b-9bdd5fd3eed3",
+    "DateTime": "2024-10-07 12:54:34",
+    "Receipt_serie": "KIOSKO",
+    "Receipt_number": "6",
+    "Sale_type": "POS",
+    "Currency_id": "USD",
+    "Currency_name": "US DOLAR",
+    "Exchange_rate": 1.0,
+    "Total": 27.999998399999984,
+    "Subtotal": 24.1379296551724,
+    "Consumption_tax": 3.862068744827584,
+    "For_credit": 0,
+    "ReferenceID": "",
+    "ReferenceType": "",
+    "User_id": "admin",
+    "User_name": "Administrator",
+    "Customer_id": "Public",
+    "Customer_name": "General public",
+    "Seller_id": null,
+    "Seller_name": null,
+    "POS_ID": "KIOSKO",
+    "Account_id": "angelsql",
+    "Location_id": null,
+    "Business_data": "KIOSKO POS\nThe best helper for your business\n\n\n\n",
+    "Sale_detail": [
+      {
+        "Id": "20e41d02-2b53-420f-9d4a-3c44cc58bbe4",
+        "Sale_id": null,
+        "Sku_id": "7501199410913",
+        "Description": "123 CON SUAVIZANTE Y JASMIN 900G",
+        "Qty": 1.0,
+        "Price": 24.1379296551724,
+        "Original_price": 24.1379296551724,
+        "Discount": 0.0,
+        "Import": 27.999998399999984,
+        "Cost": 0.0,
+        "Consumption_tax_percentages": 16.0,
+        "Consumption_tax": 3.862068744827584,
+        "Price_with_taxes": 27.999998399999984,
+        "PromotionCode": null,
+        "DateTime": "2024-10-07 12:54:34",
+        "User_id": "admin",
+        "Sku_dictionary_id": null,
+        "Qty_equivalence": 1.0,
+        "Description_equivalence": null,
+        "ClaveProdServ": null,
+        "ClaveUnidad": null,
+        "Classifications": [],
+        "Consumption_taxes": [
+          {
+            "Id": "IVA",
+            "Description": "IVA",
+            "Rate": 16.0,
+            "Type": ""
+          }
+        ]
+      }
+    ],
+    "Payment_methods": [
+      {
+        "Id": "fa3de581-ebba-4c81-b006-1dcda205ec87",
+        "Description": "Cash",
+        "Type": null,
+        "Amount": 28.00,
+        "Currency": {
+          "Id": "USD",
+          "Description": "",
+          "Symbol": "USD",
+          "Exchange_rate": 1.0
+        }
+      }
+    ]
+  }

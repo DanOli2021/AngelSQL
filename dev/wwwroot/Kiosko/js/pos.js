@@ -25,6 +25,7 @@ var payments = undefined;
 var localpayments = undefined;
 var Currency_id = "USD";
 var default_currency = undefined;
+var KioskoParameters = undefined;
 
 function SaveCustomer() {
 
@@ -180,6 +181,30 @@ async function GetDefaultCurrency() {
 
     default_currency = JSON.parse(responce_query.result);
     return default_currency; // Devolver el valor de la moneda predeterminada
+
+}
+
+
+async function GetParameteres() {
+    const query = await sendToAngelPOST(Token.User, "pos_backend/pos_parameters", Token.Token, "GetMany", ":ALL");
+
+    if (query.startsWith("Error:")) {
+        ShowDialog("Alert", query);
+        return "USD"; // Devolver el valor predeterminado en caso de error
+    }
+
+    const responce_query = JSON.parse(query);
+
+    if (responce_query.result.startsWith("Error:")) {
+        ShowDialog("Alert", responce_query.result);
+        return "USD"; // Devolver el valor predeterminado en caso de error
+    }
+
+    if (responce_query.result == "[]") {
+        return "USD"; // Devolver el valor predeterminado si no hay datos
+    }
+
+    return JSON.parse(responce_query.result); 
 
 }
 
@@ -736,8 +761,10 @@ function AddItem(Sku_id) {
             image.src = sku.Image;
             image.style.width = "140px";
             //image.style.height = "120px";
-
+            document.getElementById('btnLogo').style.backgroundColor = "white";
             document.getElementById("sku_description").innerHTML = sku.Description;
+
+            console.log("Image found for SKU: " + sku.id);
 
         }
         else {
@@ -746,7 +773,10 @@ function AddItem(Sku_id) {
             image.style.width = "140px";
             //image.style.height = "120px";
 
+            document.getElementById('btnLogo').style.backgroundColor = "white";
             document.getElementById("sku_description").innerHTML = sku.Description;
+
+            console.log("No image found for SKU: " + sku.id);
 
         }
 
@@ -1167,6 +1197,11 @@ function SaveSale(credit = false) {
             url = window.location.protocol + '//' + window.location.host + "/kiosko/";
         }
 
+        getDominantColor(document.getElementById('sku_image'), function (color) {   
+            document.getElementById('btnLogo').style.backgroundColor = color;
+        });
+
+        document.getElementById("sku_description").innerHTML = "";
         document.getElementById("dialog_sale_confirm").close();
         document.getElementById("my_frame").src = url + `ticket.html?account=${account}&sale_id=${sale_id}`;
         document.getElementById("textSku").focus();
@@ -1407,9 +1442,7 @@ window.onload = async function () {
         SavePaymentMethod();
     });
 
-    const logoImg = document.getElementById('sku_image');
-
-    getDominantColor(logoImg, function (color) {
+    getDominantColor(document.getElementById('sku_image'), function (color) {
         document.getElementById('btnLogo').style.backgroundColor = color;
     });
 

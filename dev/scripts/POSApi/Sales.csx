@@ -77,7 +77,12 @@ public class Sale
     // Total of payments
     public decimal Total_payments { get; set; }
     // Storage identifier, if the sale is in a storage 
-    public string Storage_id { get; set; } 
+    public string Storage_id { get; set; }
+    // The name of Store Branch, if the sale is in a store branch
+     // Store Branch identifier
+    public string StoreBranch { get; set; }
+     // Workstation identifier, if the sale is in a workstation
+    public string WorkStation { get; set; }    
     // If inventory is affected
     public int IsInventoryAffected { get; set; } // If the sale is already in the inventory
     public string Status { get; set; } = "PENDING"; // Sale status, default is PENDING

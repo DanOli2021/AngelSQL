@@ -365,7 +365,7 @@ string SaveImportSkus(AngelApiOperation api, Translations translation)
                 {
                     if (row["Image"].ToString().Contains("base64"))
                     {
-                        string directory = server_db.Prompt($"VAR db_wwwroot", true) + "/images/skus";
+                        string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/skus/{api.account}";
 
                         if (Directory.Exists(directory) == false)
                         {
@@ -379,7 +379,8 @@ string SaveImportSkus(AngelApiOperation api, Translations translation)
                             return "Error: Unable to save image: " + row["sku"].ToString().Trim().ToUpper();
                         }
 
-                        sku.Image = "../images/skus/" + row["sku"].ToString().Trim().ToUpper() + Path.GetExtension(path);
+                        sku.ImageBase64 = row["Image"].ToString();
+                        sku.Image = $"../images/skus/{api.account}/" + row["sku"].ToString().Trim().ToUpper() + Path.GetExtension(path);
                     }
                     else
                     {

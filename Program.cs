@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using Python.Runtime;
 using Renci.SshNet;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;

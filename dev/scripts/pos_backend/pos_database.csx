@@ -127,7 +127,7 @@ private string UpdateDatabase()
     AddParameter("Payment_method", "Cash", true);
     AddParameter("WorkStation", "WorkStation001", true);
     AddParameter("MasterAccount", "Master", true);
-
+    
     Currency currency = new();
     db.CreateTable(currency, "Currency", false, "", true);
 

@@ -97,9 +97,11 @@ string SaveImport(AngelApiOperation api, Translations translation)
                 return "Error: Type is empty in row " + n.ToString();
             }
 
+            string base64Image = "";
+
             if (row["Image"].ToString().Trim().Contains("base64") == true)
             {
-                string directory = server_db.Prompt($"VAR db_wwwroot", true) + "/images/classification";
+                string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/classification/{api.account}";
 
                 if (Directory.Exists(directory) == false)
                 {
@@ -118,9 +120,9 @@ string SaveImport(AngelApiOperation api, Translations translation)
                     row["Image"] = row["Image"].ToString().Split("?t=")[0];
                 }
 
-                row["Image"] = "../images/classification/" + row["classification_id"].ToString().Trim().ToUpper() + Path.GetExtension(path);
+                row["Image"] = $"../images/classification/{api.account}/" + row["classification_id"].ToString().Trim().ToUpper() + Path.GetExtension(path);
 
-                Console.WriteLine("Image saved: " + row["Image"].ToString());
+                base64Image = row["Image"].ToString();
             }
 
             SkuClassification classification = new()
@@ -128,7 +130,8 @@ string SaveImport(AngelApiOperation api, Translations translation)
                 Id = row["classification_id"].ToString().Trim().ToUpper(),
                 Description = row["Description"].ToString(),
                 Type = row["Type"].ToString(),
-                Image = row["Image"].ToString()
+                Image = row["Image"].ToString(),
+                ImageBase64 = base64Image,
             };
 
             classifications.Add(classification);

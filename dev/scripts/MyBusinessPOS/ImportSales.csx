@@ -118,7 +118,7 @@ public string ProcessSales(AngelDB.DB sqlserver_db, DataTable dt_sales)
 
         var pago1 = new Payments
         {
-            id = "Payment1 " + sale.User_id,
+            Id = "Payment1 " + sale.User_id,
             Amount = amount1,
             Currency_id = sale.Currency_id,
             Exchange_rate = sale.Exchange_rate,
@@ -133,7 +133,7 @@ public string ProcessSales(AngelDB.DB sqlserver_db, DataTable dt_sales)
         {
             var pago2 = new Payments
             {
-                id = "Payment2 " + sale.User_id,
+                Id = "Payment2 " + sale.User_id,
                 Amount = amount2,
                 Currency_id = sale.Currency_id,
                 Exchange_rate = sale.Exchange_rate,
@@ -149,7 +149,7 @@ public string ProcessSales(AngelDB.DB sqlserver_db, DataTable dt_sales)
         {
             var pago3 = new Payments
             {
-                id = "Payment3 " + sale.User_id,
+                Id = "Payment3 " + sale.User_id,
                 Amount = amount3,
                 Currency_id = sale.Currency_id,
                 Exchange_rate = sale.Exchange_rate,

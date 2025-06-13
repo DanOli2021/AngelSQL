@@ -68,6 +68,8 @@ public class Sku
     public string Price_code_id { get; set; }
     // Image 
     public string Image { get; set; }
+    // Image in Base64 format
+    public string ImageBase64 { get; set; }
     // List of classifications
     public List<SkuClassification> SkuClassification { get; set; } = [];
     // List of sku dictionaries
@@ -110,6 +112,8 @@ public class SkuClassification
     public string Description { get; set; }
     // Classification identifier as image in the POS
     public string Image { get; set; }
+    // Classification image in Base64 format
+    public string ImageBase64 { get; set; }
 }
 
 

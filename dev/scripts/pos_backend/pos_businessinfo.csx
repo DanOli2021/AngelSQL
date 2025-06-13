@@ -78,7 +78,7 @@ string SaveBusinessInfo(AngelApiOperation api, Translations translation)
     {
         if (bi.Logo.Contains("base64"))
         {
-            string directory = server_db.Prompt($"VAR db_wwwroot", true) + "/images";
+            string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/{api.account}";
 
             if (Directory.Exists(directory) == false)
             {
@@ -92,7 +92,8 @@ string SaveBusinessInfo(AngelApiOperation api, Translations translation)
                 return "Error: Unable to save image";
             }
 
-            bi.Logo = "../images/logo" + Path.GetExtension(path);
+            bi.LogoBase64 = bi.Logo;
+            bi.Logo = $"../images/{api.account}/logo" + Path.GetExtension(path);
 
         }
     }

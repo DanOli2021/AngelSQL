@@ -20,6 +20,8 @@ public class BusinessInfo
     public string Website { get; set; }
     // Business Logo
     public string Logo { get; set; }
+    // Business Logo in Base64 format
+    public string LogoBase64 { get; set; }
     // Business Slogan
     public string Slogan { get; set; }    
 }

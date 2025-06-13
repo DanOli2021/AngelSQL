@@ -109,15 +109,12 @@
 
                 let user_groups = JSON.parse(sessionStorage.getItem("user_groups"));
 
-                console.log(user_groups);
-                console.log(user_groups.groups.split(",").length);
-
                 if( user_groups.groups.split(",").length == 1) {
                     if (user_groups.groups == "CASHIER") {
                         generateButton("pos.html", "images/pos_small.png", "POS", "btn btn-secondary btn-block btn-lg form-control");
                         generateButton("orders.html", "images/Orders_small.png", "Orders", "btn btn-success btn-block btn-lg form-control");
+                        return;
                     }
-                    return;
                 }
 
                 if (findInString(user_groups.groups, "SUPERVISORS")) {

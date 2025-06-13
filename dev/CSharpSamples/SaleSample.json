@@ -34,6 +34,10 @@
             "Number_of_items": 1,
             "Change": 0,
             "Total_payments": 20,
+            "Workstation_id": "WorkStation001",
+            "Payment_status": "paid",
+            "Pending_reason": "",
+            "Reason_code": "",
             "Sale_detail": [
                 {
                     "Id": "a7b2877e-45df-40ec-9d78-8facbfe10e84",

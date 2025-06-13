@@ -24,6 +24,7 @@ api.server_db = server_db;
 return api.OperationType switch
 {
     "PublicUrl" => PublicUrl(),
+    "SystemInfo" => SystenInfo(),
     _ => $"Error: No service found 1 {api.OperationType}",
 };
 
@@ -33,3 +34,7 @@ string PublicUrl()
 }
 
 
+string SystenInfo() 
+{
+    return db.Prompt("SYSTEM INFO", true);
+}

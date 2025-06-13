@@ -157,7 +157,7 @@ string SaveOrder()
     {
         Payments newPayment = new()
         {
-            id = payment.Id,
+            Id = payment.Id,
             Account_id = api.account,
             Sale_id = SaleId,
             Description = payment.Description,

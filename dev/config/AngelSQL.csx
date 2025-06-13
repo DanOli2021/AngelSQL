@@ -48,6 +48,7 @@ string main_url = GetVariable("ANGELSQL_MAINSERVER", "http://localhost:11000, ht
 Dictionary<string, string> parameters = new()
 {
     { "certificate", GetVariable( "ANGELSQL_CERTIFICATE", "Certificate/localhost.pfx" ) },
+    //{ "certificates_list", JsonConvert.SerializeObject(certificates) },
     { "password", GetVariable( "ANGELSQL_CERTIFICATE_PASSWORD", "changeme" ) },
     { "urls", GetVariable( "ANGELSQL_URLS", main_url ) },
     { "cors", GetVariable( "ANGELSQL_CORS", main_url ) },

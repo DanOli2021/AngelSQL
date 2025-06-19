@@ -1340,9 +1340,17 @@ void PutHeader()
         AngelDB.Monitor.ShowLine("Public URL: " + server_db.Prompt("VAR db_public_url"), ConsoleColor.Cyan);
     }
 
-    foreach (string item in app.Urls)
+    try
     {
-        AngelDB.Monitor.ShowLine("Listen on: " + item, ConsoleColor.Yellow);
+        foreach (string item in app.Urls)
+        {
+            AngelDB.Monitor.ShowLine("Listen on: " + item, ConsoleColor.Yellow);
+        }
+
+    }
+    catch (Exception)
+    {
+        throw;
     }
 
     AngelDB.Monitor.ShowLine("APP DIRECTORY: " + app_directory, ConsoleColor.Gray);
@@ -1472,7 +1480,7 @@ void ActivateProxy()
                     string jsProxyNetworkFilePath = System.IO.Path.Combine(app_directory + "/wwwroot", "Proxy_network.js");
                     string jsProxyNetworkContent = File.ReadAllText(jsProxyNetworkFilePath);
 
-                    sb.AppendLine($"var clientKey = '-{angelSQLsass.Account}';");
+                    sb.AppendLine($"var clientKey = '--{angelSQLsass.Account}';");
                     sb.AppendLine();
                     sb.AppendLine("if ( isPrivateNetwork() )");
                     sb.AppendLine("{");
@@ -1562,7 +1570,7 @@ else
 
     app.RunAsync();
 
-    Console.Clear();
+    //Console.Clear();
 
     PutHeader();
 
@@ -1734,6 +1742,22 @@ else
                     prompt_result = server_db.Prompt($"SCRIPT FILE {new_server_account} MESSAGE {JsonConvert.SerializeObject(d)}", true);
                     continue;
 
+                case "create_app":
+
+                    if (d["create_app"] == "null")
+                    {
+                        prompt_result = "Error: App name is required.";
+                        break;
+                    }
+
+                    if (d["files_directory"] == "null")
+                    {
+                        prompt_result = "Error: file directory is required";
+                    }
+
+                    prompt_result = CreateApp(d["create_app"], d["files_directory"]);
+                    break;
+
                 default:
 
                     prompt_result = "";
@@ -1849,3 +1873,36 @@ else
 
 
 
+string CreateApp( string app_name, string files_directory = "")
+{
+
+    if (string.IsNullOrEmpty(app_name))
+    {
+        return "Error: App name is required.";
+    }
+    if (app_name.Contains(" "))
+    {
+        return "Error: App name cannot contain spaces.";
+    }
+    if (app_name.Length < 3)
+    {
+        return "Error: App name must be at least 3 characters long.";
+    }
+    if (app_name.Length > 50)
+    {
+        return "Error: App name cannot exceed 50 characters.";
+    }
+
+    var app = new
+    {
+        App_name = app_name,
+        Files_directory = files_directory,
+        Main_directory = app_directory,
+    };
+
+    string new_app_script = app_directory + "/config/CreateApp.csx";
+
+    string result = server_db.Prompt($"SCRIPT FILE {new_app_script} MESSAGE " + JsonConvert.SerializeObject(app), true);
+    return result;
+
+}

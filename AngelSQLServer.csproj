@@ -45,6 +45,9 @@
 		<None Update="dev\config\AngelSQL.csx">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="dev\config\CreateApp.csx">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="dev\config\ServerAccounts.csx">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

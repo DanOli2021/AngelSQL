@@ -17,6 +17,7 @@
                 { @"ADD TO WHITE LIST", @"ADD TO WHITE LIST#free;COMMENT#freeoptional" },
                 { @"REMOVE FROM WHITE LIST", @"REMOVE FROM WHITE LIST#free" },
                 { @"CREATE SERVER ACCOUNT", @"CREATE SERVER ACCOUNT#free;USER#free;PASSWORD#free;DATA DIRECTORY#freeoptional" },
+                { @"CREATE APP", @"CREATE APP#free;FILES DIRECTORY#freeoptional" },
             };
 
             return commands;

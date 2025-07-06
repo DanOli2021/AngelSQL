@@ -149,7 +149,7 @@ string GetMany(AngelApiOperation api, Translations translation)
 
     if (result.StartsWith("Error:"))
     {
-        return result;
+        return result + "(1)";
     }
 
     string data = api.DataMessage.ToString().Trim();

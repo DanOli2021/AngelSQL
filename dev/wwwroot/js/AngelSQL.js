@@ -21,7 +21,7 @@ class AngelSQL {
         return this.angelQuery.token;
     }
 
-    async start() {
+    async Start() {
         const response = await fetch(this.url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json; charset=UTF-8' },
@@ -34,7 +34,7 @@ class AngelSQL {
 
     }
 
-    async prompt(command) {
+    async Prompt(command) {
         this.angelQuery.type = 'query';
         this.angelQuery.command = command;
         const response = await fetch(this.url, {
@@ -45,4 +45,17 @@ class AngelSQL {
         const angelResponse = await response.json();
         return angelResponse.result;
     }
+    
+    async Server(command) {
+        this.angelQuery.type = 'server_command';
+        this.angelQuery.command = command;
+        const response = await fetch(this.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.angelQuery),
+        });
+        const angelResponse = await response.json();
+        return angelResponse.result;
+    }
+
 }

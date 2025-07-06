@@ -1,4 +1,4 @@
-﻿namespace AngelSQL
+﻿namespace AngelSQLServer
 {
     public class AngelSQLCommands
     {
@@ -16,8 +16,16 @@
                 { @"REMOVE FROM BLACK LIST", @"REMOVE FROM BLACK LIST#free" },
                 { @"ADD TO WHITE LIST", @"ADD TO WHITE LIST#free;COMMENT#freeoptional" },
                 { @"REMOVE FROM WHITE LIST", @"REMOVE FROM WHITE LIST#free" },
-                { @"CREATE SERVER ACCOUNT", @"CREATE SERVER ACCOUNT#free;USER#free;PASSWORD#free;DATA DIRECTORY#freeoptional" },
-                { @"CREATE APP", @"CREATE APP#free;FILES DIRECTORY#freeoptional" },
+                { @"CREATE SERVER ACCOUNT", @"CREATE SERVER ACCOUNT#free;USER#free;PASSWORD#free;DATA DIRECTORY#freeoptional;AS DEFAULT#optional" },
+                { @"CREATE APP", @"CREATE APP#free; FILES DIRECTORY#freeoptional" },
+                { @"QUIT", @"QUIT#free" },
+                { @"PROXY", @"PROXY#free" },
+                { @"CLEAR", @"CLEAR#free" },
+                { @"LISTEN ON", @"LISTEN ON#free" },
+                { @"SHOW COMMANDS", @"SHOW COMMANDS#free" },
+                { @"DB", @"DB#free" },
+                { @"SERVER DB", @"SERVER DB#free" },
+                { @"CHANGE SEVER MASTER", @"CHANGE SEVER MASTER#free;TO USER#free;PASSWORD#free" },
             };
 
             return commands;

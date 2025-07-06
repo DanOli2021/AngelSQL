@@ -27,8 +27,7 @@ function isPrivateNetwork() {
     return false;
 }
 
-
-var clientKey = '--mybusinesspos';
+var clientKey = 'none';
 
 if ( isPrivateNetwork() )
 {

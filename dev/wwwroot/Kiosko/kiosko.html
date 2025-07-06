@@ -295,6 +295,29 @@
     </div>
 
 
+    <!-- Modal de Detalles del Producto -->
+    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailTitle">Detalles del Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="detailImage" class="img-fluid mb-3" style="max-height: 300px; object-fit: contain;" />
+                    <h5 id="detailDescription"></h5>
+                    <p><strong id="detailPrice"></strong></p>
+                    <p class="text-muted" id="detailUnit"></p>
+                    <p id="detailNotes"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="detailAddBtn">Agregar al carrito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -540,7 +563,10 @@
                     ${prod.Image ? `<img src="${prod.Image}" class="w-100 mb-2" style="max-height:150px;object-fit:contain;">` : ""}
                     <h5>${prod.Description}</h5>
                     <p><strong>$${prod.Price.toFixed(2)}</strong></p>
+                    <div class="d-flex justify-content-between">
+                    <button class="btn btn-outline-primary btn-sm" onclick='showProductDetails(${JSON.stringify(prod)})'>Ver detalles</button>
                     <button class="btn btn-success btn-sm" onclick="addToCart('${prod.id}')">${t("addToCart")}</button>
+                    </div>
                 </div>`;
                 container.appendChild(card);
             });
@@ -852,7 +878,7 @@
 
             if (!taskGuid) return;
 
-            var response = await  getResult(taskGuid);
+            var response = await getResult(taskGuid);
 
             if (response.startsWith("Error:")) {
                 ShowDialog("Alert", "Error checking task status: " + response);
@@ -862,7 +888,7 @@
 
             var query = JSON.parse(response);
 
-            if ( query.type == "DELAYED" ) {
+            if (query.type == "DELAYED") {
                 submitBtn.innerText = query.result;
                 return; // Task is still processing, do nothing
             }
@@ -986,6 +1012,24 @@
             modal.hide();
         }
 
+        function showProductDetails(prod) {
+            document.getElementById("detailTitle").textContent = prod.Description;
+            document.getElementById("detailDescription").textContent = prod.Description;
+            document.getElementById("detailPrice").textContent = `$${prod.Price.toFixed(2)}`;
+            document.getElementById("detailUnit").textContent = prod.Unit || "";
+            document.getElementById("detailNotes").textContent = prod.Notes || "";
+            document.getElementById("detailImage").src = prod.Image || "";
+
+            const addBtn = document.getElementById("detailAddBtn");
+            addBtn.onclick = function () {
+                addToCart(prod.id);
+                bootstrap.Modal.getInstance(document.getElementById("productDetailModal")).hide();
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById("productDetailModal"));
+            modal.show();
+        }
+
 
 
         const translations = {
@@ -1081,9 +1125,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         var account = urlParams.get('account');
 
-        if (account)
-        {
-           username = "any@" + account;
+        if (account) {
+            username = "any@" + account;
         }
 
         updateLangButton(); // nuevo

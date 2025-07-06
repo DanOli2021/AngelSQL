@@ -18,6 +18,7 @@
 #load "..\POSApi\Series.csx"
 #load "..\POSApi\Sku.csx"
 #load "..\POSApi\Parameters.csx"
+#load "..\POSApi\Chat.csx"
 
 using System;
 using Newtonsoft.Json;
@@ -187,6 +188,21 @@ private string UpdateDatabase()
 
     SkuChange skuChange = new();
     db.CreateTable(skuChange, "SkuChange", false, "", true);
+
+    Chat chat = new();
+    db.CreateTable(chat, "Chat", false, "", true);  
+
+    ContactChat contactChat = new();
+    db.CreateTable(contactChat, "ContactChat", false, "", true);
+
+    ContactMessage contactMessage = new();
+    db.CreateTable(contactMessage, "ContactMessage", false, "", true);
+
+    ChatGroup chatGroup = new();
+    db.CreateTable(chatGroup, "ChatGroup", false, "", true);
+
+    ChatGroupMessage GroupChatMessage = new();
+    db.CreateTable(GroupChatMessage, "GroupChatMessage", false, "", true);
 
     return "Ok. Database updated successfully.";
 

@@ -204,7 +204,7 @@ async function GetParameteres() {
         return "USD"; // Devolver el valor predeterminado si no hay datos
     }
 
-    return JSON.parse(responce_query.result); 
+    return JSON.parse(responce_query.result);
 
 }
 
@@ -1197,7 +1197,7 @@ function SaveSale(credit = false) {
             url = window.location.protocol + '//' + window.location.host + "/kiosko/";
         }
 
-        getDominantColor(document.getElementById('sku_image'), function (color) {   
+        getDominantColor(document.getElementById('sku_image'), function (color) {
             document.getElementById('btnLogo').style.backgroundColor = color;
         });
 
@@ -1215,12 +1215,25 @@ function SaveSale(credit = false) {
 
 window.onload = async function () {
 
-    if (sessionStorage.getItem("Token") == null) {
+    let Token = null;
+    const saved = localStorage.getItem('Token');
+
+    if (saved) {
+        const data = JSON.parse(saved);
+        if (Date.now() < data.expires) {
+            Token = data;
+            sessionStorage.setItem("Token", JSON.stringify(Token));
+        } else {
+            localStorage.removeItem("Token");
+            window.location.href = "index.html";
+        }
+    } else {
         window.location.href = "index.html";
-        return;
     }
 
+    const language = getSelectedLanguage();
     language = getSelectedLanguage();
+    
     Token = JSON.parse(sessionStorage.getItem("Token"));
 
     textSku = document.getElementById("textSku");

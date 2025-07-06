@@ -59,6 +59,8 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
 
     if (d.User == null) return "Error: User is required";
 
+    d.User = d.User.ToString().Trim().ToLower();;
+
     d.Pin = d.Pin.ToString().Trim();
 
     string result = server_db.Prompt($"SELECT * FROM pins WHERE pin_number = '{d.Pin}' AND status = 'pending'");
@@ -133,6 +135,8 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
     {
         result = db.Prompt($"DB USER db PASSWORD db DATA DIRECTORY {d.DataDirectory}");
     }
+
+    Console.WriteLine($"Creating account {d.AccountName} with user {d.User} and password {d.Password} data directory {d.DataDirectory}");
 
     if (result.StartsWith("Error:"))
     {
@@ -342,7 +346,7 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
     Tokens t = new()
     {
         Id = token,
-        User = "master",
+        User = d.User.ToString(),
         ExpiryTime = DateTime.Now.AddYears(20).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fffffff"),
         CreationTime = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fffffff")
     };

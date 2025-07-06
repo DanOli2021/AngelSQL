@@ -15,17 +15,28 @@
 
     <script>
 
-        if (sessionStorage.getItem("Token") == null) {
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
             window.location.href = "index.html";
         }
 
         const language = getSelectedLanguage();
-            const Token = JSON.parse(sessionStorage.getItem("Token"));  
 
     </script>
 
     <link rel="icon" href="./images/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon">                                                                                              
+    <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon">
 </head>
 
 <body>
@@ -49,7 +60,8 @@
                 style="margin-top: 20px;width:200px">
 
             <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin</h1>
-            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for small businesses</h1>
+            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for
+                small businesses</h1>
 
             <div class="col-sm-12" id="buttonszone">
             </div>
@@ -109,7 +121,7 @@
 
                 let user_groups = JSON.parse(sessionStorage.getItem("user_groups"));
 
-                if( user_groups.groups.split(",").length == 1) {
+                if (user_groups.groups.split(",").length == 1) {
                     if (user_groups.groups == "CASHIER") {
                         generateButton("pos.html", "images/pos_small.png", "POS", "btn btn-secondary btn-block btn-lg form-control");
                         generateButton("orders.html", "images/Orders_small.png", "Orders", "btn btn-success btn-block btn-lg form-control");
@@ -124,6 +136,7 @@
                     generateButton("purchases.html", "images/purchases_small.png", "Purchases", "btn btn-success btn-block btn-lg form-control");
                     generateButton("reports.html", "images/reports_small.png", "Reports", "btn btn-secondary btn-block btn-lg form-control");
                     generateButton("datascience.html", "images/datascience_small.png", "Data Science", "btn btn-success btn-block btn-lg form-control");
+                    generateButton("tools.html", "images/Kiosko_tools_small.png", "Tools", "btn btn-secondary btn-block btn-lg form-control");
                 }
             }
         }

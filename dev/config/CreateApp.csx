@@ -41,7 +41,7 @@ if (File.Exists(configFile))
 }
 else
 {
-    string config_result = ScriptGenerator.GenerateAngelSQLScriptFile();
+    string config_result = ScriptGenerator.GenerateAngelSQLScriptFile(App app);
     File.WriteAllText(configFile, config_result);
     Console.WriteLine("Created config file: " + configFile);
 }
@@ -110,7 +110,7 @@ public static class FileUtils
 
 public static class ScriptGenerator
 {
-    public static string GenerateAngelSQLScriptFile()
+    public static string GenerateAngelSQLScriptFile(App app)
     {
         int freePort = AngelDB.PortScanner.GetFreePort(); // 👈 Obtenemos el puerto libre
 
@@ -160,7 +160,7 @@ Dictionary<string, string> parameters = new()
     {{ ""cors"", main_url }},
     {{ ""master_user"", ""db"" }},
     {{ ""master_password"", ""db"" }},
-    {{ ""data_directory"", """" }},
+    {{ ""data_directory"", ""{ app.Files_directory }/Data"" }},
     {{ ""account"", ""account1"" }},
     {{ ""account_user"", ""angelsql"" }},
     {{ ""account_password"", ""angelsql123"" }},
@@ -175,7 +175,7 @@ Dictionary<string, string> parameters = new()
     {{ ""use_proxy"", ""yes"" }},
     {{ ""proxy_account"", """" }},
     {{ ""proxy_password"", """" }},
-    {{ ""public_account"", ""angelsql"" }},
+    {{ ""public_account"", """" }},
     {{ ""gpt_key"", """" }},
     {{ ""save_activity"", ""false"" }},
     {{ ""use_black_list"", ""false"" }},
@@ -183,7 +183,7 @@ Dictionary<string, string> parameters = new()
     {{ ""service_delay"", ""30000"" }},
 }};
 
-string local_url = ""http://localhost:11000"";
+string local_url = main_url.Split("","")[0];;
 
 Dictionary<string, string> servers = new Dictionary<string, string>
 {{

@@ -1,11 +1,13 @@
 async function sendPOST(data) {
 
-  if (typeof clientKey !== 'undefined' && clientKey) {
-     url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
-  }
-  else {
-     url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
-  }    
+  // if (typeof clientKey !== 'undefined' && clientKey) {
+  //    url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
+  // }
+  // else {
+  //    url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
+  // }    
+
+  url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
 
   const response = await fetch(url, {
     method: 'POST',
@@ -96,7 +98,7 @@ async function GetPins(user, token, InitialDate, FinalDate) {
   return sendToAngelPOST(user, "tokens/admintokens", token, "GetPins", { InitialDate: InitialDate, FinalDate: FinalDate });
 }
 
-async function GetPinsFromUser( user, token ) {
+async function GetPinsFromUser(user, token) {
   return sendToAngelPOST(user, "tokens/admintokens", token, "GetPinsFromUser", {});
 }
 
@@ -267,8 +269,7 @@ function saveSelectedLanguage(language) {
 }
 
 
-function SaveLanguage(language) 
-{ 
+function SaveLanguage(language) {
   saveSelectedLanguage(language);
   window.location.reload();
 }
@@ -279,13 +280,13 @@ function getSelectedLanguage() {
   var decodedCookie = decodeURIComponent(document.cookie);
   var ca = decodedCookie.split(';');
   for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) === ' ') {
-          c = c.substring(1);
-      }
-      if (c.indexOf(name) === 0) {
-          return c.substring(name.length, c.length);
-      }
+    var c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
   }
   return "";
 }
@@ -303,6 +304,6 @@ function findInString(stringToSearch, stringToFind) {
       break;
     }
   }
-  
+
   return find;
 }

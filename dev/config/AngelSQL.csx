@@ -55,9 +55,6 @@ Dictionary<string, string> parameters = new()
     { "master_user", GetVariable( "ANGELSQL_MASTER_USER", "db" ) },
     { "master_password", GetVariable( "ANGELSQL_MASTER_PASSWORD", "db" ) },
     { "data_directory", GetVariable( "ANGELSQL_DATA_DIRECTORY", "" ) },
-    { "account", GetVariable( "ANGELSQL_ACCOUNT", "account1" ) },
-    { "account_user", GetVariable( "ANGELSQL_ACCOUNT_USER", "angelsql" ) },
-    { "account_password", GetVariable( "ANGELSQL_ACCOUNT_PASSWORD", "angelsql123" ) },
     { "database", GetVariable( "ANGELSQL_DATABASE", "database1" ) },
     { "request_timeout", GetVariable( "ANGELSQL_REQUEST_TIMEOUT", "4" ) },
     { "accounts_directory", GetVariable( "ANGELSQL_ACCOUNTS_DIRECTORY", "" ) },
@@ -77,7 +74,7 @@ Dictionary<string, string> parameters = new()
     { "service_delay", "30000" },
 };
 
-string local_url = "http://localhost:11000";
+string local_url = main_url.Split(",")[0];
 
 Dictionary<string, string> servers = new Dictionary<string, string>
 {

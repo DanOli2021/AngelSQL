@@ -142,10 +142,11 @@ async function SendFile(user, api_name, token, OperationType, file, dataMessage)
 async function sendPOST(data) {
 
 
-    if (typeof clientKey !== 'undefined' && clientKey) {
-        url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
+    if (typeof clientKey !== 'undefined' && clientKey != "none" && clientKey) {
+         url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
     }
-    else {
+    else 
+    {
         url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
     }
 
@@ -260,6 +261,40 @@ function ShowDialog(title, message) {
     document.getElementById('generic_dialog_message').innerText = '⚠️' + message;
     document.getElementById('generic_dialog').showModal();
 }
+
+function showDialog(title, message) {
+  // Elimina modales anteriores si existen
+  const existingModal = document.getElementById('genericModal');
+  if (existingModal) existingModal.remove();
+
+  const modalHtml = `
+    <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content rounded-4 shadow">
+          <div class="modal-header">
+            <h5 class="modal-title" id="genericModalLabel">${title}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>${message}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Inyectar al body
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Mostrar el modal
+  const myModal = new bootstrap.Modal(document.getElementById('genericModal'));
+  myModal.show();
+}
+
+
 
 function CloseDialog() {
     document.getElementById('generic_dialog').close();
@@ -729,3 +764,6 @@ function getDominantColor(imgElement, callback, borderSize = 10) {
     const finalColor = `rgb(${dominantColor.r}, ${dominantColor.g}, ${dominantColor.b})`;
     callback(finalColor);
 }
+
+
+

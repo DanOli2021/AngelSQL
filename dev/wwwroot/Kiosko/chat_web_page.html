@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Contact Chat)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <style>
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+
+    <script>
+
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+
+    </script>
+
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row col-12" style="margin-top: 10px;">
+            <!-- Botón de logout -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_log_out">Log Out</span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de sales -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="tools.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Tools</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center">
+            <img src="./images/Kiosco_chat_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Contact
+                Chat)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+
+        </div>
+
+        <!-- Date range for the report -->
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-4">
+                    <label for="start_date" class="form-label">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <label for="end_date" class="form-label">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control">
+                </div>
+                <div class="col-sm-4">
+                    <button class="btn btn-primary form-control" id="btnGetSales"
+                        style="margin-top: 30px; margin-right: 10px;" onclick="GetChats();">Get Chats</button>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" checked value="" id="chek_onlypending"
+                        name="chek_onlypending">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Only include chats waiting for response
+                    </label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-sm-12">
+                    <input type="text" id="search_text" class="form-control" placeholder="Search..."
+                        style="width: 100%; margin-bottom: 10px;">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row col-12" style="margin-top: 10px;">
+            <div class="col-4">
+                <div id="tableContainer"></div>
+            </div>
+            <div class="col-8">
+                <div id="tableChat" style="overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="myDialog">
+        <div class="form-group">
+            <h1 id="dialogTittle" class="form-group">Title</h1>
+            <h3 id="dialogMessage" class="form-group">Message</h3>
+            <button id="closeButton" class="btn btn-warning btn-lg form-control">Close</button>
+        </div>
+    </dialog>
+
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+
+    <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-body p-0">
+                    <img id="zoomedImage" src="#" class="img-fluid w-100 rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+
+        var chat_id = null; // Variable para almacenar el ID del chat actual
+        let Timestamp = null;
+        let chat_interval = null;
+
+        // Función para inicializar las fechas en los campos de fecha
+        function initializeDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const currentDate = `${year}-${month}-${day}`;
+            document.getElementById('start_date').value = "2025-01-01"; // Set to a default value (e.g., 2025-01-01)
+            document.getElementById('end_date').value = currentDate;
+        }
+
+        function GetChats() {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+
+            if (startDate === "" || endDate === "") {
+                ShowDialog("Error", "Please select both start and end dates.");
+                return;
+            }
+
+            var ChatFilter = {
+                "Start_date": startDate,
+                "End_date": endDate,
+                "Search_text": document.getElementById("search_text").value.trim(),
+                "OnlyPending": document.getElementById("chek_onlypending").checked,
+            };
+
+            var response = sendToAngelPOST(Token.User, "chat/pos_chat", Token.Token, "GetChats", ChatFilter);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                if (responce_query.result == "[]") {
+                    document.getElementById("tableContainer").innerHTML = "<p>No chats found for the selected date range.</p>";
+                    return;
+                }
+
+                const jsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value, row) => HtmlFromStatus(row["Status"], row["Status"] + `<br /><span>${convertirAngelSQLUtcALocal(row["timestamp"], false) + "<br />" + row["Phone"] + "<br />" + row["Email"] + "<br />" + row["Kiosko_user_id"]}</span>`),
+                        "onclick": (val, row) => OpenChat(val),
+                        "style": "color: blue; cursor: pointer"
+                    },
+                    "Account_id":
+                    {
+                        "visible": false
+                    },
+                    "PartitionKey":
+                    {
+                        "visible": false
+                    },
+                    "Kiosko_user_id":
+                    {
+                        "visible": false
+                    },
+                    "timestamp":
+                    {
+                        "visible": false,
+                    },
+                    "Phone":
+                    {
+                        "visible": false,
+                    },
+                    "Email":
+                    {
+                        "visible": false
+                    },
+                    "Message_text":
+                    {
+                        "visible": false,
+                    },
+                    "Status":
+                    {
+                        "visible": false,
+                    },
+                    "Source":
+                    {
+                        "visible": false,
+                    },
+                };
+
+                renderPaginatedTable(jsonData, "tableContainer", 7, customCols);
+
+            });
+
+        }
+
+
+        function HtmlFromStatus(status, Message = "") {
+
+            let main_message = "";
+
+            if (Message !== "") {
+                main_message = Message;
+            }
+            else {
+                main_message = status;
+            }
+
+            switch (status) {
+                case "Waiting":
+                    return `<span class="badge bg-warning text-dark" style="width: 100%;"> ${main_message}</span>`;
+                case "Answered":
+                    return `<span class="badge bg-success" style="width: 100%;"> ${main_message}</span>`;
+                case "Closed":
+                    return `<span class="badge bg-secondary" style="width: 100%;"> ${main_message}</span>`;
+                default:
+                    return `<span class="badge bg-danger" style="width: 100%;"> ${main_message}</span>`;
+            }
+        }
+
+        function convertirAngelSQLUtcALocal(fechaUtcAngel, includeMilliseconds = true) {
+            // Recortamos a los primeros 23 caracteres y formateamos para que Date lo entienda
+            const isoFormat = fechaUtcAngel.substring(0, 23).replace(" ", "T") + "Z";
+
+            // Creamos el objeto Date en UTC
+            const fechaUtc = new Date(isoFormat);
+
+            // Obtenemos los componentes locales
+            const pad = (n, z = 2) => n.toString().padStart(z, '0');
+
+            const año = fechaUtc.getFullYear();
+            const mes = pad(fechaUtc.getMonth() + 1);
+            const dia = pad(fechaUtc.getDate());
+            const horas = pad(fechaUtc.getHours());
+            const minutos = pad(fechaUtc.getMinutes());
+            const segundos = pad(fechaUtc.getSeconds());
+            const milisegundos = pad(fechaUtc.getMilliseconds(), 3) + '0000'; // Para que tenga 7 dígitos            
+
+            if (!includeMilliseconds) {
+                return `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
+            }
+
+            return `${año}-${mes}-${dia} ${horas}:${minutos}:${segundos}.${milisegundos}`;
+        }
+
+
+        async function OpenChat(main_chat_id) {
+
+            chat_id = main_chat_id; // Guardar el ID del chat actual
+            Timestamp = null;
+
+            clearInterval(chat_interval); // Detener el intervalo anterior si existe
+
+            // Spinner mientras carga
+            document.getElementById("tableChat").innerHTML = `
+            <div class="border-bottom pb-2 mb-3">
+                <h5><strong>Tel:</strong> ...</h5>
+                <h5><strong>Email:</strong> ...</h5>
+                <p><strong>Inicio:</strong> ...</p>
+            </div>
+                <div id="chatMessages" style="height: 500px; overflow-y: auto; display: flex; flex-direction: column; align-items: stretch;">
+                    <div class="spinner-border text-primary mt-5" role="status"><span class="visually-hidden">Cargando...</span></div>
+                </div>
+            <div id="replyBoxContainer" class="mt-4">Cargando...</div>
+            `;
+
+            // Petición real
+            const chat = {
+                "Chat_id": chat_id,
+                "Timestamp": null
+            };
+
+            const response = await sendToAngelPOST(Token.User, "Chat/pos_chat", Token.Token, "GetChat", chat);
+
+            if (!response || response.startsWith("Error:")) return console.error("Error:", response);
+
+            const json = JSON.parse(response);
+            if (json.result.startsWith("Error:")) return console.error("Error:", json.result);
+
+            const data = JSON.parse(json.result);
+
+            // Header
+            document.querySelector("#tableChat .border-bottom").innerHTML = `
+                <h5><strong>Tel:</strong> ${data.Phone}</h5>
+                <h5><strong>Email:</strong> ${data.Email}</h5>
+                <p><strong>Inicio:</strong> ${convertirAngelSQLUtcALocal(data.Timestamp, false)}</p>
+            `;
+
+            // Mensajes
+            //const reversedMessages = [...data.Messages].reverse();
+            const reversedMessages = [...data.Messages];
+
+            Timestamp = null; // Reiniciar Timestamp
+
+            reversedMessages.forEach(msg => {
+                if (msg.Timestamp) {
+                    if (!Timestamp || msg.Timestamp > Timestamp) {
+                        Timestamp = msg.Timestamp;
+                    }
+                }
+            });
+
+            verifyChats();
+
+            const chatMessages = reversedMessages.map(msg => {
+                // Actualiza Timestamp global si es mayor
+                if (!Timestamp || msg.Timestamp > Timestamp) {
+                    Timestamp = msg.Timestamp;
+                }
+
+                const isUser = !(msg.Kiosko_user_id && msg.Kiosko_user_id !== '');
+                const align = isUser ? 'left' : 'right';
+                const bgColor = isUser ? '#c4d4e3' : '#0d6efd';
+                const textColor = isUser ? '#000' : '#fff';
+                const localTime = convertirAngelSQLUtcALocal(msg.Timestamp, false);
+                const imageHtml = msg.Image_data
+                    ? `<img src="${msg.Image_data}" class="img-fluid rounded mb-2" style="max-height:150px; cursor: zoom-in;" onclick="zoomImage('${msg.Image_data}')" /><br>`
+                    : '';
+
+                return `
+                <table style="width: 100%; margin-bottom: 10px;">
+                    <tr>
+                        <td style="text-align: ${align};">
+                            <div style="
+                                display: inline-block;
+                                background: ${bgColor};
+                                color: ${textColor};
+                                padding: 12px 16px;
+                                border-radius: 18px;
+                                max-width: 75%;
+                                word-wrap: break-word;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                font-family: 'Segoe UI', sans-serif;
+                                animation: fadeIn 0.3s ease-in-out;
+                                ">
+                                ${imageHtml}
+                                <div style="white-space: pre-wrap;">${linkify(msg.Message_text)}</div>
+                                <div style="font-size: 0.75em;" class="text-light mt-1" style="color: #ccc;">${msg.Kiosko_user_id || 'User'}</div>
+                                <div style="font-size: 0.75em;" class="text-light mt-1" style="color: #ccc;">${localTime}</div>                                    
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            `;
+            }).join('');
+            const chatContainer = document.getElementById("chatMessages");
+            chatContainer.innerHTML = chatMessages;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+
+            // Caja de respuesta
+            const replyHtml = `
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <label class="btn btn-outline-secondary btn-sm m-0" title="Adjuntar imagen">
+                        📸<input type="file" id="operatorImageUpload" accept="image/*" hidden />
+                    </label>
+                    <button id="operatorEmojiButton" class="btn btn-outline-secondary btn-sm" type="button" title="Emojis">😊</button>
+                    <div id="operatorEmojiPicker" class="position-relative bg-white border rounded p-2 shadow-sm d-none" style="z-index: 1000; max-width: 300px; overflow: auto;"></div>
+                </div>
+
+                <div id="operatorImagePreviewContainer" class="mb-2 d-none">
+                    <img id="operatorImagePreview" src="#" alt="Previsualización" class="img-fluid rounded" style="max-height: 150px;">
+                    <button class="btn btn-sm btn-danger mt-1" onclick="removeOperatorImage()">Remover</button>
+                </div>
+
+                <textarea id="replyMessage" class="form-control mb-2" rows="3" placeholder="Escribe tu respuesta..."></textarea>
+
+                <button class="btn btn-success btn-sm w-100" id="sendReplyBtn" onclick="SendChatReply('${chat_id}')">Send</button>
+                <button class="btn btn-primary btn-sm w-100 mt-2" onclick="CopyChatUrl()">Copy Chat URL</button>
+                <button class="btn btn-danger btn-sm w-100 mt-2" onclick="CloseChat('${chat_id}')">Close chat</button>
+            `;
+
+            document.getElementById("replyBoxContainer").innerHTML = replyHtml;
+
+            // Eventos (emoji picker, imagenes, enter, etc.)
+            setTimeout(() => {
+                const emojiMap = window.emojiMap || {
+                    ':smile:': '😄', ':thumbsup:': '👍', ':fire:': '🔥', ':tada:': '🎉', ':rocket:': '🚀',
+                    ':clap:': '👏', ':heart:': '❤️', ':sunglasses:': '😎', ':ok_hand:': '👌', ':pray:': '🙏'
+                };
+
+                const emojiBtn = document.getElementById("operatorEmojiButton");
+                const emojiPicker = document.getElementById("operatorEmojiPicker");
+                const replyInput = document.getElementById("replyMessage");
+
+                emojiBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    emojiPicker.classList.toggle("d-none");
+                    emojiPicker.innerHTML = "";
+                    for (const shortcut in emojiMap) {
+                        const span = document.createElement("span");
+                        span.textContent = emojiMap[shortcut];
+                        span.style.cursor = 'pointer';
+                        span.style.margin = '3px';
+                        span.onclick = () => {
+                            replyInput.value += emojiMap[shortcut];
+                            emojiPicker.classList.add("d-none");
+                            replyInput.focus();
+                        };
+                        emojiPicker.appendChild(span);
+                    }
+                });
+
+                document.addEventListener("click", function (event) {
+                    if (!emojiPicker.contains(event.target) && !emojiBtn.contains(event.target)) {
+                        emojiPicker.classList.add("d-none");
+                    }
+                });
+
+                document.getElementById("operatorImageUpload").addEventListener("change", function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            window.uploadedOperatorImage = e.target.result;
+                            const preview = document.getElementById("operatorImagePreview");
+                            preview.src = e.target.result;
+                            document.getElementById("operatorImagePreviewContainer").classList.remove("d-none");
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                replyInput.addEventListener("paste", function (event) {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf("image") !== -1) {
+                            const file = items[i].getAsFile();
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                const img = new Image();
+                                img.onload = function () {
+                                    const canvas = document.createElement("canvas");
+                                    canvas.width = img.width;
+                                    canvas.height = img.height;
+                                    const ctx = canvas.getContext("2d");
+                                    ctx.drawImage(img, 0, 0);
+
+                                    // Aquí se convierte a JPG (calidad 0.8)
+                                    const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+
+                                    window.uploadedOperatorImage = jpgDataUrl;
+
+                                    const preview = document.getElementById("operatorImagePreview");
+                                    preview.src = jpgDataUrl;
+                                    document.getElementById("operatorImagePreviewContainer").classList.remove("d-none");
+                                };
+                                img.src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                            event.preventDefault();
+                            break;
+                        }
+                    }
+                });
+
+                replyInput.focus();
+                replyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                replyInput.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        document.getElementById("sendReplyBtn").click();
+                    }
+                });
+            }, 200);
+        }
+
+
+        function CopyChatUrl() {
+            if (!chat_id) {
+                ShowDialog("Error", "No chat selected.");
+                return;
+            }
+
+            const baseUrl = window.location.href;
+            const chatUrl = `${baseUrl}?chat_id=${chat_id}`;
+
+            navigator.clipboard.writeText(chatUrl).then(() => {
+                ShowDialog("Success", "Chat URL copied to clipboard.");
+            }).catch(err => {
+                ShowDialog("Error", "Failed to copy chat URL: " + err);
+            });
+        }
+
+        function CloseChat(chat_id) {
+
+            let response = sendToAngelPOST(Token.User, "Chat/pos_chat", Token.Token, "CloseChat", { Chat_id: chat_id });
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert 1", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert 2", responce_query.result);
+                    return;
+                }
+
+                ShowDialog("Success", "Chat closed successfully.");
+                GetChats(); // Refresh the chat list
+            });
+
+        }
+
+        function zoomImage(src) {
+            const modalImg = document.getElementById("zoomedImage");
+            modalImg.src = src;
+            const modal = new bootstrap.Modal(document.getElementById("imageZoomModal"));
+            modal.show();
+        }
+
+        function linkify(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, url => `<a href="${url}" target="_blank" style="color: #25D366; text-decoration: underline;">${url}</a>`);
+        }
+
+        function removeOperatorImage() {
+            window.uploadedOperatorImage = null;
+            const preview = document.getElementById("operatorImagePreview");
+            if (preview) preview.src = "";
+            const container = document.getElementById("operatorImagePreviewContainer");
+            if (container) container.classList.add("d-none");
+        }
+
+        async function SendChatReply(chat_id) {
+            const replyInput = document.getElementById("replyMessage");
+            const messageText = replyInput.value.trim();
+            const imageData = window.uploadedOperatorImage || null;
+
+            const sendBtn = document.getElementById("sendReplyBtn");
+
+            if (!messageText && !imageData) return;
+
+            // Desactiva botón y muestra spinner
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...`;
+
+            const message = {
+                Chat_id: chat_id,
+                Kiosko_user_id: Token.User,
+                Message_text: messageText,
+                Image_data: imageData
+            };
+
+            const response = await sendToAngelPOST(Token.User, "Chat/pos_chat", Token.Token, "InsertKioskoUserChat", message);
+
+            // Reactiva el botón
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = "Send";
+
+            if (!response || response.startsWith("Error:")) {
+                alert("Error sending message.");
+                return;
+            }
+
+            let query = JSON.parse(response);
+
+            if (query.result.startsWith("Error:")) {
+                ShowDialog("Error", "Error sending message: " + query.result);
+                return;
+            }
+
+            // let jsonData = JSON.parse(query.result);
+
+            // Agrega mensaje al DOM sin recargar
+            const now = convertirAngelSQLUtcALocal(new Date().toISOString(), false);
+            const container = document.getElementById("chatMessages");
+            const alignClass = 'text-end';
+            const bgColor = 'bg-primary text-white';
+            const imgHtml = imageData
+                ? `<img src="${imageData}" class="img-fluid rounded mb-2 chat-img" style="max-height:150px; cursor: zoom-in;" onclick="zoomImage('${imageData}')" /><br>`
+                : '';
+
+            const bubbleHtml = `
+                <table style="width: 100%; margin-bottom: 10px;">
+                    <tr>
+                        <td style="text-align: right;">
+                            <div style="
+                                display: inline-block;
+                                background: #0d6efd;
+                                color: #fff;
+                                padding: 12px 16px;
+                                border-radius: 18px;
+                                max-width: 75%;
+                                word-wrap: break-word;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                font-family: 'Segoe UI', sans-serif;
+                                animation: fadeIn 0.3s ease-in-out;
+                                ">
+                                ${imgHtml}
+                                <div style="white-space: pre-wrap;">${linkify(messageText)}</div>
+                                <div style="font-size: 0.75em;" class="text-light mt-1" style="color: #ccc;">${Token.User}</div>
+                                <div style="font-size: 0.75em;" class="text-light mt-1" style="color: #ccc;">${now}</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            `;
+
+            container.insertAdjacentHTML('beforeend', bubbleHtml);
+            container.scrollTop = container.scrollHeight;
+
+            // Limpiar campos
+            replyInput.value = "";
+            removeOperatorImage();
+            replyInput.focus();
+        }
+
+
+        async function verifyChats() {
+
+            chat_interval = setInterval(async () => {
+                GetChats();
+
+                if (!chat_id) return; // No hay chat seleccionado
+
+                if( Timestamp === null ) {
+                    return;
+                }
+
+                const chat = {
+                    Chat_id: chat_id, // Se usa para buscar respuestas a este chat
+                    Timestamp: Timestamp // Se usa para buscar respuestas después de este timestamp
+                };
+
+                // Aquí se envía la petición al backend para verificar respuestas
+                let response = await sendToAngelPOST(Token.User, "Chat/pos_chat", Token.Token, "GetKioskoChatReply", chat);
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Error", "An error occurred: " + response);
+                    return;
+                }
+
+                let query = JSON.parse(response);
+
+                if (query.result.startsWith("Error:")) {
+                    ShowDialog("Error", "An error occurred: " + query.result);
+                    return;
+                }
+
+                if (query.result === "[]") {
+                    return;
+                }
+
+                const messages = JSON.parse(query.result);
+
+                if (!chat_id) return;
+
+                const container = document.getElementById("chatMessages");
+                if (!container) return;
+
+                //messages lo he cambiado para que sea un array de objetos
+
+                messages.forEach(function (jsonData) {
+                    const localTime = convertirAngelSQLUtcALocal(jsonData.Timestamp, false);
+                    const imageHtml = jsonData.Image_data
+                        ? `<img src="${jsonData.Image_data}" class="img-fluid rounded mb-2" style="max-height:150px; cursor: zoom-in;" onclick="zoomImage('${jsonData.Image_data}')" /><br>`
+                        : '';
+
+                    const bubbleId = `bubble-${jsonData.Timestamp.replace(/[^0-9]/g, '')}`;
+                    if (document.getElementById(bubbleId)) return; // Evita duplicados
+
+                    const bubbleHtml = `
+                    <table id="${bubbleId}" style="width: 100%; margin-bottom: 10px; animation: slideFadeIn 0.5s ease;">
+                        <tr>
+                            <td style="text-align: left;">
+                                <div style="
+                                    display: inline-block;
+                                    background: #c4d4e3;
+                                    color: #000;
+                                    padding: 12px 16px;
+                                    border-radius: 18px;
+                                    max-width: 75%;
+                                    word-wrap: break-word;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                    font-family: 'Segoe UI', sans-serif;
+                                    ">
+                                    ${imageHtml}
+                                    <div style="white-space: pre-wrap;">${linkify(jsonData.Message_text)}</div>
+                                    <div style="font-size: 0.75em;" class="text-muted mt-1">${localTime}</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                `;
+
+                    Timestamp = jsonData.Timestamp; // Actualiza el último timestamp
+                    container.insertAdjacentHTML('beforeend', bubbleHtml);
+                    container.scrollTop = container.scrollHeight;
+
+                });
+
+            }, 10000); // Verifica cada 10 segundos
+
+        }
+
+
+        window.onload = function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            translate_menu(language);
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+
+            if (urlParams.has("chat_id")) {
+                chat_id = urlParams.get("chat_id");
+                OpenChat(chat_id);
+            }
+
+
+            initializeDates();
+            GetChats();
+            verifyChats();
+
+        };
+
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

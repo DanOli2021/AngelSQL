@@ -1,7 +1,7 @@
 // GLOBALS
 // These lines of code go in each script
-#r "/AngelSQLNet/AngelSQL/db.dll"
-#r "/AngelSQLNet/AngelSQL/Newtonsoft.Json.dll"
+#r "C:/AngelSQLNet/AngelSQL/db.dll"
+#r "C:/AngelSQLNet/AngelSQL/Newtonsoft.Json.dll"
 // END GLOBALS
 
 using System;

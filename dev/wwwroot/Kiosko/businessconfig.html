@@ -14,13 +14,27 @@
     <script src="../proxy.js"></script>
 
     <script>
-        if (sessionStorage.getItem("Token") == null) {
+
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
             window.location.href = "index.html";
         }
 
         const language = getSelectedLanguage();
-        const Token = JSON.parse(sessionStorage.getItem("Token"));
+
     </script>
+
 </head>
 
 <body>
@@ -135,7 +149,7 @@
                 Logo: document.getElementById('logo').value
             };
 
-            var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
+            var response = (Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
 
             response.then(function (query) {
 

@@ -5,83 +5,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AngelSQL</title>
-    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bootstrap-5.3.0/css/bootstrap.min.css">
+
     <link href="./css/styles.css" rel="stylesheet" />
-    <script src="../proxy.js"></script>
+    <script src="proxy.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/AngelSQL.js"></script>
+
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #e4e9ec, #5facc5), url('images/hero2.png') center center / cover no-repeat;
+            background-blend-mode: overlay;
+            background-size: auto;
+            color: rgb(53, 48, 48);
+            padding: 80px 20px;
             text-align: center;
-            padding: 2rem;
         }
 
-        .centered-image {
-            max-width: 300px;
-            margin-bottom: 1.0rem;
+            .hero img {
+                max-width: 300px;
+                margin-bottom: 20px;
+            }
+
+        .slogan {
+            font-size: 1.2rem;
+            font-style: italic;
+            margin-top: -10px;
         }
 
-        .slogan_text {
-            font-size: 1.0rem;
-            font-weight: 400;
-            margin-bottom: 2rem;
-            color: #333;
+        .section {
+            padding: 60px 20px;
         }
 
-        .custom-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1rem;
-            font-size: 1.1rem;
-            font-weight: 500;
+            .section:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+
+        footer {
+            background-color: #222;
+            color: #ccc;
             text-align: center;
-            height: 100px;
+            padding: 30px 20px;
         }
 
-        .custom-button img {
-            height: 60px;
+        .navbar-brand img {
+            height: 180px;
+            margin-right: 10px;
         }
 
-        .button-container {
-            max-width: 600px;
-            margin: 0 auto;
+        .features {
+            padding: 60px 20px;
+        }
+
+            .features h2 {
+                text-align: center;
+                margin-bottom: 40px;
+                color: #333;
+            }
+
+        .feature-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: none;
         }
     </style>
+
 </head>
 
 <body>
-    <div id="app">
 
-        <a href="https://angelsql.net " target="_blank" class="btn btn-link mb-3">
-            <img src="images/angelsql.png" alt="AngelSQL Logo" class="centered-image" />
-        </a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/AngelSQL.png" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="kiosko/kiosko.html?account=angelsql">Store</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Downloads</a></li>
+                    <li class="nav-item"><a class="nav-link" href="auth/index.html">Users</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kiosko/index.html">Kiosko</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="lanzarChatModal('index.html', '', '');">Contact us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#anuncios">Announcements</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Server</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-        <br />
-        <a href="https://angelsql.net" target="_blank">
-            <h2 class="slogan_text">
-                All you need, in one place. With the ultimate simplicity and power of AngelSQL
-            </h2>
-        </a>
+    <header class="hero">
+        <div class="container">
+            <img src="images/AngelSQL.png" alt="MyBusiness POS Logo" />
+            <p class="slogan">Development, honesty and intelligence</p>
+            <p class="lead">All you need, in one place. With the ultimate simplicity and power of AngelSQL.</p>
+            <a href="#" class="btn btn-light btn-lg mt-3" onclick="lanzarChatModal('index.html', '', '');">Contact us</a>
+        </div>
 
+    </header>
 
-
-    </div>
-
-    <div class="container button-container">
-        <button class="btn btn-primary w-100 custom-button mb-3" onclick="window.location.href='auth/index.html'">
-            <img src="images/permissions.png" alt="logo" style="width: 120px; height: 120px;">
-            <span>Authorizer<br><small>User administration</small></span>
-        </button>
-
-        <button class="btn btn-success w-100 custom-button" onclick="window.location.href='kiosko/index.html'">
-            <img src="images/logo.png" alt="logo" style="width: 80px; height: 80px;">
-            <span>Kiosko POS<br><small>The software your business needs</small></span>
-        </button>
-    </div>
+    <!-- Features Section -->
+    <section id="features" class="features container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card p-4 text-center">
+                    <h3 id="title_card1">Comprehensive and Scalable Connection</h3>
+                    <p id="description_card1">
+                        AngelSQL combines a database, web server, and development environment all
+                        in one place. From script execution to real-time data management, it provides everything you
+                        need to handle critical operations efficiently and effortlessly.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card p-4 text-center">
+                    <h3 id="title_card2">Simple and Direct Internet Connectivity</h3>
+                    <p id="description_card2">
+                        AngelSQL enables your developments to connect to the Internet seamlessly
+                        and directly from your own devices. No complex setups—just secure, straightforward access.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card feature-card p-4 text-center">
+                    <h3 id="title_card3">Real-Time Optimization</h3>
+                    <p id="description_card3">
+                        The power of AngelDB, combined with C# and Python scripting, enables
+                        real-time data manipulation and execution, optimizing processes intuitively and effectively.
+                        From quick queries to complex tasks, it’s all just a click away.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <hr />
+
+    <footer>
+        <p>&copy; 2025 MyBusiness POS. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Modal Login -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Server Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuario</label>
+                        <input type="text" class="form-control" id="username" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="password" />
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-primary" onclick="login()">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const loginModal = document.getElementById('loginModal');
+        loginModal.addEventListener('shown.bs.modal', () => {
+            document.getElementById('username').focus();
+        });
+
+        function login() {
+
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            var angelSql = new AngelSQL(username, password, window.location.protocol + '//' + window.location.host + "/AngelSQL");
+            var result_promise = angelSql.Start();
+
+            result_promise.then(result => {
+                console.log('Resultado:', result);
+
+                if (result.startsWith("Error:")) {
+                    console.log('Start Result:', result);
+                    showDialog("Error", result);
+                    return;
+                }
+
+                angelSql.Gettoken().then(result => {
+                    sessionStorage.setItem('AngelSQLTocken', result);
+
+                    if (password == "db") {
+                        window.location = "config.html?warning=change_default_password";
+                    }
+                    else
+                    {
+                       window.location = "config.html";   
+                    }
+                    
+                });
+
+            }).catch(error => console.error('Error: Login() When getting the result:', error));
+
+        }
+    </script>
+
+    <script src="bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

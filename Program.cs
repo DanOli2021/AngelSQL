@@ -4,6 +4,7 @@ using AngelSQLServer;
 using Azure.Core;
 using DocumentFormat.OpenXml.Vml;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -35,18 +36,18 @@ if (!string.IsNullOrEmpty(commandLine))
 
     DbLanguage language = new DbLanguage();
     language.SetCommands(AngelSQL.ServerCommands.DbCommands());
-    Dictionary<string, string> d = new Dictionary<string, string>();
+    Dictionary<string, string> d1 = new Dictionary<string, string>();
 
-    d = language.Interpreter(commandLine);
+    d1 = language.Interpreter(commandLine);
 
-    switch (d.First().Key) 
+    switch (d1.First().Key)
     {
         case "app_directory":
-            app_directory = d["app_directory"];
+            app_directory = d1["app_directory"];
             config_file = app_directory + "/config/AngelSQL.csx";
             break;
         default:
-            LogFile.Log($"Error: Invalid command line argument {d.First().Key}");
+            LogFile.Log($"Error: Invalid command line argument {d1.First().Key}");
             Environment.Exit(0);
             return;
     }
@@ -130,6 +131,40 @@ if (parameters.ContainsKey("save_activity"))
     }
 }
 
+
+// Este bloque anula el uso de AngelSQL.csx para definir el usuario y contraseña del servidor
+if ( File.Exists(app_directory + "/webdb1.webmi") )
+{
+    string result_webmi = File.ReadAllText(app_directory + "/webdb1.webmi");
+
+    if( !string.IsNullOrEmpty( result_webmi ) )
+    {
+        try
+        {
+            result_webmi = AngelDBTools.CryptoString.Decrypt(result_webmi, "hbjklios", "iuybncsa");
+            var secrets = JsonConvert.DeserializeObject<Dictionary<string, string>>(result_webmi);
+
+            parameters["master_user"] = secrets["master_user"];
+            parameters["master_password"] = secrets["master_password"];
+            parameters["account_password"] = secrets["master_password"];
+
+        }
+        catch (Exception e)
+        {
+            LogFile.Log($"Error: parsing webdb1.webmi: {e.Message}");
+        }
+
+    }
+
+}
+
+
+// Cargamos los comandos del servidor solo una vez
+DbLanguage serverLanguage = new DbLanguage();
+serverLanguage.SetCommands(AngelSQLCommands.DbCommands());
+Dictionary<string, string> d = new Dictionary<string, string>();
+
+
 // Create a bulder for the web app
 //if is a Windows service, set the current directory to the same as the executable
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
@@ -154,10 +189,10 @@ if (WindowsServiceHelpers.IsWindowsService())
 
 // Create the master database
 server_db.Prompt($"DB USER {parameters["master_user"]} PASSWORD {parameters["master_password"]} DATA DIRECTORY {parameters["data_directory"]}", true);
-server_db.Prompt($"CREATE ACCOUNT {parameters["account"]} SUPERUSER {parameters["account_user"]} PASSWORD {parameters["account_password"]}", true);
-server_db.Prompt($"USE ACCOUNT {parameters["account"]}", true);
-server_db.Prompt($"CREATE DATABASE {parameters["database"]}", true);
-server_db.Prompt($"USE DATABASE {parameters["database"]}", true);
+server_db.Prompt($"CREATE ACCOUNT angelsql SUPERUSER angelsql PASSWORD {parameters["master_password"]}", true);
+server_db.Prompt($"USE ACCOUNT angelsql", true);
+server_db.Prompt($"CREATE DATABASE server", true);
+server_db.Prompt($"USE DATABASE server", true);
 
 // Create the accounts table
 server_db.Prompt($"CREATE TABLE accounts FIELD LIST db_user, name, email, connection_string, db_password, database, data_directory, account, super_user, super_user_password, active, created", true);
@@ -482,6 +517,45 @@ string QueryResponce(AngelSQL.Query query)
     }
 }
 
+
+string ServerResponce(AngelSQL.Query query)
+{
+    try
+    {
+        AngelSQL.Responce responce = new AngelSQL.Responce();
+
+        if (!connections.ContainsKey(query.token))
+        {
+            responce.token = "";
+            responce.result = $"Error: You need to identify yourself first. {query.token}";
+            responce.type = "ERROR";
+            return JsonConvert.SerializeObject(responce);
+        }
+
+        responce.token = query.token;
+        connections[query.token].date_of_last_access = DateTime.Now;
+
+        responce.result = connections[query.token].db.Prompt(query.command);
+
+        if (responce.result.StartsWith("Error:"))
+        {
+            responce.type = "ERROR";
+        }
+        else
+        {
+            responce.type = "SUCCESS";
+        }
+
+        return JsonConvert.SerializeObject(responce);
+
+    }
+    catch (Exception e)
+    {
+        return $"Error: QueryResponce() {e}";
+    }
+}
+
+
 app.MapGet("/AngelAPI", (string data, HttpContext context) =>
 {
     string result = ProcessGet(data, context);
@@ -535,10 +609,7 @@ string ProcessGet(string data, HttpContext context)
 
         AngelDB.DB angel_api_db = new AngelDB.DB();
         angel_api_db.Prompt($"DB USER {parameters["master_user"]} PASSWORD {parameters["master_password"]} DATA DIRECTORY {parameters["data_directory"]}", true);
-        angel_api_db.Prompt($"CREATE ACCOUNT {parameters["account"]} SUPERUSER {parameters["account_user"]} PASSWORD {parameters["account_password"]}", true);
-        angel_api_db.Prompt($"USE ACCOUNT {parameters["account"]}", true);
-        angel_api_db.Prompt($"CREATE DATABASE {parameters["database"]}", true);
-        angel_api_db.Prompt($"USE DATABASE {parameters["database"]}", true);
+        angel_api_db.Prompt($"USE angelsql DATABASE server", true);
 
         //AngelSQL.ApiClass api = JsonConvert.DeserializeObject<AngelSQL.ApiClass>(data);
         string ApiCommand;
@@ -834,10 +905,7 @@ string ProcessAngelData(string jsonstring, string RemoteIp, AngelApiOperation ap
                 if (!parameters.ContainsKey("connection_string"))
                 {
                     db.Prompt($"DB USER {parameters["master_user"]} PASSWORD {parameters["master_password"]} DATA DIRECTORY {parameters["data_directory"]}", true);
-                    db.Prompt($"CREATE ACCOUNT {parameters["account"]} SUPERUSER {parameters["account_user"]} PASSWORD {parameters["account_password"]}", true);
-                    db.Prompt($"USE ACCOUNT {parameters["account"]}", true);
-                    db.Prompt($"CREATE DATABASE {parameters["database"]}", true);
-                    db.Prompt($"USE DATABASE {parameters["database"]}", true);
+                    db.Prompt($"USE angelsql DATABASE server", true);
                 }
                 else
                 {
@@ -1139,7 +1207,7 @@ app.MapPost("/AngelSQL", async delegate (HttpContext context)
 
                 case "server_command":
 
-                    result = QueryResponce(query);
+                    result = ServerCommands(query);
                     break;
 
                 default:
@@ -1335,7 +1403,7 @@ void PutHeader()
     AngelDB.Monitor.ShowLine(" =>  We explain it to you in 20 words or fewer:", ConsoleColor.Green);
     AngelDB.Monitor.ShowLine(" =>  AngelSQL", ConsoleColor.Green);
 
-    if (parameters["use_proxy"] == "yes") 
+    if (parameters["use_proxy"] == "yes")
     {
         AngelDB.Monitor.ShowLine("Public URL: " + server_db.Prompt("VAR db_public_url"), ConsoleColor.Cyan);
     }
@@ -1354,6 +1422,19 @@ void PutHeader()
     }
 
     AngelDB.Monitor.ShowLine("APP DIRECTORY: " + app_directory, ConsoleColor.Gray);
+
+    result = server_db.Prompt("SELECT * FROM accounts");
+
+    if (result.StartsWith("Error:"))
+    {
+        AngelDB.Monitor.ShowLine("Error: " + result, ConsoleColor.Red);
+    }
+
+    if (result == "[]") 
+    {
+        AngelDB.Monitor.ShowLine("No accounts found. Please create an account.", ConsoleColor.Red);
+        AngelDB.Monitor.ShowLine("CREATE SERVER ACCOUNT <account name> USER <user> PASSWORD <strong_password> DATA DIRECTORY [data on disk] AS DEFAULT", ConsoleColor.Red);
+    }
 
     AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Green);
 
@@ -1375,7 +1456,6 @@ app.Use(async (context, next) =>
         await next();
     }
 });
-
 
 //Add White And Black List
 app.Use(async (context, next) =>
@@ -1552,6 +1632,296 @@ File.WriteAllText(parameters["wwwroot"] + "/js/account.js", $"var angelsql_accou
 // Activamos el proxy
 ActivateProxy();
 
+void ShowMessage(string result)
+{
+    if (result.StartsWith("Error:"))
+    {
+        AngelDB.Monitor.ShowError(result);
+        return;
+    }
+    if (result != "")
+    {
+        AngelDB.Monitor.ShowLine(result, ConsoleColor.Cyan);
+        return;
+    }
+}
+
+
+string ServerCommands(AngelSQL.Query query)
+{
+
+    AngelSQL.Responce responce = new AngelSQL.Responce();
+
+    if (!connections.ContainsKey(query.token))
+    {
+        responce.token = "";
+        responce.result = $"Error: You need to identify yourself first. {query.token}";
+        responce.type = "ERROR";
+        return JsonConvert.SerializeObject(responce);
+    }
+
+    responce.token = query.token;
+    connections[query.token].date_of_last_access = DateTime.Now;
+
+    Dictionary<string, string> d = serverLanguage.Interpreter(query.command);
+
+    if (d == null)
+    {
+        ShowMessage(serverLanguage.errorString);
+        return serverLanguage.errorString;
+    }
+
+    Console.WriteLine(d.First().Key);
+
+    string result = "";
+
+        switch (d.First().Key)
+        {
+            case "save_activity_on":
+                save_activity = true;
+                result = "Ok. Save Activity ON";
+                break;
+
+        case "save_activity_off":
+
+                save_activity = false;
+                result = "Ok. Save Activity OFF";
+                break;
+
+            case "white_list_on":
+
+                if (parameters.ContainsKey("use_white_list"))
+                {
+                    parameters["use_white_list"] = "true";
+                }
+                else
+                {
+                    parameters.Add("use_white_list", "true");
+                }
+
+                result = "Ok. White List ON";
+                break;
+
+            case "white_list_off":
+
+                if (parameters.ContainsKey("use_white_list"))
+                {
+                    parameters["use_white_list"] = "false";
+                }
+                else
+                {
+                    parameters.Add("use_white_list", "false");
+                }
+
+                result = "Ok. White List OFF";
+                break;
+
+            case "black_list_on":
+
+                if (parameters.ContainsKey("use_black_list"))
+                {
+                    parameters["use_black_list"] = "true";
+                }
+                else
+                {
+                    parameters.Add("use_black_list", "true");
+                }
+
+                result = "Ok. Black List ON";
+                break;
+
+            case "black_list_off":
+
+                if (parameters.ContainsKey("use_black_list"))
+                {
+                    parameters["use_black_list"] = "false";
+                }
+                else
+                {
+                    parameters.Add("use_black_list", "false");
+                }
+
+                result = "Ok. Black List OFF";
+                break;
+
+            case "add_to_white_list":
+
+                if (!IsValidIPAddress(d["add_to_white_list"]))
+                {
+                    result = "Error: Invalid IP Address";
+                    break;
+                }
+
+                var w = new
+                {
+                    id = d["add_to_white_list"]
+                };
+
+                result = server_db.UpsertInto("whitelist", w);
+                break;
+
+            case "remove_from_white_list":
+
+                result = server_db.Prompt("SELECT id FROM whitelist WHERE id = '" + d["remove_from_white_list"] + "'");
+
+                if (result == "[]")
+                {
+                    result = "Error: IP Address not found";
+                    break;
+                }
+
+                result = server_db.Prompt($"DELETE FROM whitelist PARTITION KEY main WHERE id = '{d["remove_from_white_list"]}'");
+                break;
+
+            case "add_to_black_list":
+
+                if (!IsValidIPAddress(d["add_to_black_list"]))
+                {
+                    result = "Error: Invalid IP Address";
+                }
+
+                var b = new
+                {
+                    id = d["add_to_black_list"]
+                };
+
+                result = server_db.UpsertInto("blacklist", b);
+                break;
+
+            case "remove_from_black_list":
+
+                result = server_db.Prompt("SELECT id FROM blacklist WHERE id = '" + d["remove_from_black_list"] + "'");
+
+                if (result == "[]")
+                {
+                    result = "Error: IP Address not found";
+                    break;
+                }
+
+                result = server_db.Prompt($"DELETE FROM blacklist PARTITION KEY main WHERE id = '{d["remove_from_black_list"]}'");
+                break;
+
+            case "create_server_account":
+
+                result = server_db.Prompt($"SCRIPT FILE {new_server_account} MESSAGE {JsonConvert.SerializeObject(d)}", true);
+                break;
+
+            case "create_app":
+
+                if (d["create_app"] == "null" || d["create_app"].Trim() == "")
+                {
+                    result = "Error: App name is required.";
+                    break;
+                }
+
+                if (d["files_directory"] == "null")
+                {
+                    result = "Error: file directory is required";
+                    break;
+                }
+
+                result = CreateApp(d["create_app"], d["files_directory"]);
+                break;
+
+            case "proxy":
+
+                try
+                {
+                    ActivateProxy();
+                    result = "Ok. Proxy activated";
+                }
+                catch( Exception e)
+                {
+                    result = $"Error: {e.Message}";
+                }
+
+                break;
+
+            case "db":
+
+                result = server_db.Prompt(d["db"]);
+                break;
+
+            case "server_db":
+
+                result = server_db.Prompt(d["server_db"]);
+                break;
+
+            case "change_sever_master":
+
+                result = ChangeMaster( d["to_user"], d["password"]);
+                break;
+
+        default:
+
+                result = "Error: Not command found";
+                break;
+        }
+
+        responce.result = result;
+
+        if (responce.result.StartsWith("Error:"))
+        {
+            responce.type = "ERROR";
+        }
+        else
+        {
+            responce.type = "SUCCESS";
+        }
+
+        return JsonConvert.SerializeObject(responce);
+
+}
+
+string ChangeMaster(string to_user, string password)
+{
+    try
+    {
+        if (string.IsNullOrEmpty(to_user) || string.IsNullOrEmpty(password))
+        {
+            return "Error: User and password are required.";
+        }
+
+        string result = server_db.Prompt($"CHANGE MASTER TO USER {to_user} PASSWORD {password}");
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (CHANGE MASTER)";
+        }
+
+        result = server_db.Prompt($"UPDATE MASTER ACCOUNT angelsql FROM ACCOUNT angelsql PASSWORD {password}");
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (UPDATE MASTER)";
+        }
+
+        var secrets = new Dictionary<string, string>
+        {
+            { "master_user", to_user },
+            { "master_password", password },
+            { "account_password", password }
+        };
+
+        string jsonParameters = server_db.GetJson(secrets);
+        result = AngelDBTools.CryptoString.Encrypt(jsonParameters, "hbjklios", "iuybncsa");
+
+        string filePath = System.IO.Path.Combine(app_directory + "/webdb1.webmi");
+
+        File.WriteAllText(filePath, result);
+
+        return "Ok. Master changed successfully.";
+
+    }
+    catch (Exception e)
+    {
+        LogFile.Log("Error: " + e);
+        return $"Error: {e.Message}";
+    }
+}
+
+
+
 // Running the server, as a service or as a console application
 if (WindowsServiceHelpers.IsWindowsService())
 {
@@ -1563,21 +1933,13 @@ else
     //Mapping the AngelPOS API (POST)
     AngelDB.DB prompt_db = new AngelDB.DB();
     prompt_db.Prompt($"DB USER {parameters["master_user"]} PASSWORD {parameters["master_password"]} DATA DIRECTORY {parameters["data_directory"]}", true);
-    prompt_db.Prompt($"CREATE ACCOUNT {parameters["account"]} SUPERUSER {parameters["account_user"]} PASSWORD {parameters["account_password"]}", true);
-    prompt_db.Prompt($"USE ACCOUNT {parameters["account"]}", true);
-    prompt_db.Prompt($"CREATE DATABASE {parameters["database"]}", true);
-    prompt_db.Prompt($"USE DATABASE {parameters["database"]}", true);
+    prompt_db.Prompt($"USE angelsql DATABASE server", true);
 
     app.RunAsync();
 
     //Console.Clear();
 
     PutHeader();
-
-
-    DbLanguage language = new DbLanguage();
-    language.SetCommands(AngelSQL.AngelSQLCommands.DbCommands());
-    Dictionary<string, string> d = new Dictionary<string, string>();
 
     for (; ; )
     {
@@ -1605,7 +1967,13 @@ else
             continue;
         }
 
-        d = language.Interpreter(line);
+        d = serverLanguage.Interpreter(line);
+
+        if (d == null)
+        {
+            ShowMessage(serverLanguage.errorString);
+            continue;
+        }
 
         if (d != null)
         {
@@ -1614,12 +1982,13 @@ else
                 case "save_activity_on":
                     save_activity = true;
                     prompt_result = "Ok. Save Activity ON";
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "save_activity_off":
                     save_activity = false;
                     prompt_result = "Ok. Save Activity OFF";
-                    break;
+                    continue;
 
                 case "white_list_on":
 
@@ -1633,8 +2002,8 @@ else
                     }
 
                     prompt_result = "Ok. White List ON";
-
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "white_list_off":
 
@@ -1648,7 +2017,8 @@ else
                     }
 
                     prompt_result = "Ok. White List OFF";
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "black_list_on":
 
@@ -1662,7 +2032,8 @@ else
                     }
 
                     prompt_result = "Ok. Black List ON";
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "black_list_off":
 
@@ -1676,14 +2047,16 @@ else
                     }
 
                     prompt_result = "Ok. Black List OFF";
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "add_to_white_list":
 
                     if (!IsValidIPAddress(d["add_to_white_list"]))
                     {
                         prompt_result = "Error: Invalid IP Address";
-                        break;
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     var w = new
@@ -1692,7 +2065,8 @@ else
                     };
 
                     prompt_result = prompt_db.UpsertInto("whitelist", w);
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "remove_from_white_list":
 
@@ -1702,18 +2076,21 @@ else
                     if (prompt_result == "[]")
                     {
                         prompt_result = "Error: IP Address not found";
-                        break;
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     prompt_result = prompt_db.Prompt($"DELETE FROM whitelist PARTITION KEY main WHERE id = '{d["remove_from_white_list"]}'");
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "add_to_black_list":
 
                     if (!IsValidIPAddress(d["add_to_black_list"]))
                     {
                         prompt_result = "Error: Invalid IP Address";
-                        break;
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     var b = new
@@ -1722,7 +2099,8 @@ else
                     };
 
                     prompt_result = prompt_db.UpsertInto("blacklist", b);
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "remove_from_black_list":
 
@@ -1731,149 +2109,158 @@ else
                     if (prompt_result == "[]")
                     {
                         prompt_result = "Error: IP Address not found";
-                        break;
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     prompt_result = prompt_db.Prompt($"DELETE FROM blacklist PARTITION KEY main WHERE id = '{d["remove_from_black_list"]}'");
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
                 case "create_server_account":
 
                     prompt_result = server_db.Prompt($"SCRIPT FILE {new_server_account} MESSAGE {JsonConvert.SerializeObject(d)}", true);
+                    ShowMessage(prompt_result);
                     continue;
 
                 case "create_app":
 
-                    if (d["create_app"] == "null")
+                    if (d["create_app"] == "null" || d["create_app"].Trim() == "")
                     {
                         prompt_result = "Error: App name is required.";
-                        break;
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     if (d["files_directory"] == "null")
                     {
                         prompt_result = "Error: file directory is required";
+                        ShowMessage(prompt_result);
+                        continue;
                     }
 
                     prompt_result = CreateApp(d["create_app"], d["files_directory"]);
-                    break;
+                    ShowMessage(prompt_result);
+                    continue;
 
-                default:
+                case "quit":
 
-                    prompt_result = "";
-                    break;
-            }
-        }
-
-        if (prompt_result != "")
-        {
-            if (prompt_result.StartsWith("Error:"))
-            {
-                AngelDB.Monitor.ShowError(prompt_result);
-            }
-            else
-            {
-                AngelDB.Monitor.Show(prompt_result);
-            }
-            continue;
-        }
-
-        if (line.Trim().ToUpper() == "QUIT")
-        {
-            try
-            {
-                app.StopAsync().GetAwaiter();
-                PythonEngine.Shutdown();
-            }
-            catch
-            {
-            }
-
-            Environment.Exit(0);
-            return;
-        }
-
-        if (line.Trim().ToUpper() == "PROXY")
-        {
-            try
-            {
-
-                if (parameters.ContainsKey("use_proxy"))
-                {
-                    Console.WriteLine("Activate Proxy...");
-                    if (parameters["use_proxy"] == "yes")
+                    try
                     {
-                        ActivateProxy();
+                        app.StopAsync().GetAwaiter();
+                        PythonEngine.Shutdown();
+                    }
+                    catch
+                    {
+                    }
+
+                    Environment.Exit(0);
+                    return;
+
+                case "proxy":
+
+                    try
+                    {
+                        if (parameters.ContainsKey("use_proxy"))
+                        {
+                            Console.WriteLine("Activate Proxy...");
+                            if (parameters["use_proxy"] == "yes")
+                            {
+                                ActivateProxy();
+                            }
+                            else
+                            {
+                                Console.WriteLine("Proxy is not configured");
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                    continue;
+
+                case "clear":
+
+                    Console.Clear();
+                    PutHeader();
+                    continue;
+
+                case "listen on":
+
+                    try
+                    {
+                        foreach (string item in app.Urls)
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        AngelDB.Monitor.ShowError($"Error: {e.ToString()}");
+                    }
+                    continue;
+
+                case "show_commands":
+
+                    serverLanguage.ShowCommands();
+                    continue;
+
+                case "db":
+
+                    string prompt_result_db = "";
+                    prompt_result_db = prompt_db.Prompt("BATCH " + d["db"] + " SHOW IN CONSOLE");
+
+                    if (prompt_result_db.StartsWith("Error:"))
+                    {
+                        AngelDB.Monitor.ShowError(prompt_result_db + " (DB)");
                     }
                     else
                     {
-                        Console.WriteLine("Proxy is not configured");
+                        AngelDB.Monitor.Show(prompt_result_db);
                     }
-                }
+                    continue;
 
+                case "server_db":
+
+                    if (line.Trim().ToUpper().StartsWith("SERVER DB"))
+                    {
+                        prompt_result_db = server_db.Prompt("BATCH " + d["server_db"] + " SHOW IN CONSOLE");
+                    }
+                    else
+                    {
+                        prompt_result_db = prompt_db.Prompt("BATCH " + line + " SHOW IN CONSOLE");
+                    }
+                    if (prompt_result_db.StartsWith("Error:"))
+                    {
+                        AngelDB.Monitor.ShowError(prompt_result_db + "(SERVER DB)");
+                    }
+                    else
+                    {
+                        AngelDB.Monitor.Show(prompt_result_db);
+                    }
+                    continue;
+
+
+                default:
+
+                    continue;
             }
-            catch
-            {
-            }
-
-            continue;
         }
 
-        if (line.Trim().ToUpper() == "CLEAR")
-        {
-            Console.Clear();
-            PutHeader();
-            continue;
-        }
 
-        if (line.Trim().ToUpper() == "LISTEN ON")
-        {
-            try
-            {
-                foreach (string item in app.Urls)
-                {
-                    Console.WriteLine(item);
-                }
-            }
-            catch (Exception e)
-            {
-                AngelDB.Monitor.ShowError($"Error: {e.ToString()}");
-            }
-            continue;
-        }
 
-        string prompt_result_db = "";
-
-        if (line.Trim().ToUpper().StartsWith("SERVER DB"))
-        {
-            prompt_result_db = server_db.Prompt("BATCH " + line.Replace("SERVER DB", "") + " SHOW IN CONSOLE");
-        }
-        else
-        {
-            prompt_result_db = prompt_db.Prompt("BATCH " + line + " SHOW IN CONSOLE");
-        }
-
-        if (prompt_result_db.StartsWith("Error:"))
-        {
-            AngelDB.Monitor.ShowError(prompt_result_db);
-        }
-        else
-        {
-            AngelDB.Monitor.Show(prompt_result_db);
-        }
-
-    }
-
-    static bool IsValidIPAddress(string ipAddress)
-    {
-        return IPAddress.TryParse(ipAddress, out _);
     }
 
 }
 
+static bool IsValidIPAddress(string ipAddress)
+{
+    return IPAddress.TryParse(ipAddress, out _);
+}
 
 
-string CreateApp( string app_name, string files_directory = "")
+
+string CreateApp(string app_name, string files_directory = "")
 {
 
     if (string.IsNullOrEmpty(app_name))

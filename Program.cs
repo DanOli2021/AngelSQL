@@ -1,10 +1,8 @@
 ﻿//AngelSQLServer
 using AngelDB;
 using AngelSQLServer;
-using Azure.Core;
-using DocumentFormat.OpenXml.Vml;
+using DocumentFormat.OpenXml.Vml.Office;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -18,7 +16,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json.Serialization;
 
 //if is a Windows service, set the current directory to the same as the executable
 if (WindowsServiceHelpers.IsWindowsService())
@@ -131,13 +128,12 @@ if (parameters.ContainsKey("save_activity"))
     }
 }
 
-
 // Este bloque anula el uso de AngelSQL.csx para definir el usuario y contraseña del servidor
-if ( File.Exists(app_directory + "/webdb1.webmi") )
+if (File.Exists(app_directory + "/webdb1.webmi"))
 {
     string result_webmi = File.ReadAllText(app_directory + "/webdb1.webmi");
 
-    if( !string.IsNullOrEmpty( result_webmi ) )
+    if (!string.IsNullOrEmpty(result_webmi))
     {
         try
         {
@@ -157,6 +153,35 @@ if ( File.Exists(app_directory + "/webdb1.webmi") )
     }
 
 }
+
+// Este bloque anula el uso de AngelSQL.csx para los datos del proxy
+// Este bloque anula el uso de AngelSQL.csx para los datos del proxy
+if (File.Exists(app_directory + "/webdb2.webmi"))
+{
+    string result_webmi = File.ReadAllText(app_directory + "/webdb2.webmi");
+
+    if (!string.IsNullOrEmpty(result_webmi))
+    {
+        try
+        {
+            result_webmi = AngelDBTools.CryptoString.Decrypt(result_webmi, "hbjklios", "iuybncsa");
+            var secrets = JsonConvert.DeserializeObject<Dictionary<string, string>>(result_webmi);
+
+            parameters["use_proxy"] = secrets["use_proxy"];
+            parameters["proxy_account"] = secrets["proxy_account"];
+            parameters["proxy_password"] = secrets["proxy_password"];
+            parameters["public_account"] = secrets["public_account"];
+
+        }
+        catch (Exception e)
+        {
+            LogFile.Log($"Error: parsing webdb2.webmi: {e.Message}");
+        }
+
+    }
+
+}
+
 
 
 // Cargamos los comandos del servidor solo una vez
@@ -1430,10 +1455,10 @@ void PutHeader()
         AngelDB.Monitor.ShowLine("Error: " + result, ConsoleColor.Red);
     }
 
-    if (result == "[]") 
+    if (result == "[]")
     {
         AngelDB.Monitor.ShowLine("No accounts found. Please create an account.", ConsoleColor.Red);
-        AngelDB.Monitor.ShowLine("CREATE SERVER ACCOUNT <account name> USER <user> PASSWORD <strong_password> DATA DIRECTORY [data on disk] AS DEFAULT", ConsoleColor.Red);
+        AngelDB.Monitor.ShowLine("CREATE SERVER ACCOUNT <account name> USER <user> PASSWORD <strong_password> DATA DIRECTORY [data on disk]", ConsoleColor.Red);
     }
 
     AngelDB.Monitor.ShowLine("===================================================================", ConsoleColor.Green);
@@ -1624,6 +1649,13 @@ void OnPowerChange(object s, PowerModeChangedEventArgs e)
     }
 }
 
+
+if (File.Exists(parameters["wwwroot"] + "/js/account.js") == false)
+{
+    //Create default account file
+    File.Delete(parameters["wwwroot"] + "/js/account.js");
+}
+
 //Save Account for remote orders
 File.WriteAllText(parameters["wwwroot"] + "/js/account.js", $"var angelsql_account = '{parameters["public_account"]}'");
 
@@ -1675,203 +1707,279 @@ string ServerCommands(AngelSQL.Query query)
 
     string result = "";
 
-        switch (d.First().Key)
-        {
-            case "save_activity_on":
-                save_activity = true;
-                result = "Ok. Save Activity ON";
-                break;
+    switch (d.First().Key)
+    {
+        case "save_activity_on":
+            save_activity = true;
+            result = "Ok. Save Activity ON";
+            break;
 
         case "save_activity_off":
 
-                save_activity = false;
-                result = "Ok. Save Activity OFF";
+            save_activity = false;
+            result = "Ok. Save Activity OFF";
+            break;
+
+        case "white_list_on":
+
+            if (parameters.ContainsKey("use_white_list"))
+            {
+                parameters["use_white_list"] = "true";
+            }
+            else
+            {
+                parameters.Add("use_white_list", "true");
+            }
+
+            result = "Ok. White List ON";
+            break;
+
+        case "white_list_off":
+
+            if (parameters.ContainsKey("use_white_list"))
+            {
+                parameters["use_white_list"] = "false";
+            }
+            else
+            {
+                parameters.Add("use_white_list", "false");
+            }
+
+            result = "Ok. White List OFF";
+            break;
+
+        case "black_list_on":
+
+            if (parameters.ContainsKey("use_black_list"))
+            {
+                parameters["use_black_list"] = "true";
+            }
+            else
+            {
+                parameters.Add("use_black_list", "true");
+            }
+
+            result = "Ok. Black List ON";
+            break;
+
+        case "black_list_off":
+
+            if (parameters.ContainsKey("use_black_list"))
+            {
+                parameters["use_black_list"] = "false";
+            }
+            else
+            {
+                parameters.Add("use_black_list", "false");
+            }
+
+            result = "Ok. Black List OFF";
+            break;
+
+        case "add_to_white_list":
+
+            if (!IsValidIPAddress(d["add_to_white_list"]))
+            {
+                result = "Error: Invalid IP Address";
                 break;
+            }
 
-            case "white_list_on":
+            var w = new
+            {
+                id = d["add_to_white_list"]
+            };
 
-                if (parameters.ContainsKey("use_white_list"))
-                {
-                    parameters["use_white_list"] = "true";
-                }
-                else
-                {
-                    parameters.Add("use_white_list", "true");
-                }
+            result = server_db.UpsertInto("whitelist", w);
+            break;
 
-                result = "Ok. White List ON";
+        case "remove_from_white_list":
+
+            result = server_db.Prompt("SELECT id FROM whitelist WHERE id = '" + d["remove_from_white_list"] + "'");
+
+            if (result == "[]")
+            {
+                result = "Error: IP Address not found";
                 break;
+            }
 
-            case "white_list_off":
+            result = server_db.Prompt($"DELETE FROM whitelist PARTITION KEY main WHERE id = '{d["remove_from_white_list"]}'");
+            break;
 
-                if (parameters.ContainsKey("use_white_list"))
-                {
-                    parameters["use_white_list"] = "false";
-                }
-                else
-                {
-                    parameters.Add("use_white_list", "false");
-                }
+        case "add_to_black_list":
 
-                result = "Ok. White List OFF";
+            if (!IsValidIPAddress(d["add_to_black_list"]))
+            {
+                result = "Error: Invalid IP Address";
+            }
+
+            var b = new
+            {
+                id = d["add_to_black_list"]
+            };
+
+            result = server_db.UpsertInto("blacklist", b);
+            break;
+
+        case "remove_from_black_list":
+
+            result = server_db.Prompt("SELECT id FROM blacklist WHERE id = '" + d["remove_from_black_list"] + "'");
+
+            if (result == "[]")
+            {
+                result = "Error: IP Address not found";
                 break;
+            }
 
-            case "black_list_on":
+            result = server_db.Prompt($"DELETE FROM blacklist PARTITION KEY main WHERE id = '{d["remove_from_black_list"]}'");
+            break;
 
-                if (parameters.ContainsKey("use_black_list"))
-                {
-                    parameters["use_black_list"] = "true";
-                }
-                else
-                {
-                    parameters.Add("use_black_list", "true");
-                }
+        case "create_server_account":
 
-                result = "Ok. Black List ON";
+            result = server_db.Prompt($"SCRIPT FILE {new_server_account} MESSAGE {JsonConvert.SerializeObject(d)}", true);
+
+            if (result.StartsWith("Error:"))
+            {
+                return result;
+            }
+
+            break;
+
+        case "create_app":
+
+            if (d["create_app"] == "null" || d["create_app"].Trim() == "")
+            {
+                result = "Error: App name is required.";
                 break;
+            }
 
-            case "black_list_off":
-
-                if (parameters.ContainsKey("use_black_list"))
-                {
-                    parameters["use_black_list"] = "false";
-                }
-                else
-                {
-                    parameters.Add("use_black_list", "false");
-                }
-
-                result = "Ok. Black List OFF";
+            if (d["files_directory"] == "null")
+            {
+                result = "Error: file directory is required";
                 break;
+            }
 
-            case "add_to_white_list":
+            result = CreateApp(d["create_app"], d["files_directory"]);
+            break;
 
-                if (!IsValidIPAddress(d["add_to_white_list"]))
-                {
-                    result = "Error: Invalid IP Address";
-                    break;
-                }
+        case "proxy":
 
-                var w = new
-                {
-                    id = d["add_to_white_list"]
-                };
+            try
+            {
+                ActivateProxy();
+                result = "Ok. Proxy activated";
+            }
+            catch (Exception e)
+            {
+                result = $"Error: {e.Message}";
+            }
 
-                result = server_db.UpsertInto("whitelist", w);
-                break;
+            break;
 
-            case "remove_from_white_list":
+        case "db":
 
-                result = server_db.Prompt("SELECT id FROM whitelist WHERE id = '" + d["remove_from_white_list"] + "'");
+            result = server_db.Prompt(d["db"]);
+            break;
 
-                if (result == "[]")
-                {
-                    result = "Error: IP Address not found";
-                    break;
-                }
+        case "server_db":
 
-                result = server_db.Prompt($"DELETE FROM whitelist PARTITION KEY main WHERE id = '{d["remove_from_white_list"]}'");
-                break;
+            result = server_db.Prompt(d["server_db"]);
+            break;
 
-            case "add_to_black_list":
+        case "change_sever_master":
 
-                if (!IsValidIPAddress(d["add_to_black_list"]))
-                {
-                    result = "Error: Invalid IP Address";
-                }
+            result = ChangeMaster(d["to_user"], d["password"]);
+            break;
 
-                var b = new
-                {
-                    id = d["add_to_black_list"]
-                };
+        case "set_proxy":
 
-                result = server_db.UpsertInto("blacklist", b);
-                break;
+            result = SetProxy(d);
+            break;
 
-            case "remove_from_black_list":
-
-                result = server_db.Prompt("SELECT id FROM blacklist WHERE id = '" + d["remove_from_black_list"] + "'");
-
-                if (result == "[]")
-                {
-                    result = "Error: IP Address not found";
-                    break;
-                }
-
-                result = server_db.Prompt($"DELETE FROM blacklist PARTITION KEY main WHERE id = '{d["remove_from_black_list"]}'");
-                break;
-
-            case "create_server_account":
-
-                result = server_db.Prompt($"SCRIPT FILE {new_server_account} MESSAGE {JsonConvert.SerializeObject(d)}", true);
-                break;
-
-            case "create_app":
-
-                if (d["create_app"] == "null" || d["create_app"].Trim() == "")
-                {
-                    result = "Error: App name is required.";
-                    break;
-                }
-
-                if (d["files_directory"] == "null")
-                {
-                    result = "Error: file directory is required";
-                    break;
-                }
-
-                result = CreateApp(d["create_app"], d["files_directory"]);
-                break;
-
-            case "proxy":
-
-                try
-                {
-                    ActivateProxy();
-                    result = "Ok. Proxy activated";
-                }
-                catch( Exception e)
-                {
-                    result = $"Error: {e.Message}";
-                }
-
-                break;
-
-            case "db":
-
-                result = server_db.Prompt(d["db"]);
-                break;
-
-            case "server_db":
-
-                result = server_db.Prompt(d["server_db"]);
-                break;
-
-            case "change_sever_master":
-
-                result = ChangeMaster( d["to_user"], d["password"]);
-                break;
 
         default:
 
-                result = "Error: Not command found";
-                break;
-        }
+            result = "Error: Not command found";
+            break;
+    }
 
-        responce.result = result;
+    responce.result = result;
 
-        if (responce.result.StartsWith("Error:"))
-        {
-            responce.type = "ERROR";
-        }
-        else
-        {
-            responce.type = "SUCCESS";
-        }
+    if (responce.result.StartsWith("Error:"))
+    {
+        responce.type = "ERROR";
+    }
+    else
+    {
+        responce.type = "SUCCESS";
+    }
 
-        return JsonConvert.SerializeObject(responce);
+    return JsonConvert.SerializeObject(responce);
 
 }
+
+
+string SetProxy(Dictionary<string, string> d)
+{
+    try
+    {
+        if (!d.ContainsKey("user") || !d.ContainsKey("password"))
+        {
+            return "Error: User and password are required.";
+        }
+
+        if (string.IsNullOrEmpty(d["user"]) || string.IsNullOrEmpty(d["password"]))
+        {
+            return "Error: User and password cannot be empty.";
+        }
+
+        if (d["set_proxy"] == "null" || d["set_proxy"].Trim() == "" )
+        {
+            return "Error: Proxy allowed values ​​are YES or NO";
+        }
+
+        var proxyData = new Dictionary<string, string>
+        {
+            { "use_proxy", d["set_proxy"].ToLower() },
+            { "proxy_account", d["user"] },
+            { "proxy_password", d["password"] },
+            { "public_account", d["public_account"] },
+        };
+
+        string jsonParameters = server_db.GetJson(proxyData);
+
+        string encryptedParameters = AngelDBTools.CryptoString.Encrypt(jsonParameters, "hbjklios", "iuybncsa");
+
+        string filePath = System.IO.Path.Combine(app_directory + "/webdb2.webmi");
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+        File.WriteAllText(filePath, encryptedParameters);
+
+        if (proxyData["use_proxy"] == "yes") 
+        {
+            parameters["use_proxy"] = proxyData["use_proxy"];
+            parameters["proxy_account"] = proxyData["proxy_account"];
+            parameters["proxy_password"] = proxyData[d["password"]];
+            parameters["public_account"] = proxyData[d["public_account"]];
+
+            ActivateProxy();
+
+            return server_db.Prompt("VAR db_public_url");
+
+        }
+
+        return "Ok.";
+
+    }
+    catch (Exception e)
+    {
+        return $"Error: {e.Message}";
+    }
+
+}
+
 
 string ChangeMaster(string to_user, string password)
 {
@@ -2271,9 +2379,9 @@ string CreateApp(string app_name, string files_directory = "")
     {
         return "Error: App name cannot contain spaces.";
     }
-    if (app_name.Length < 3)
+    if (app_name.Length < 5)
     {
-        return "Error: App name must be at least 3 characters long.";
+        return "Error: App name must be at least 5 characters long.";
     }
     if (app_name.Length > 50)
     {

@@ -149,7 +149,7 @@
                 Logo: document.getElementById('logo').value
             };
 
-            var response = (Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
 
             response.then(function (query) {
 

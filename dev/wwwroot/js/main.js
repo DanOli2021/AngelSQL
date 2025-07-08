@@ -143,10 +143,9 @@ async function sendPOST(data) {
 
 
     if (typeof clientKey !== 'undefined' && clientKey != "none" && clientKey) {
-         url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
+        url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
     }
-    else 
-    {
+    else {
         url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
     }
 
@@ -263,11 +262,11 @@ function ShowDialog(title, message) {
 }
 
 function showDialog(title, message) {
-  // Elimina modales anteriores si existen
-  const existingModal = document.getElementById('genericModal');
-  if (existingModal) existingModal.remove();
+    // Elimina modales anteriores si existen
+    const existingModal = document.getElementById('genericModal');
+    if (existingModal) existingModal.remove();
 
-  const modalHtml = `
+    const modalHtml = `
     <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content rounded-4 shadow">
@@ -286,12 +285,12 @@ function showDialog(title, message) {
     </div>
   `;
 
-  // Inyectar al body
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
+    // Inyectar al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-  // Mostrar el modal
-  const myModal = new bootstrap.Modal(document.getElementById('genericModal'));
-  myModal.show();
+    // Mostrar el modal
+    const myModal = new bootstrap.Modal(document.getElementById('genericModal'));
+    myModal.show();
 }
 
 
@@ -765,5 +764,12 @@ function getDominantColor(imgElement, callback, borderSize = 10) {
     callback(finalColor);
 }
 
+
+function LogOut() {
+    localStorage.removeItem("Token");
+    sessionStorage.removeItem("user_groups");
+    sessionStorage.removeItem("Token");
+    window.location.href = "index.html";
+}
 
 

@@ -10,15 +10,6 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 
-if (Environment.GetEnvironmentVariable("ANGELSQL_MAPUNIT") != null)
-{
-    string result = AngelDB.OSTools.MapNetworkDrive(GetVariable("ANGELSQL_MAPNETWORK", ""), GetVariable("ANGELSQL_SHAREDPATH", ""), GetVariable("ANGELSQL_NETWORKUSER", ""), GetVariable("ANGELSQL_NETWORKCODE", ""));
-
-    if (result.StartsWith("Error:"))
-    {
-        Console.WriteLine("Map Network Drive: " + result);
-    }
-}
 
 public class Certificates
 {

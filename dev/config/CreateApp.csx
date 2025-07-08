@@ -41,11 +41,10 @@ if (File.Exists(configFile))
 }
 else
 {
-    string config_result = ScriptGenerator.GenerateAngelSQLScriptFile(App app);
+    string config_result = ScriptGenerator.GenerateAngelSQLScriptFile(app);
     File.WriteAllText(configFile, config_result);
     Console.WriteLine("Created config file: " + configFile);
 }
-
 
 string scripts_directory = Path.Combine(appPath, "scripts");
 FileUtils.CopyDirectory($"{app.Main_directory}/scripts", scripts_directory, false);
@@ -59,7 +58,7 @@ Console.WriteLine();
 
 return "Ok. App created successfully: " + app.App_name;
 
-class App
+public class App
 {
     public string App_name { get; set; }
     public string Files_directory { get; set; }
@@ -108,7 +107,7 @@ public static class FileUtils
 }
 
 
-public static class ScriptGenerator
+public class ScriptGenerator
 {
     public static string GenerateAngelSQLScriptFile(App app)
     {
@@ -161,12 +160,8 @@ Dictionary<string, string> parameters = new()
     {{ ""master_user"", ""db"" }},
     {{ ""master_password"", ""db"" }},
     {{ ""data_directory"", ""{ app.Files_directory }/Data"" }},
-    {{ ""account"", ""account1"" }},
-    {{ ""account_user"", ""angelsql"" }},
-    {{ ""account_password"", ""angelsql123"" }},
-    {{ ""database"", ""database1"" }},
     {{ ""request_timeout"", ""4"" }},
-    {{ ""accounts_directory"", """" }},
+    {{ ""accounts_directory"", ""{app.Files_directory}/Data"" }},
     {{ ""smtp"", """" }},
     {{ ""smtp_port"", """" }},
     {{ ""email_address"", """" }},

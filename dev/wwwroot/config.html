@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,17 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/monokai.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
 
+    <script src="proxy.js"></script>
     <script src="js/AngelSQL.js"></script>
     <script src="js/main.js"></script>
     <link href="css/sql_commands.css" rel="stylesheet" />
+
+    <style>
+        .table-break-word td {
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+    </style>
 
     <script>
 
@@ -21,7 +30,16 @@
             window.location.href = "index.html";
         }
 
-        let db = new AngelSQL("", "", window.location.protocol + '//' + window.location.host + "/AngelSQL");
+        let url = "";
+
+        if (typeof clientKey !== 'undefined' && clientKey != "none" && clientKey) {
+            url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelSQL";
+        }
+        else {
+            url = window.location.protocol + '//' + window.location.host + "/AngelSQL";
+        }
+
+        let db = new AngelSQL("", "", url);
         db.SetToken(result);
 
     </script>
@@ -38,7 +56,8 @@
 
 
     <!-- Modal Bootstrap -->
-    <div class="modal fade" id="changeMasterModal" tabindex="-1" aria-labelledby="changeMasterModalLabel" aria-hidden="true">
+    <div class="modal fade" id="changeMasterModal" tabindex="-1" aria-labelledby="changeMasterModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -72,12 +91,14 @@
 
     <!-- Toast Bootstrap -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2000">
-        <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     Change made successfully.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Cerrar"></button>
             </div>
         </div>
     </div>
@@ -95,28 +116,202 @@
 
     <h1>AngelSQL Command Interface</h1>
 
+    <div id="Prompt_data">
+    </div>
+
     <textarea rows="5" id="sqlCommand">
     </textarea>
 
     <div class="container-fluid">
         <div class="row col-12">
-            <div class="col-3 btn-container">
-                <button id="btnChangeMaster" class="btn" onclick="executeAngelSQLCommand()">Execute (F2)</button>
+            <div class="col-4 btn-container">
+                <button id="btnChangeMaster" class="btn form-control" onclick="executeAngelSQLCommand()">Execute (F2)</button>
             </div>
 
-            <div class="col-3 btn-container" style="margin-bottom: 10px">
+            <div class="col-2 btn-container" style="margin-bottom: 10px">
                 <button class="btn" onclick="showChangeMasterModal()">Change master user</button>
             </div>
 
-            <div class="col-3 btn-container" style="margin-bottom: 10px">
-                <button class="btn">Manage Accounts</button>
+            <div class="col-2 btn-container" style="margin-bottom: 10px">
+                <button class="btn" onclick="showManageAccountsModal()">Manage Accounts</button>
             </div>
 
-            <div class="col-3 btn-container" style="margin-bottom: 10px">
-                <button class="btn">Create App</button>
+            <div class="col-2 btn-container" style="margin-bottom: 10px">
+                <button class="btn" onclick="showCreateAppModal()">Create App</button>
+            </div>
+
+            <!-- Inicio Boton para establecer los parámetros del proxy-->
+            <div class="col-2 btn-container" style="margin-bottom: 10px">
+                <button class="btn" onclick="showProxyModal()">Set Proxy Values</button>
+            </div>
+            <!-- Fin Boton para establecer los parámetros del proxy-->
+
+
+        </div>
+    </div>
+
+
+    <!-- Modal Bootstrap para Administrar Cuentas -->
+    <div class="modal fade" id="manageAccountsModal" tabindex="-1" aria-labelledby="manageAccountsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageAccountsModalLabel">Manage Accounts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="accountsTableContainer"></div>
+                    <hr />
+                    <form id="accountForm">
+                        <input type="hidden" id="accountId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="accountName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="accountName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="accountEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="accountEmail" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="accountDbUser" class="form-label">DB User</label>
+                                <input type="text" class="form-control" id="accountDbUser" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="accountDbPassword" class="form-label">DB Password</label>
+                                <input type="password" class="form-control" id="accountDbPassword" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="accountActive">
+                            <label class="form-check-label" for="accountActive">Active</label>
+                        </div>
+                        <div id="accountMsg" class="text-danger small"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="showCreateAccountModal()">New
+                        Account</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAccount()">Save</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Bootstrap para Crear Cuenta -->
+    <div class="modal fade" id="createAccountModal" tabindex="-1" aria-labelledby="createAccountModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createAccountModalLabel">Create New Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createAccountForm">
+                        <div class="mb-3">
+                            <label for="createAccountName" class="form-label">Account Name</label>
+                            <input type="text" class="form-control" id="createAccountName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createAccountUser" class="form-label">User</label>
+                            <input type="text" class="form-control" id="createAccountUser" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createAccountPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="createAccountPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createAccountDataDirectory" class="form-label">Data Directory (Optional)</label>
+                            <input type="text" class="form-control" id="createAccountDataDirectory">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="createAccountDefault">
+                            <label class="form-check-label" for="createAccountDefault">Set as Default</label>
+                        </div>
+                        <div id="createAccountMsg" class="text-danger small"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createAccount()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Bootstrap para Crear App -->
+    <div class="modal fade" id="createAppModal" tabindex="-1" aria-labelledby="createAppModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createAppModalLabel">Create New App</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createAppForm">
+                        <div class="mb-3">
+                            <label for="createAppName" class="form-label">App Name</label>
+                            <input type="text" class="form-control" id="createAppName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createAppFilesDirectory" class="form-label">Files Directory</label>
+                            <input type="text" class="form-control" id="createAppFilesDirectory" required>
+                        </div>
+                        <div id="createAppMsg" class="text-danger small"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createApp()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inicio Modal Bootstrap para Establecer los servicios de proxy -->
+    <div class="modal fade" id="proxyModal" tabindex="-1" aria-labelledby="proxyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="proxyModalLabel">Set Proxy Parameters</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="proxyForm">
+                        <div class="mb-3">
+                            <label for="proxyEnabled" class="form-label">Proxy</label>
+                            <select class="form-select" id="proxyEnabled" onchange="toggleProxyFields()">
+                                <option value="NO">Disabled</option>
+                                <option value="YES">Enabled</option>
+                            </select>
+                        </div>
+                        <div id="proxyFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="proxyUser" class="form-label">User</label>
+                                <input type="text" class="form-control" id="proxyUser">
+                            </div>
+                            <div class="mb-3">
+                                <label for="proxyPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="proxyPassword">
+                            </div>
+                        </div>
+                        <div id="proxyMsg" class="text-danger small"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="applyProxySettings()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Fin Modal Bootstrap para Establecer los servicios de proxy -->
+    
 
     <br />
 
@@ -137,6 +332,7 @@
         }
 
         function executeAngelSQLCommand() {
+
             const sqlCommand = document.getElementById("sqlCommand").value;
 
             if (sqlCommand === null) return;
@@ -162,7 +358,8 @@
             resultOutput.classList.add("resultOutput");
             resultOutput.textContent = "Thinking...";
 
-            console.log(sqlCommand);
+            console.log(sqlCommand);            
+
             result = db.Prompt("BATCH " + sqlCommand + " SHOW IN CONSOLE");
 
             let dotCount = 0;
@@ -174,6 +371,13 @@
                     dotCount = 0;
                 }
             }, 500); // Añade un punto cada 500 milisegundos
+
+            let connection_data = db.Prompt("CONNECTION INFO");
+            
+            connection_data.then(function (value) {
+                let info = JSON.parse(value);
+                document.getElementById("Prompt_data").innerHTML = info.Account + ">" + info.Database + ">" + info.User + "$>";
+            });
 
             result.then(function (value) {
                 clearInterval(dotInterval); // Detenemos la animación
@@ -403,6 +607,303 @@
             toast.show();
         }
 
+        let manageAccountsModal = null;
+
+        function showManageAccountsModal() {
+            const modalElement = document.getElementById('manageAccountsModal');
+            manageAccountsModal = new bootstrap.Modal(modalElement);
+            manageAccountsModal.show();
+            loadAccounts();
+        }
+
+        async function loadAccounts() {
+            try {
+                let result = await db.Prompt("USE ACCOUNT angelsql");
+
+                if (result.startsWith("Error:")) {
+                    showDialog("Error:", result);
+                    return;
+                }
+
+                result = await db.Prompt("USE DATABASE server");
+
+                if (result.startsWith("Error:")) {
+                    showDialog("Error:", result);
+                    return;
+                }
+
+
+                result = await db.Prompt("SELECT * FROM accounts");
+
+                if (result.startsWith("Error:")) {
+                    showDialog("Error:", result);
+                    return;
+                }
+
+                const accounts = JSON.parse(result);
+                const tableContainer = document.getElementById("accountsTableContainer");
+
+                let table = '<table class="table table-striped table-break-word">';
+                table += '<thead><tr><th>Name</th><th>Email</th><th>DB User</th><th>Active</th><th>Actions</th></tr></thead>';
+                table += '<tbody>';
+
+                for (const account of accounts) {
+                    table += `<tr>
+                        <td>${account.name}</td>
+                        <td>${account.email}</td>
+                        <td>${account.db_user}</td>
+                        <td>${account.active}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick='editAccount(${JSON.stringify(account)})'>Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick='deleteAccount("${account.id}")'>Delete</button>
+                        </td>
+                    </tr>`;
+                }
+
+                table += '</tbody></table>';
+                tableContainer.innerHTML = table;
+            } catch (error) {
+                console.error("Error loading accounts:", error);
+                document.getElementById("accountsTableContainer").innerHTML = `<div class="alert alert-danger">Error loading accounts: ${error}</div>`;
+            }
+        }
+
+        function editAccount(account) {
+            document.getElementById("accountId").value = account.id;
+            document.getElementById("accountName").value = account.name;
+            document.getElementById("accountEmail").value = account.email;
+            document.getElementById("accountDbUser").value = account.db_user;
+            document.getElementById("accountDbPassword").value = account.db_password;
+            document.getElementById("accountActive").checked = account.active === 'true';
+        }
+
+        async function saveAccount() {
+            const accountId = document.getElementById("accountId").value;
+            const account = {
+                id: accountId || `acc_${Date.now()}`,
+                name: document.getElementById("accountName").value,
+                email: document.getElementById("accountEmail").value,
+                db_user: document.getElementById("accountDbUser").value,
+                db_password: document.getElementById("accountDbPassword").value,
+                active: document.getElementById("accountActive").checked.toString(),
+                PartitionKey: 'main'
+            };
+
+            if (!account.name || !account.email || !account.db_user || !account.db_password) {
+                document.getElementById("accountMsg").textContent = "All fields are required.";
+                return;
+            }
+
+            const jsonValues = JSON.stringify(account);
+            const command = `UPSERT INTO accounts VALUES ${jsonValues}`;
+
+            try {
+                await db.Prompt("USE angelsql DATABASE server");
+                const result = await db.Prompt(command);
+                if (result.startsWith("Error:")) {
+                    document.getElementById("accountMsg").textContent = result;
+                } else {
+                    showSuccessToast();
+                    loadAccounts();
+                    document.getElementById('accountForm').reset();
+                    document.getElementById('accountId').value = '';
+                }
+            } catch (error) {
+                document.getElementById("accountMsg").textContent = `Error: ${error}`;
+            }
+        }
+
+        async function deleteAccount(accountId) {
+            ShowAcceptCancelDialog("Confirm Deletion", `Are you sure you want to delete account ${accountId}?`, async function () {
+                try {
+                    await db.Prompt("USE angelsql DATABASE server");
+                    const command = `DELETE FROM accounts PARTITION KEY main WHERE id = '${accountId}'`;
+                    const result = await db.Prompt(command);
+                    if (result.startsWith("Error:")) {
+                        showDialog("Error", result);
+                    } else {
+                        showSuccessToast();
+                        loadAccounts();
+                    }
+                } catch (error) {
+                    showDialog("Error", `Error: ${error}`);
+                }
+                ShowAcceptCancelDialogClose();
+            });
+        }
+
+        let createAccountModal = null;
+
+        function showCreateAccountModal() {
+            const modalElement = document.getElementById('createAccountModal');
+            createAccountModal = new bootstrap.Modal(modalElement);
+            createAccountModal.show();
+            document.getElementById("createAccountMsg").textContent = "";
+            document.getElementById("createAccountForm").reset();
+        }
+
+        async function createAccount() {
+            const accountName = document.getElementById("createAccountName").value.trim();
+            const user = document.getElementById("createAccountUser").value.trim();
+            const password = document.getElementById("createAccountPassword").value;
+            const dataDirectory = document.getElementById("createAccountDataDirectory").value.trim();
+            const isDefault = document.getElementById("createAccountDefault").checked;
+            const msg = document.getElementById("createAccountMsg");
+
+            msg.classList.remove("text-success", "text-danger");
+
+            if (!accountName || !user || !password) {
+                msg.textContent = "Account Name, User, and Password are required.";
+                msg.classList.add("text-danger");
+                return;
+            }
+
+            let command = `CREATE SERVER ACCOUNT ${accountName} USER ${user} PASSWORD ${password}`;
+            if (dataDirectory) {
+                command += ` DATA DIRECTORY ${dataDirectory}`;
+            }
+
+            try {
+                const result = await db.Server(command);
+                if (result.startsWith("Error:")) {
+                    msg.textContent = result;
+                    msg.classList.add("text-danger");
+                } else {
+                    msg.textContent = "Account created successfully.";
+                    msg.classList.add("text-success");
+                    setTimeout(() => {
+                        createAccountModal.hide();
+                        showSuccessToast();
+                        loadAccounts();
+                    }, 800);
+                }
+            }
+            catch (err) {
+                msg.textContent = "Error: " + err;
+                msg.classList.add("text-danger");
+            }
+        }
+
+        let createAppModal = null;
+
+        function showCreateAppModal() {
+            const modalElement = document.getElementById('createAppModal');
+            createAppModal = new bootstrap.Modal(modalElement);
+            createAppModal.show();
+            document.getElementById("createAppMsg").textContent = "";
+            document.getElementById("createAppForm").reset();
+        }
+
+        async function createApp() {
+            const appName = document.getElementById("createAppName").value.trim();
+            const filesDirectory = document.getElementById("createAppFilesDirectory").value.trim();
+            const msg = document.getElementById("createAppMsg");
+
+            msg.classList.remove("text-success", "text-danger");
+
+            if (!appName || !filesDirectory) {
+                msg.textContent = "App Name and Files Directory are required.";
+                msg.classList.add("text-danger");
+                return;
+            }
+
+            if (appName.length < 5) {
+                msg.textContent = "App Name must be at least 5 characters long.";
+                msg.classList.add("text-danger");
+                return;
+            }
+
+            const command = `CREATE APP ${appName} FILES DIRECTORY ${filesDirectory}`;
+
+            try {
+                const result = await db.Server(command);
+                if (result.startsWith("Error:")) {
+                    showDialog("Error", result);
+                } else {
+                    showDialog("Success", "App created successfully. Run your APP from command line: C:/AngelSQLNet/AngelSQL/AngelSQLServer.exe APP DIRECTORY " + filesDirectory);
+                    setTimeout(() => {
+                        createAppModal.hide();
+                        showSuccessToast();
+                    }, 800);
+                }
+            } catch (err) {
+                showDialog("Error", "Error: " + err);
+            }
+        }
+
+
+        // Función para mostrar el modal de parámetros del proxy
+        // Se debe de usar el comando Server AngelSQL 
+        // La sintaxis es:
+        // SET PROXY <YES, NO> USER <usuario de la cuenta de AngelSQL> PASSWORD <password la cuenta>
+        // Si se desea dejar de usar el proxy se puede usa el comando simplemente como:
+        // SET PROXY NO
+        let proxyModal = null;
+
+        function showProxyModal() {
+            const modalElement = document.getElementById('proxyModal');
+            proxyModal = new bootstrap.Modal(modalElement);
+            proxyModal.show();
+            document.getElementById("proxyMsg").textContent = "";
+            document.getElementById("proxyForm").reset();
+            toggleProxyFields();
+        }
+
+        function toggleProxyFields() {
+            const proxyEnabled = document.getElementById("proxyEnabled").value;
+            const proxyFields = document.getElementById("proxyFields");
+            proxyFields.style.display = proxyEnabled === "YES" ? "block" : "none";
+        }
+
+        async function applyProxySettings() {
+            const proxyEnabled = document.getElementById("proxyEnabled").value;
+            const user = document.getElementById("proxyUser").value.trim();
+            const pass = document.getElementById("proxyPassword").value;
+            const msg = document.getElementById("proxyMsg");
+
+            msg.classList.remove("text-success", "text-danger");
+
+            let command;
+            if (proxyEnabled === "YES") {
+                if (!user || !pass) {
+                    msg.textContent = "User and password are required when enabling the proxy.";
+                    msg.classList.add("text-danger");
+                    return;
+                }
+                command = `SET PROXY YES USER ${user} PASSWORD ${pass}`;
+            } else {
+                command = `SET PROXY NO`;
+            }
+
+            ShowAcceptCancelDialog("Confirm Proxy Settings", `Are you sure you want to apply these settings?`, async function () {
+                msg.textContent = "Procesando...";
+
+                try {
+                    const result = await db.Server(command);
+                    if (result.startsWith("Error:")) {
+                        showDialog("Error", result);
+                        msg.textContent = result;
+                        msg.classList.add("text-danger");
+                    } else {
+                        showDialog("Success", "Proxy settings updated successfully.");
+                        msg.textContent = "Proxy settings updated successfully.";
+                        msg.classList.add("text-success");
+
+                        setTimeout(() => {
+                            proxyModal.hide();
+                            showSuccessToast();
+                        }, 800);
+
+                        ShowAcceptCancelDialogClose();
+
+                    }
+                } catch (err) {
+                    msg.textContent = "Error: " + err;
+                    msg.classList.add("text-danger");
+                }
+            });
+        }
+
 
         document.getElementById("sqlCommand").focus();
 
@@ -462,7 +963,6 @@
         }
     </script>
 
-
-
 </body>
+
 </html>

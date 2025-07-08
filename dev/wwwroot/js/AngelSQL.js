@@ -45,7 +45,7 @@ class AngelSQL {
         const angelResponse = await response.json();
         return angelResponse.result;
     }
-    
+
     async Server(command) {
         this.angelQuery.type = 'server_command';
         this.angelQuery.command = command;

@@ -18,11 +18,6 @@ using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Globalization;
-using System.Reflection;
-using System.IO;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 private AngelApiOperation api = JsonConvert.DeserializeObject<AngelApiOperation>(message);
 api.db = db;
@@ -39,18 +34,19 @@ CreateTables(db);
 // This is the main function that will be called by the API
 return api.OperationType switch
 {
-    "SaveImport" => SaveImport(api, translation),
-    "CreatePageWithIA" => CreatePageWithIA(api, translation),
-    "Get" => Get(api, translation),
-    "GetMany" => GetMany(api, translation),
-    "UpsertCurrency" => UpsertCurrency(api, translation),
-    "Delete" => Delete(api, translation),
+    "SaveImport" => SaveImport(),
+    "SaveHeadSite" => SaveHeadSite(),
+    "Get" => Get(),
+    "GetSiteParameters" => GetSiteParameters(),
+    "GetMany" => GetMany(),
+    "UpsertCurrency" => UpsertCurrency(),
+    "Delete" => Delete(),
     _ => $"Error: No service found {api.OperationType}",
 };
 
 
 
-string SaveImport(AngelApiOperation api, Translations translation)
+string SaveImport()
 {
 
     string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
@@ -95,19 +91,11 @@ string SaveImport(AngelApiOperation api, Translations translation)
                 return "Error: Title is empty in row " + n.ToString();
             }
 
-            if (row["html_code"].ToString().Trim() == "")
-            {
-                return "Error: HTML code is empty in row " + n.ToString();
-            }
-
-
             Pages page = new()
             {
                 Id = row["page_id"].ToString().Trim().ToUpper(),
                 Title = row["title"].ToString(),
-                Html_code = row["html_code"].ToString(),
                 User_id = api.User,
-                User_name = ""
             };
 
             pages.Add(page);
@@ -135,7 +123,44 @@ string SaveImport(AngelApiOperation api, Translations translation)
 }
 
 
-string GetMany(AngelApiOperation api, Translations translation)
+string SaveHeadSite()
+{
+    string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    dynamic data = api.DataMessage.ToString().Trim();
+
+    if (string.IsNullOrEmpty(data))
+    {
+        return "Error: No data provided.";
+    }
+
+    if (data.Head == null || data.Head.ToString().Trim() == "")
+    {
+        return "Error: Head is empty.";
+    }
+
+    Site site = new()
+    {
+        Id = "1",
+        Head = data.Head.ToString().Trim(),
+    };
+
+    result = db.UpsertInto("Site", site);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    return "Ok.";    
+}
+
+string GetMany()
 {
 
     string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
@@ -170,7 +195,7 @@ string GetMany(AngelApiOperation api, Translations translation)
 
 
 
-string UpsertCurrency(AngelApiOperation api, Translations translation)
+string UpsertCurrency()
 {
 
     string result = IsTokenValid(api, "POS_DATA_UPSERT, STAKEHOLDER, SUPERVISOR");
@@ -219,7 +244,7 @@ string UpsertCurrency(AngelApiOperation api, Translations translation)
 
 
 
-string Get(AngelApiOperation api, Translations translation)
+string Get()
 {
 
     string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
@@ -250,7 +275,38 @@ string Get(AngelApiOperation api, Translations translation)
 }
 
 
-string Delete(AngelApiOperation api, Translations translation)
+string GetSiteParameters()
+{
+
+    string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    string data = api.DataMessage.ToString().Trim();
+
+    result = db.Prompt($"SELECT * FROM Site WHERE id = '1'", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return "Error: " + translation.Get("No data found.", api.UserLanguage);
+    }
+
+    result = result[1..^1];
+
+    return result;
+
+}
+
+
+string Delete()
 {
 
     string result = IsTokenValid(api, "STAKEHOLDER");
@@ -275,38 +331,13 @@ string Delete(AngelApiOperation api, Translations translation)
 
 }
 
-
-string CreatePageWithIA(AngelApiOperation api, Translations translation)
-{
-
-    string result = IsTokenValid(api, "STAKEHOLDER");
-
-    if (result.StartsWith("Error:"))
-    {
-        return result;
-    }
-
-    dynamic data = api.DataMessage;
-
-    if (data.Length < 3)
-    {
-        return "Error: " + translation.Get("Data is too short", api.UserLanguage);
-    }
-
-    db.Prompt($"OLLAMA", true);
-    db.Prompt($"OLLAMA LOAD MODEL qwen2.5-coder", true);
-    result = db.Prompt($"OLLAMA PROMPT {data.Html_code}", true);
-
-    // Here you would implement the logic to create a page using AI
-    // For now, we will just return a placeholder message
-    return result;
-
-}
-
 private string CreateTables(AngelDB.DB db)
 {
     Pages pages = new();
     db.CreateTable(pages, "Pages", false, "", true);
+
+    Site site = new();
+    db.CreateTable(site, "Site", false, "", true);
 
     return "Ok.";
 }
@@ -315,8 +346,18 @@ public class Pages
 {
     public string Id { get; set; }
     public string User_id { get; set; }
-    public string User_name { get; set; }
     public string Title { get; set; }
-    public string Prompt { get; set; }
     public string Html_code { get; set; }
+    public string Javascript { get; set; }
+}
+
+
+public class Site
+{
+    public string Id { get; set; }
+    public string User_id { get; set; }
+    public string Head { get; set; }
+    public string Css { get; set; }
+    public string Body { get; set; }
+    public string Navigation_bar { get; set; }
 }

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Kiosko Admin (pages)</title>
+    <title>Kiosko Admin (site)</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
@@ -45,45 +45,80 @@
 
         <!-- ** Navigation menu -->
         <div class="row col-12" style="margin-top: 10px;">
-            <!-- Botón de logout -->
-            <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
-                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
-                    <span id="menu_log_out">Log Out</span>
-                </a>
-            </div>
 
-            <!-- Botón de menu -->
-            <div class="col-4">
-                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
-                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
-                    <span id="menu_menu">Menu</span>
-                </a>
-            </div>
+            <div class="row col-12" style="margin-top: 10px;">
+                <!-- Botón de logout -->
+                <div class="col-4">
+                    <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                        <span id="menu_log_out">Log Out</span>
+                    </a>
+                </div>
 
-            <!-- Botón de configuration -->
-            <div class="col-4">
-                <a class="btn btn-primary w-100" href="configuration.html" id="menu_navigation_logout">
-                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
-                    <span id="menu_configuration">Configuration</span>
-                </a>
+                <!-- Botón de menu -->
+                <div class="col-4">
+                    <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                        <span id="menu_menu">Menu</span>
+                    </a>
+                </div>
+
+                <!-- Botón de configuration -->
+                <div class="col-4">
+                    <a class="btn btn-primary w-100" href="configuration.html" id="menu_navigation_logout">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                        <span id="menu_configuration">Configuration</span>
+                    </a>
+                </div>
             </div>
             <!-- ** Navigation menu -->
 
 
             <!-- ** Logo and title of the module -->
             <div class="row justify-content-center">
-                <img src="./images/AI_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                <img src="images/WebPasges_small.png" alt="logo" class="img-fluid mx-auto d-block"
                     style="margin-top: 20px;width:200px">
 
                 <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin
-                    (pages)
+                    (Site)
                 </h1>
 
                 <div class="col-sm-12" id="buttonszone">
                 </div>
             </div>
             <!-- ** Logo and title of the module -->
+
+
+            <!-- ** Action button area -->
+            <div class="row col-12" style="margin-top: 10px;">
+                <div class="col-3">
+                    <button id="button_head" class="btn btn-primary btn-lg form-control col-4"
+                        style="margin-bottom: 10px;">Head</button>
+                </div>
+
+                <div class="col-3">
+                    <button id="button_css" class="btn btn-primary btn-lg form-control col-4"
+                        style="margin-bottom: 10px;">CSS</button>
+                </div>
+
+                <div class="col-3">
+                    <button id="button_body" class="btn btn-primary btn-lg form-control col-4"
+                        style="margin-bottom: 10px;">Body</button>
+                </div>
+
+                <div class="col-3">
+                    <button id="button_navigation" class="btn btn-primary btn-lg form-control col-4"
+                        style="margin-bottom: 10px;">Navigation</button>
+                </div>
+
+                <div class="col-12">
+                    <button id="button_import" class="btn btn-primary btn-lg form-control col-4"
+                        style="margin-bottom: 10px;">Import existing page</button>
+                </div>
+
+
+            </div>
+            <!-- ** Action button area -->
 
 
             <!-- ** Action button area -->
@@ -104,7 +139,6 @@
                 </div>
             </div>
             <!-- ** Action button area -->
-
 
             <!-- ** Application body -->
             <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
@@ -148,40 +182,26 @@
                 <div class="row col-12">
 
                     <div class="col-3">
-                        <label for="page_id" class="form-label">Page ID</label>
+                        <label for="page_id" class="form-label" style="margin-bottom: 10px;">Page ID</label>
                     </div>
+
                     <div class="col-9">
-                        <input type="text" id="page_id" class="form-control" />
+                        <input type="text" id="page_id" class="form-control" style="margin-bottom: 10px;" />
                     </div>
 
                     <div class="col-3">
-                        <label for="page_title" class="form-label">Title</label>
-                    </div>
-                    <div class="col-9">
-                        <input type="text" id="page_title" class="form-control" />
-                    </div>
-
-                    <div class="col-3">
-                        <label for="page_prompt" class="form-label">Prompt</label>
-                    </div>
-                    <div class="col-9">
-                        <textarea id="page_prompt" class="form-control" rows="3"
-                            style="margin-top: 10px; margin-bottom: 10px;" placeholder="Prompt"></textarea>
-                    </div>
-
-                    <div class="col-3">
+                        <label for="page_title" class="form-label" style="margin-bottom: 10px;">Title</label>
                     </div>
 
                     <div class="col-9">
-                        <button id="edit_ia_button" class="btn btn-success form-control" onclick="CreatePage();">Generate</button>
+                        <input type="text" id="page_title" class="form-control" style="margin-bottom: 10px;" />
                     </div>
 
-                    <div class="col-3">
-                        <label for="page_html_code" class="form-label">HTML</label>
-                    </div>
-                    <div class="col-9">
-                        <textarea id="page_html_code" class="form-control" rows="15"
-                            style="margin-top: 10px; margin-bottom: 10px;" placeholder="HTML"></textarea>
+
+
+                    <div class="col-12">
+                        <button id="edit_ia_button" class="btn btn-info btn-lg form-control" onclick="CreatePage();"
+                            style="margin-bottom: 10px; margin-top: 10px">Generate</button>
                     </div>
 
                     <div class="col-4">
@@ -198,11 +218,17 @@
                         <button id="edit_cancel_button" class="btn btn-danger btn-lg form-control col-4"
                             style="margin-bottom: 10px;">Cancel</button>
                     </div>
-
                 </div>
             </div>
         </dialog>
         <!-- ** Dialog to edit the properties of a record -->
+
+
+        <!-- ** Dialog edit html -->
+
+        <!-- ** Dialog edit html -->
+        
+
 
 
         <!-- ** Footer bar-->
@@ -231,8 +257,17 @@
         </dialog>
         <!-- ** Generic Dialog to confirm -->
 
-
         <script>
+
+            let site = 
+            {
+                "head": "",
+                "css": "",
+                "body": "",
+                "navigation": ""
+            };
+
+            let businessesInfo = null;
 
             // Import from Excel
             function ImporFromSpreadSheet() {
@@ -326,6 +361,23 @@
                             "title": "Title",
                             "html": (value) => `<strong>${value}</strong>`,
                         },
+                        "PartitionKey":
+                        {
+                            "visible": false,
+                        },
+                        "timestamp":
+                        {
+                            "title": "Time stamp",
+                            "html": (value) => `<strong>${value}</strong>`,
+                        },
+                        "Html_code":
+                        {
+                            "visible": false,
+                        },
+                        "Javascript":
+                        {
+                            "visible": false,
+                        },
                     };
 
                     if (responce_query.result == "[]") {
@@ -356,8 +408,6 @@
 
                     document.getElementById("page_id").value = "";
                     document.getElementById("page_title").value = "";
-                    document.getElementById("page_html_code").value = "";
-                    document.getElementById("page_prompt").value = "";
                     document.getElementById("page_edit").showModal();
                     return;
 
@@ -389,8 +439,6 @@
                     document.getElementById("page_id").disabled = true;
                     document.getElementById("page_id").value = page.id;
                     document.getElementById("page_title").value = page.Title;
-                    document.getElementById("page_html_code").value = page.Html_code;
-                    document.getElementById("page_prompt").value = page.Prompt;
 
                     // Mostrar el diálogo de edición
                     document.getElementById("page_edit").showModal();
@@ -404,8 +452,6 @@
 
                 const pageId = document.getElementById("page_id").value;
                 const pageTitle = document.getElementById("page_title").value;
-                const pageHtmlCode = document.getElementById("page_html_code").value;
-                const pagePrompt = document.getElementById("page_prompt").value;
 
                 if (pageId.trim() == "") {
                     ShowDialog("Alert", "Page ID cannot be empty.");
@@ -417,16 +463,9 @@
                     return;
                 }
 
-                if( pagePrompt.trim() == "") {
-                    ShowDialog("Alert", "Page Prompt cannot be empty.");
-                    return;
-                }
-
                 var page = {
                     page_id: document.getElementById("page_id").value,
-                    Title: pageTitle,
-                    Html_code: pageHtmlCode,
-                    Prompt: pagePrompt
+                    Title: pageTitle
                 };
 
 
@@ -453,61 +492,6 @@
 
 
             }
-
-
-            function CreatePage() {
-
-                const pageId = document.getElementById("page_id").value;
-                const pageTitle = document.getElementById("page_title").value;
-                const pageHtmlCode = document.getElementById("page_html_code").value;
-                const pagePrompt = document.getElementById("page_prompt").value;
-
-                if (pageId.trim() == "") {
-                    ShowDialog("Alert", "Page ID cannot be empty.");
-                    return;
-                }
-
-                if (pageTitle.trim() == "") {
-                    ShowDialog("Alert", "Page Title cannot be empty.");
-                    return;
-                }
-
-                if( pagePrompt.trim() == "") {
-                    ShowDialog("Alert", "Page Prompt cannot be empty.");
-                    return;
-                }
-
-                var page = {
-                    page_id: document.getElementById("page_id").value,
-                    Title: pageTitle,
-                    Html_code: pageHtmlCode,
-                    Prompt: pagePrompt
-                };
-
-                var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "CreatePageWithIA", page);
-
-                response.then(function (query) {
-
-                    if (query.startsWith("Error:")) {
-                        ShowDialog("Alert", query);
-                        return;
-                    }
-
-                    let responce_query = JSON.parse(query);
-
-                    if (responce_query.result.startsWith("Error:")) {
-                        ShowDialog("Alert", responce_query.result);
-                        return;
-                    }
-
-                    document.getElementById("page_html_code").value = responce_query.result;
-
-                });
-
-
-            }
-
-
 
             function ConfirmDelete() {
                 const pageId = document.getElementById("page_id").value;
@@ -580,6 +564,23 @@
                     }
                 });
 
+
+                response = await sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "GetSiteParameters");
+
+                if (response.startsWith("Error:")) {
+                    ShowDialog("Alert", response);
+                    return;
+                }
+
+                let responce_query = JSON.parse(response);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                site = JSON.parse(responce_query.result);                
+
                 translate_menu(language);
 
                 Search(":ALL");
@@ -590,7 +591,6 @@
 
 
         </script>
-
 
         <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
 

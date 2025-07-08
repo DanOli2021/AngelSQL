@@ -109,7 +109,6 @@
             <p class="lead">All you need, in one place. With the ultimate simplicity and power of AngelSQL.</p>
             <a href="#" class="btn btn-light btn-lg mt-3" onclick="lanzarChatModal('index.html', '', '');">Contact us</a>
         </div>
-
     </header>
 
     <!-- Features Section -->
@@ -190,7 +189,16 @@
             var username = document.getElementById("username").value;
             var password = document.getElementById("password").value;
 
-            var angelSql = new AngelSQL(username, password, window.location.protocol + '//' + window.location.host + "/AngelSQL");
+            let url = "";
+
+            if (typeof clientKey !== 'undefined' && clientKey != "none" && clientKey) {
+                url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelSQL";
+            }
+            else {
+                url = window.location.protocol + '//' + window.location.host + "/AngelSQL";
+            }
+
+            var angelSql = new AngelSQL(username, password, url);
             var result_promise = angelSql.Start();
 
             result_promise.then(result => {
@@ -206,14 +214,16 @@
                     sessionStorage.setItem('AngelSQLTocken', result);
 
                     if (password == "db") {
-                        window.location = "config.html?warning=change_default_password";
+                        window.open("config.html?warning=change_default_password", '_blank');
                     }
                     else
                     {
-                       window.location = "config.html";   
+                        window.open("config.html", '_blank');
                     }
                     
                 });
+
+                document.getElementById('loginModal').classList.remove('show');
 
             }).catch(error => console.error('Error: Login() When getting the result:', error));
 

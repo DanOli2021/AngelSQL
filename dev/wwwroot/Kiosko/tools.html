@@ -45,7 +45,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-6">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -129,6 +129,7 @@
                 if( findInString(user_groups.groups, "SUPERVISORS") )  
                 {
                     generateButton("chat_web_page.html", "images/Kiosco_chat_small.png", "Chat with contacts on the website", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("pages.html", "images/WebPasges_small.png", "WebSite Manager", "btn btn-success btn-block btn-lg form-control");
                 }
             }
         }

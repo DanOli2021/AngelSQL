@@ -44,7 +44,7 @@
 
         <div class="row" style="margin-top: 10px;">
             <div class="container-fluid">
-                <a class="btn btn-primary btn-block" href="index.html" style="width: 100%;" id="menu_navigation_logout">
+                <a class="btn btn-primary btn-block" href="#" style="width: 100%;" id="menu_navigation_logout" onclick="LogOut()">
                     <span style="float: left;">
                         <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
                     </span>
@@ -101,6 +101,9 @@
             let response = GetGroupsUsingTocken(Token.User, Token.Token);
 
             response.then(function (query) {
+
+                console.log("Response from GetGroupsUsingTocken: " + query);
+
                 let response_query = JSON.parse(query);
 
                 if (response_query.result.startsWith("Error:")) {

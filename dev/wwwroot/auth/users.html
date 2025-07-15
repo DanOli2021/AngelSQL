@@ -5,7 +5,7 @@
     <title>Users</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
 
 
     <link rel="stylesheet" type="text/css" href="./css/jquery.dataTables.min.css">
@@ -17,17 +17,28 @@
     <script src="./js/cdn.datatables.net_buttons_2.4.0_js_buttons.print.min.js"></script>
 
     <script src="./js/index_translate.js"></script>
-    <script src="./js/main.js"></script>
+    <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
 
     <script>
 
-        if (sessionStorage.getItem("Token") == null) {
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
             window.location.href = "index.html";
         }
 
         const language = getSelectedLanguage();
-        const Token = JSON.parse(sessionStorage.getItem("Token"));
 
     </script>
 
@@ -195,7 +206,7 @@
                 <div class="col-sm-6">
                     <button type="button" class="btn btn-danger"
                         style="text-align: right; margin-top: 20px; width: 100%;"
-                        onclick="showAcceptCancelDialog('Attention','Are you sure you want to remove the User?', DeleteUserData)">
+                        onclick="ShowAcceptCancelDialog('Attention','Are you sure you want to remove the User?', DeleteUserData)">
                         <span id="users_button_delete">                            
                             Delete
                         </span>
@@ -222,9 +233,7 @@
         function DeleteUserData() {
             var id = document.getElementById('id').value;
 
-            closeDialogAcceptCancelDialog();
-
-            var data_result = DeleteUser(Token.username, Token.token, id);
+            var data_result = DeleteUser(Token.User, Token.Token, id);
 
             data_result.then(function (query) {
 
@@ -252,7 +261,7 @@
                 select.remove(0);
             }
 
-            var groups_result = GetGroups(Token.username, Token.token);
+            var groups_result = GetGroups(Token.User, Token.Token);
 
             groups_result.then(function (query_result) {
                 let responce_query = JSON.parse(query_result);
@@ -291,10 +300,12 @@
                 document.getElementById('user_groups_list').value = "";
                 document.getElementById('organization').value = "";
                 document.getElementById('permissions_list').value = "";
+                document.getElementById('password').value = "";
+                document.getElementById('retype_password').value = "";
                 return;
             }
 
-            var data_result = GetUser(Token.username, Token.token, User_data.id);
+            var data_result = GetUser(Token.User, Token.Token, User_data.id);
 
             data_result.then(function (query) {
 
@@ -322,6 +333,8 @@
                 document.getElementById('user_groups_list').value = User.UserGroups;
                 document.getElementById('organization').value = User.Organization;
                 document.getElementById('permissions_list').value = User.permissions_list;
+                document.getElementById('password').value = User.Password;
+                document.getElementById('retype_password').value = User.Password;
 
                 let description = document.getElementById('name');
                 description.focus();
@@ -353,7 +366,7 @@
                 return;
             }
 
-            var data_result = SaveUser(Token.username, Token.token, user);
+            var data_result = SaveUser(Token.User, Token.Token, user);
 
             data_result.then(function (query) {
 
@@ -374,7 +387,7 @@
 
         function GetData() {
 
-            var datos = GetUsers(Token.username, Token.token);
+            var datos = GetUsers(Token.User, Token.Token);
 
             datos.then(function (query) {
 
@@ -465,7 +478,7 @@
 
     </script>
 
-    <script src="./bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

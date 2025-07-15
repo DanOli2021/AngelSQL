@@ -75,7 +75,7 @@
             language = getSelectedLanguage();
             Token = JSON.parse(sessionStorage.getItem("Token"));
 
-            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", "");
 
             if (response.startsWith("Error:")) {
                 alert("Error to get the Business Info: " + response);

@@ -5,7 +5,7 @@
     <title>Tokens</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
 
 
     <link rel="stylesheet" type="text/css" href="./css/jquery.dataTables.min.css">
@@ -17,17 +17,28 @@
     <script src="./js/cdn.datatables.net_buttons_2.4.0_js_buttons.print.min.js"></script>
 
     <script src="./js/index_translate.js"></script>
-    <script src="./js/main.js"></script>
+    <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
 
     <script>
 
-        if (sessionStorage.getItem("Token") == null) {
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
             window.location.href = "index.html";
         }
 
         const language = getSelectedLanguage();
-        const Token = JSON.parse(sessionStorage.getItem("Token"));
 
     </script>
 
@@ -176,7 +187,7 @@
                 <div class="col-sm-6">
                     <button type="button" class="btn btn-danger"
                         style="text-align: right; margin-top: 20px; width: 100%;"
-                        onclick="showAcceptCancelDialog('Attention','Are you sure you want to remove the Token?', DeleteTokenData)">
+                        onclick="ShowAcceptCancelDialog('Attention','Are you sure you want to remove the Token?', DeleteTokenData)">
                         <span id="tokens_dialog_delete">
                             Delete
                         </span>
@@ -204,7 +215,7 @@
 
         function DeleteTokenData() {
             var id = document.getElementById('id').value;
-            var data_result = DeleteToken(Token.username, Token.token, id);
+            var data_result = DeleteToken(Token.User, Token.Token, id);
 
             data_result.then(function (query) {
 
@@ -238,7 +249,7 @@
             blanck_option.text = "";
             select.appendChild(blanck_option);
 
-            var users = GetUsers(Token.username, Token.token);;
+            var users = GetUsers(Token.User, Token.Token);
 
             users.then(function (query) {
 
@@ -274,7 +285,7 @@
                     return;
                 }
 
-                var data_result = GetToken(Token.username, Token.token, Token_data.id);
+                var data_result = GetToken(Token.User, Token.Token, Token_data.id);
 
                 data_result.then(function (query) {
 
@@ -321,7 +332,7 @@
             t.UsedFor = document.getElementById('usedfor').value;
             t.Observations = document.getElementById('observations').value;
             t.ExpiryTime = document.getElementById('expirytime').value;
-            var data_result = SaveToken(Token.username, Token.token, t);
+            var data_result = SaveToken(Token.User, Token.Token, t);
 
             data_result.then(function (query) {
 
@@ -342,7 +353,7 @@
 
         function GetData() {
 
-            var datos = GetTokens(Token.username, Token.token);
+            var datos = GetTokens(Token.User, Token.Token);
 
             datos.then(function (query) {
 
@@ -434,7 +445,7 @@
 
     </script>
 
-    <script src="./bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

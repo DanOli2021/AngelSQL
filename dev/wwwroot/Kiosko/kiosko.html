@@ -475,7 +475,7 @@
 
 
         async function loadBusinessInfo() {
-            const businessinfo_result = await sendToAngelPOST(username, "pos_backend/pos_businessinfo", "", "GetBusinessInfo", ":ALL");
+            const businessinfo_result = await sendToAngelPOST(username, "pos_backend/pos_businessinfo", "", "GetBasicBusinessInfo", ":ALL");
             if (businessinfo_result.startsWith("Error:")) return ShowDialog("Alert", businessinfo_result);
 
             const query = JSON.parse(businessinfo_result);

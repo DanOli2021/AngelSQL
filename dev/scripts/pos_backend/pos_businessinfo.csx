@@ -39,6 +39,7 @@ return api.OperationType switch
 {
     "SaveBusinessInfo" => SaveBusinessInfo(api, translation),
     "GetBusinessInfo" => GetBusinessInfo(api, translation),
+    "GetBasicBusinessInfo" => GetBasicBusinessInfo(api, translation),
     _ => $"Error: No service found {api.OperationType}",
 };
 
@@ -98,6 +99,83 @@ string SaveBusinessInfo(AngelApiOperation api, Translations translation)
         }
     }
 
+    if (bi.CentralLogo != null || bi.CentralLogo != "")
+    {
+        if (bi.CentralLogo.Contains("base64"))
+        {
+            string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/{api.account}";
+
+            if (Directory.Exists(directory) == false)
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            string path = AngelDB.Base64Helper.SaveBase64ToAutoNamedFile(bi.CentralLogo, directory, "CentralLogo");
+
+            if (path == "Error:")
+            {
+                return "Error: Unable to save image";
+            }
+
+            bi.CentralLogoBase64 = bi.CentralLogo;
+            bi.CentralLogo = $"../images/{api.account}/CentralLogo" + Path.GetExtension(path);
+
+        }
+    }
+
+
+    if (bi.BackgroundImage != null || bi.BackgroundImage != "")
+    {
+        if (bi.BackgroundImage.Contains("base64"))
+        {
+            string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/{api.account}";
+
+            if (Directory.Exists(directory) == false)
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            string path = AngelDB.Base64Helper.SaveBase64ToAutoNamedFile(bi.BackgroundImage, directory, "background");
+
+            if (path == "Error:")
+            {
+                return "Error: Unable to save image";
+            }
+ 
+            bi.BackgroundImage = $"../images/{api.account}/background" + Path.GetExtension(path);
+        }
+    }
+
+    for (int i = 1; i <= 6; i++)
+    {
+        PropertyInfo advantageImageProp = typeof(BusinessInfo).GetProperty($"Advantage{i}Image");
+        PropertyInfo advantageImageBase64Prop = typeof(BusinessInfo).GetProperty($"Advantage{i}ImageBase64");
+
+        if (advantageImageProp != null && advantageImageBase64Prop != null)
+        {
+            string advantageImage = (string)advantageImageProp.GetValue(bi);
+            if (!string.IsNullOrEmpty(advantageImage) && advantageImage.Contains("base64"))
+            {
+                string directory = server_db.Prompt($"VAR db_wwwroot", true) + $"/images/{api.account}";
+
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                string path = AngelDB.Base64Helper.SaveBase64ToAutoNamedFile(advantageImage, directory, $"advantage{i}");
+
+                if (path == "Error:")
+                {
+                    return $"Error: Unable to save image for Advantage {i}";
+                }
+
+                advantageImageBase64Prop.SetValue(bi, advantageImage);
+                advantageImageProp.SetValue(bi, $"../images/{api.account}/advantage{i}" + Path.GetExtension(path));
+            }
+        }
+    }
+
     result = db.UpsertInto("BusinessInfo", bi);
     return result;
 
@@ -109,6 +187,29 @@ string GetBusinessInfo(AngelApiOperation api, Translations translation)
 {
 
     string result = db.Prompt("SELECT * FROM BusinessInfo WHERE Id = '1'");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return "Error: No data found.";
+    }
+
+    List<BusinessInfo> businessInfoList = db.jSonDeserialize<List<BusinessInfo>>(result);
+    BusinessInfo businessInfo = businessInfoList[0];
+
+    return db.GetJson(businessInfo);
+
+}
+
+
+string GetBasicBusinessInfo(AngelApiOperation api, Translations translation)
+{
+
+    string result = db.Prompt("SELECT id,Address,Name,Phone,Email,Website,Logo,Slogan,Description FROM BusinessInfo WHERE Id = '1'");
 
     if (result.StartsWith("Error:"))
     {

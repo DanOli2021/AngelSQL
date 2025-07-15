@@ -7,18 +7,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./bootstrap-5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="./css/bottom_bar.css">
-
     <script src="./js/index_translate.js"></script>
-    <script src="./js/main.js"></script>
+    <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
 
     <script>
-        if (sessionStorage.getItem("Token") == null) {
+
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
             window.location.href = "index.html";
         }
 
         const language = getSelectedLanguage();
-        const Token = JSON.parse(sessionStorage.getItem("Token"));
 
     </script>
 
@@ -82,7 +93,7 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-            let response = GetGroupsUsingTocken(Token.username, Token.token);
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
 
             response.then(function (query) {
                 let response_query = JSON.parse(query);
@@ -107,9 +118,9 @@
 
                 if( findInString(user_groups.groups, "AUTHORIZERS") )  
                 {
-                    generateButton("users_groups.html", "golden_educationicons_classmate_128.png", "User Groups", "btn btn-secondary btn-block btn-lg form-control");
-                    generateButton("users.html", "beta_accounting_executive_128.png", "System Users", "btn btn-primary btn-block btn-lg form-control");
-                    generateButton("tokens.html", "golden_networking_net_admin_128.png", "Admin Access Tokens", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("users_groups.html", "images/icons/golden_educationicons_classmate_128.png", "User Groups", "btn btn-secondary btn-block btn-lg form-control");
+                    generateButton("users.html", "images/icons/beta_accounting_executive_128.png", "System Users", "btn btn-primary btn-block btn-lg form-control");
+                    generateButton("tokens.html", "images/icons/golden_networking_net_admin_128.png", "Admin Access Tokens", "btn btn-secondary btn-block btn-lg form-control");
                 }
             }
         }

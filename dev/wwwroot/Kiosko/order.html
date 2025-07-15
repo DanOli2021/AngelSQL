@@ -180,7 +180,7 @@
                 paymentsContainer.appendChild(item);
             });
 
-            response = await sendToAngelPOST(user, "pos_backend/pos_businessinfo", "", "GetBusinessInfo", "");
+            response = await sendToAngelPOST(user, "pos_backend/pos_businessinfo", "", "GetBasicBusinessInfo", "");
             if (response.startsWith("Error:")) return alert("Error al obtener información del negocio: " + response);
 
             const business = JSON.parse(JSON.parse(response).result);

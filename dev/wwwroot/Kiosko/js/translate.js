@@ -1,4 +1,4 @@
-const app_name = "MyBusiness POS Kiosko "; 
+const app_name = "Kiosko Admin"; 
 
 function translate_login( language ) 
 {

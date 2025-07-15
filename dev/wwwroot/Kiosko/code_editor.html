@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Editor AngelSQL</title>
+    <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+    </script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #main-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #explorer {
+            background-color: #252526;
+            padding: 10px;
+            overflow-y: auto;
+            resize: horizontal;
+            min-width: 200px;
+            width: 250px;
+        }
+
+        #resizer {
+            background-color: #333;
+            width: 5px;
+            cursor: col-resize;
+            height: 100%;
+        }
+
+        .file,
+        .folder {
+            cursor: pointer;
+            padding: 3px 5px;
+            border-radius: 3px;
+        }
+
+        .file:hover,
+        .folder:hover {
+            background-color: #37373d;
+        }
+
+        .folder {
+            font-weight: bold;
+        }
+
+        #editor-panel {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        #editorContainer {
+            flex-grow: 1;
+        }
+
+        #toolbar {
+            height: 40px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            color: #ccc;
+            flex-shrink: 0;
+        }
+
+        #tabs {
+            display: flex;
+            background-color: #2d2d30;
+            border-bottom: 1px solid #444;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #ccc;
+            border-right: 1px solid #444;
+            display: flex;
+            align-items: center;
+        }
+
+        .tab.active {
+            background-color: #1e1e1e;
+            font-weight: bold;
+            color: #00ff99;
+        }
+
+        .tab .close-tab {
+            margin-left: 8px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .tab .close-tab:hover {
+            color: #f33;
+        }
+
+        .modified-asterisk {
+            color: #f0ad4e;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        body.resizing {
+            cursor: col-resize;
+            user-select: none;
+        }
+
+        #tabs {
+            display: flex;
+            background-color: #2d2d30;
+            border-bottom: 1px solid #444;
+            overflow-x: auto;
+            height: 36px;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+        }
+        #context-menu {
+            display: none;
+            position: absolute;
+            background-color: #2a2d2e;
+            border: 1px solid #444;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            color: #ccc;
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+            z-index: 1000;
+        }
+        #context-menu li {
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        #context-menu li:hover {
+            background-color: #37373d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="main-container">
+        <div id="explorer">
+            <h6><i class="fas fa-folder-open" style="color: #75aee1;"></i> Project Files</h6>
+            <div id="fileTree"></div>
+        </div>
+        <div id="resizer"></div>
+        <div id="editor-panel">
+            <div id="toolbar">
+                <div>Editing: <span id="currentFile">No file selected</span></div>
+                <div>
+                    <button class="btn btn-sm btn-primary" id="saveAllBtn" style="display: none;">💾 Save All</button>
+                    <button class="btn btn-sm btn-success" id="saveBtn">💾 Save</button>
+                </div>
+            </div>
+            <div id="tabs"></div>
+            <div id="editorContainer"></div>
+        </div>
+    </div>
+
+    <!-- Context Menu Structure -->
+    <ul id="context-menu">
+        <li id="ctx-new-file">New File</li>
+        <li id="ctx-new-folder">New Folder</li>
+        <li id="ctx-rename">Rename</li>
+        <li id="ctx-delete">Delete</li>
+    </ul>
+
+
+    <script>
+        let editor;
+        let currentFilePath = null;
+        const openFiles = new Map(); // path -> { model, modified, viewState }
+
+        const iconMap = {
+            csx: { icon: 'fa-code', color: '#178600' },
+            html: { icon: 'fa-html5', color: '#E34F26' },
+            css: { icon: 'fa-css3-alt', color: '#1572B6' },
+            js: { icon: 'fa-js-square', color: '#F7DF1E' },
+            json: { icon: 'fa-file-code', color: '#F0F0F0' },
+            py: { icon: 'fa-python', color: '#3776AB' },
+            md: { icon: 'fa-markdown', color: '#FFFFFF' },
+            directory: { icon: 'fa-folder', color: '#75aee1' },
+            file: { icon: 'fa-file-alt', color: '#cccccc' }
+        };
+
+        function getFileIcon(filename) {
+            if (filename.isDirectory) return iconMap.directory;
+            const extension = filename.split('.').pop().toLowerCase();
+            return iconMap[extension] || iconMap.file;
+        }
+
+        function getLanguageForExtension(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            const langMap = {
+                csx: 'csharp', js: 'javascript', html: 'html', css: 'css', json: 'json', py: 'python', md: 'markdown'
+            };
+            return langMap[extension] || 'plaintext';
+        }
+
+        function renderTree(node, container) {
+            const ul = document.createElement('ul');
+            ul.className = 'list-unstyled ps-3';
+
+            node.Children.sort((a, b) => {
+                if (a.Type === b.Type) return a.Name.localeCompare(b.Name);
+                return a.Type === 'directory' ? -1 : 1;
+            });
+
+            for (const child of node.Children) {
+                const li = document.createElement('li');
+                const info = getFileIcon(child.Type === 'directory' ? { isDirectory: true } : child.Name);
+
+                li.innerHTML = `<i class="fas ${info.icon} me-2" style="color: ${info.color};"></i> <span class="node-name">${child.Name}</span>`;
+                li.className = child.Type;
+                li.setAttribute('data-path', child.FullPath);
+
+                if (child.Type === 'directory') {
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const existingSubtree = li.querySelector('ul');
+                        if (existingSubtree) {
+                            existingSubtree.remove();
+                        } else {
+                            renderTree(child, li);
+                        }
+                    });
+                } else {
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openFile(child.FullPath);
+                    });
+                }
+
+                li.addEventListener('contextmenu', showContextMenu);
+                ul.appendChild(li);
+            }
+            container.appendChild(ul);
+        }
+
+        async function openFile(filePath) {
+            try {
+                if (currentFilePath && openFiles.has(currentFilePath)) {
+                    openFiles.get(currentFilePath).viewState = editor.saveViewState();
+                }
+
+                if (openFiles.has(filePath)) {
+                    editor.setModel(openFiles.get(filePath).model);
+                } else {
+                    const response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "GetFileContent", { filePath });
+                    const query = JSON.parse(response);
+                    if (query.result.startsWith("Error:")) throw new Error(query.result);
+
+                    const language = getLanguageForExtension(filePath);
+                    const model = monaco.editor.createModel(query.result, language);
+
+                    model.onDidChangeContent(() => markFileAsModified(filePath));
+
+                    openFiles.set(filePath, { model, modified: false, viewState: null });
+                    editor.setModel(model);
+                }
+
+                const viewState = openFiles.get(filePath).viewState;
+                if (viewState) {
+                    editor.restoreViewState(viewState);
+                }
+                editor.focus();
+
+                currentFilePath = filePath;
+                document.getElementById("currentFile").textContent = filePath;
+                updateFileModificationStatus(filePath, openFiles.get(filePath).modified);
+                updateTabs(currentFilePath);
+
+            } catch (error) {
+                console.error("Error opening file:", error);
+                alert(`Could not open file: ${error.message}`);
+            }
+        }
+        
+        function markFileAsModified(filePath) {
+            if (!openFiles.has(filePath)) return;
+
+            const fileData = openFiles.get(filePath);
+            if (!fileData.modified) {
+                fileData.modified = true;
+                updateFileModificationStatus(filePath, true);
+                updateSaveAllButtonVisibility();
+            }
+        }
+
+        function updateFileModificationStatus(filePath, isModified) {
+            const fileNode = document.querySelector(`[data-path="${filePath}"] .node-name`);
+            if (fileNode) {
+                let asterisk = fileNode.nextElementSibling;
+                if (isModified) {
+                    if (!asterisk || !asterisk.classList.contains('modified-asterisk')) {
+                        asterisk = document.createElement('span');
+                        asterisk.className = 'modified-asterisk';
+                        asterisk.textContent = '*';
+                        fileNode.parentNode.insertBefore(asterisk, fileNode.nextSibling);
+                    }
+                } else {
+                    if (asterisk && asterisk.classList.contains('modified-asterisk')) {
+                        asterisk.remove();
+                    }
+                }
+            }
+        }
+
+        function updateSaveAllButtonVisibility() {
+            const hasModifiedFiles = [...openFiles.values()].some(f => f.modified);
+            document.getElementById('saveAllBtn').style.display = hasModifiedFiles ? 'inline-block' : 'none';
+        }
+
+        async function saveFile(filePathToSave = currentFilePath) {
+            if (!filePathToSave || !openFiles.has(filePathToSave)) {
+                alert("No file is open to save.");
+                return;
+            }
+
+            const fileData = openFiles.get(filePathToSave);
+            const content = fileData.model.getValue();
+
+            try {
+                const response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "SaveContent", { filePath: filePathToSave, content });
+                const query = JSON.parse(response);
+                if (query.result.startsWith("Error:")) throw new Error(query.result);
+
+                fileData.modified = false;
+                updateFileModificationStatus(filePathToSave, false);
+                updateSaveAllButtonVisibility();
+                //if (filePathToSave === currentFilePath) alert("File saved successfully!");
+
+            } catch (error) {
+                console.error("Error saving file:", error);
+                alert(`Could not save file: ${error.message}`);
+            }
+        }
+
+        async function saveAllFiles() {
+            const modifiedFiles = [...openFiles.entries()].filter(([, data]) => data.modified);
+            if (modifiedFiles.length === 0) {
+                alert("No modified files to save.");
+                return;
+            }
+
+            let successCount = 0;
+            for (const [path] of modifiedFiles) {
+                await saveFile(path);
+                successCount++;
+            }
+            alert(`${successCount} file(s) saved successfully!`);
+        }
+
+        function createEditor() {
+            require.config({ paths: { vs: "https://unpkg.com/monaco-editor@latest/min/vs" } });
+            require(["vs/editor/editor.main"], () => {
+                editor = monaco.editor.create(document.getElementById('editorContainer'), {
+                    value: "// Select a file to start editing",
+                    theme: 'vs-dark',
+                    automaticLayout: true
+                });
+            });
+        }
+
+        async function loadFileTree() {
+            try {
+                const response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "GetDirectoryTree", {});
+                const query = JSON.parse(response);
+                if (query.result.startsWith("Error:")) throw new Error(query.result);
+
+                const fileTreeData = JSON.parse(query.result);
+                const fileTreeContainer = document.getElementById('fileTree');
+                fileTreeContainer.innerHTML = '';
+                renderTree(fileTreeData, fileTreeContainer);
+
+            } catch (error) {
+                console.error("Error loading file tree:", error);
+                document.getElementById('fileTree').innerHTML = `<div class="text-danger">Error loading file tree: ${error.message}</div>`;
+            }
+        }
+
+        // --- Context Menu Logic ---
+        let contextMenuTarget = null;
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            contextMenuTarget = e.currentTarget;
+            const menu = document.getElementById('context-menu');
+            menu.style.left = `${e.clientX}px`;
+            menu.style.top = `${e.clientY}px`;
+            menu.style.display = 'block';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('context-menu').style.display = 'none';
+        }
+
+        async function handleContextMenuAction(action) {
+            if (!contextMenuTarget) return;
+            const path = contextMenuTarget.getAttribute('data-path');
+            const type = contextMenuTarget.classList.contains('directory') ? 'directory' : 'file';
+
+            hideContextMenu();
+
+            try {
+                let response, query;
+                switch (action) {
+                    case 'new-file':
+                        const parentPath = type === 'directory' ? path : path.substring(0, path.lastIndexOf('/'));
+                        const newFileName = prompt(`Enter new file name inside '${parentPath}':`);
+                        if (!newFileName) return;
+                        const newFilePath = `${parentPath}/${newFileName}`;
+                        response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "SaveContent", { filePath: newFilePath, content: "" });
+                        break;
+                    case 'new-folder':
+                        const newFolderName = prompt(`Enter new folder name inside '${path}':`);
+                        if (!newFolderName) return;
+                        response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "CreateFolder", { path: `${path}/${newFolderName}` });
+                        break;
+                    case 'rename':
+                        const newName = prompt(`Enter new name for '${path}':`, path.split('/').pop());
+                        if (!newName) return;
+                        const newPath = path.substring(0, path.lastIndexOf('/') + 1) + newName;
+                        response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "RenameItem", { oldPath: path, newPath });
+                        break;
+                    case 'delete':
+                        if (!confirm(`Are you sure you want to delete '${path}'?`)) return;
+                        response = await sendToAngelPOST(Token.User, "code/files", Token.Token, "DeleteItem", { path });
+                        break;
+                }
+
+                query = JSON.parse(response);
+                if (query.result.startsWith("Error:")) throw new Error(query.result);
+
+                //alert(query.result);
+                loadFileTree(); // Refresh tree on success
+
+            } catch (error) {
+                alert(`Operation failed: ${error.message}`);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (typeof saveFile === 'function') saveFile();
+            }
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (typeof openFiles !== 'undefined') {
+                const hasModified = [...openFiles.values()].some(f => f.modified);
+                if (hasModified) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            }
+        });
+
+        function updateTabs(currentFilePath) {
+            const tabs = document.getElementById('tabs');
+            tabs.innerHTML = '';
+            [...openFiles.entries()].forEach(([path, { modified }]) => {
+                const tab = document.createElement('div');
+                tab.className = 'tab' + (path === currentFilePath ? ' active' : '');
+
+                const label = document.createElement('span');
+                label.textContent = path.split('/').pop() + (modified ? '*' : '');
+
+                label.onclick = () => {
+                    currentFilePath = path;
+                    openFile(path);
+                };
+
+
+                const close = document.createElement('span');
+                close.className = 'close-tab';
+                close.innerHTML = '&times;';
+                close.onclick = (e) => {
+                    e.stopPropagation();
+                    if (openFiles.has(path) && openFiles.get(path).modified) {
+                        const confirmClose = confirm(`El archivo '${path.split('/').pop()}' tiene cambios sin guardar. ¿Deseas cerrarlo de todos modos?`);
+                        if (!confirmClose) return;
+                    }
+                    if (openFiles.has(path)) openFiles.delete(path);
+                    if (currentFilePath === path) {
+                        currentFilePath = null;
+                        editor.setValue('');
+                        document.getElementById('currentFile').textContent = 'No file selected';
+                    }
+                    updateTabs(currentFilePath);
+                    updateSaveAllButtonVisibility();
+                };
+
+                tab.appendChild(label);
+                tab.appendChild(close);
+                tabs.appendChild(tab);
+            });
+        }
+
+
+        window.onload = async function () {
+            createEditor();
+            await loadFileTree();
+
+            document.getElementById('saveBtn').addEventListener('click', () => saveFile());
+            document.getElementById('saveAllBtn').addEventListener('click', saveAllFiles);
+
+            // Resizer logic
+            const resizer = document.getElementById('resizer');
+            const explorer = document.getElementById('explorer');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.classList.add('resizing');
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', () => {
+                    isResizing = false;
+                    document.body.classList.remove('resizing');
+                    document.removeEventListener('mousemove', handleMouseMove);
+                });
+            });
+
+            function handleMouseMove(e) {
+                if (isResizing) {
+                    const newWidth = e.clientX - explorer.getBoundingClientRect().left;
+                    explorer.style.width = `${newWidth}px`;
+                }
+            }
+            // Context menu events
+            document.addEventListener('click', hideContextMenu);
+            document.getElementById('ctx-new-file').addEventListener('click', () => handleContextMenuAction('new-file'));
+            document.getElementById('ctx-new-folder').addEventListener('click', () => handleContextMenuAction('new-folder'));
+            document.getElementById('ctx-rename').addEventListener('click', () => handleContextMenuAction('rename'));
+            document.getElementById('ctx-delete').addEventListener('click', () => handleContextMenuAction('delete'));
+        };
+    </script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

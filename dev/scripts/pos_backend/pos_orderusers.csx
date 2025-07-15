@@ -714,7 +714,7 @@ string SaveOrderFromKiosk(AngelApiOperation api, Translations translation)
         return result;
     }
 
-    result = SendToAngelPOST("pos_backend/pos_businessinfo", "GetBusinessInfo", null, server_db.Prompt("VAR server_configuration_url"), api);
+    result = SendToAngelPOST("pos_backend/pos_businessinfo", "GetBasicBusinessInfo", null, server_db.Prompt("VAR server_configuration_url"), api);
 
     if (result.StartsWith("Error:"))
     {

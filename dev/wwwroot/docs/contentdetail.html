@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Docs ContentDetail</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" ContentDetail="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="../css/bottom_bar.css">
+    <script src="./js/helpdesk_translate.js"></script>
+    <script src="../proxy.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="./js/helpdesk_translate.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="./css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/responsive.dataTables.css">
+    <script src="./js/code.jquery.com_jquery-3.7.0.min.js"></script>
+    <script src="./js/jquery.dataTables.min.js"></script>
+    <script src="./js/dataTables.responsive.min.js"></script>
+    <script src="./js/cdn.datatables.net_buttons_2.4.0_js_dataTables.buttons.min.js"></script>
+    <script src="./js/cdn.datatables.net_buttons_2.4.0_js_buttons.print.min.js"></script>
+    <link rel="stylesheet" href="./prism/prism.css">
+    <script src="./prism/prism.js"></script>
+    <script src="./js/HelpDeskGetContent.js"></script>
+
+    <script>
+
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search);
+        var Content_id = params.get('content_id');
+        var Account = Token.User.split("@")[1];
+
+        var datos = GetContentDetailCSS(Account, Content_id);
+
+        datos.then(function (query) {
+
+            let responce_query = JSON.parse(query);
+
+            if (responce_query.result.startsWith("Error:")) {
+                console.log(responce_query.result);
+                return;
+            }
+
+            var css = JSON.parse(responce_query.result)[0];
+
+            if (css != null) {
+                const style = document.createElement('style');
+                style.textContent = css.Content;
+                document.head.append(style);
+            }
+        });
+
+
+    </script>
+
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: auto;
+            padding: 2rem;
+            background-color: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: bold;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        pre,
+        code {
+            text-align: left;
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Prism.js override for readability */
+        .token.comment,
+        .token.block-comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #8292a2;
+        }
+
+        .token.punctuation {
+            color: #f8f8f2;
+        }
+
+        .token.property,
+        .token.tag,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #f92672;
+        }
+
+        .token.boolean,
+        .token.number {
+            color: #ae81ff;
+        }
+
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #a6e22e;
+        }
+
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #f8f8f2;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <hr />
+
+    <div class="container">
+
+        <div class="row justify-ContentDetail-center">
+
+            <div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+
+                <div class="col-sm-6">
+                    <a class="btn btn-primary btn-block" href="topics.html" id="topics_link" style="width: 100%;">
+                        <span style="float: left;">
+                            <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px">
+                        </span>
+                        <span id="contentdetail_topics">
+                            Topics
+                        </span>
+                    </a>
+                </div>
+
+                <div class="col-sm-6">
+                    <a class="btn btn-secondary btn-block" href="topic.html" id="subtopic_link" style="width: 100%;">
+                        <span style="float: left;">
+                            <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px">
+                        </span>
+                        <span id="subtopics_menu">
+                            Sub Topics
+                        </span>
+                    </a>
+                </div>
+
+            </div>
+
+            <br />
+
+            <div class="row" style="margin-bottom: 10px;">
+                <div class="col-sm-12">
+                    <h3 id="content_title">
+                        Content
+                    </h3>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="row" style="margin-bottom: 10px;">
+
+                <div class="col-sm-4">
+                    <button type="button" id="ButtonNew" class="btn btn-primary"
+                        onclick="showContentDetailDialog('', true)" style="margin-bottom: 20px;;width: 100%;">
+                        <span id="contentdetail_new">
+                            New Content (F2)
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-4">
+                    <button type="button" id="ButtonSearch" class="btn btn-secondary" onclick="GetData()"
+                        style="margin-bottom: 20px;margin-bottom: 20px;;width: 100%;">
+                        <span id="contentdetail_refresh">
+                            Refresh (F4)
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-4">
+                    <button type="button" id="button_show_content" class="btn btn-primary"
+                        style="margin-bottom: 20px;width: 100%;" onclick="OpenContent()">
+                        <span id="contentdetail_open">
+                            Open Content Url
+                        </span>
+                    </button>
+                </div>
+
+            </div>
+
+            <br />
+
+            <div id="ShowContent" class="row justify-ContentDetail-center">
+            </div>
+
+        </div>
+    </div>
+
+    <hr />
+
+    <dialog id="myDialog" class="dialog-box">
+        <h1 id="dialogTittle">Title</h1>
+        <p id="dialogMessage">Message</p>
+        <button id="closeButton" class="btn btn-warning" style="width: 100%;" onclick="closeDialog()">Close</button>
+    </dialog>
+
+    <dialog id="DialogAcceptCancel" class="dialog-box">
+
+        <h1 id="dialogTittleAcceptCancel">Title</h1>
+        <p id="dialogMessageAcceptCancel">Message</p>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <button id="accept" onclick="closeDialogAcceptCancelDialog()" class="btn btn-danger"
+                    style="width: 100%;">Accept</button>
+            </div>
+
+            <div class="col-sm-6">
+                <button id="cancel" onclick="closeDialogAcceptCancelDialog()" class="btn btn-primary"
+                    style="width: 100%;">Cancel</button>
+            </div>
+        </div>
+    </dialog>
+
+
+    <dialog id="ContentDetail_dialog" style="width: 70%;">
+        <div class="row">
+            <div class="col-md-12">
+
+                <div class="form-group">
+                    <label for="id" id="contentdetail_label_id">Id</label>
+                    <input type="text" class="form-control" id="id" name="id">
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="file_upload" id="contentdetail_label_file">Upload File</label>
+                        <input type="file" class="form-control" id="file_upload" name="file_upload">
+                    </div>
+                    <div class="col-sm-6">
+                        <button type="button" class="btn btn-primary" "
+                            style=" text-align: right; margin-top: 20px; width: 100%;" onclick="UploadFile()">
+                            <span id="contentdetail_button_upload_now">
+                                Upload Now
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class=" form-group">
+                    <label for="Content_type" id="dontentdetail_label_content_type">Content type</label>
+                    <select class="form-control" id="Content_type" name="Content_type">
+                        <option value=""></option>
+                        <option value="Text" id="contentdetail_option_text">Text</option>
+                        <option value="Title1" id="contentdetail_option_tittle1">Title 1</option>
+                        <option value="Title2" id="contentdetail_option_tittle2">Title 2</option>
+                        <option value="Title3" id="contentdetail_option_tittle3">Title 3</option>
+                        <option value="VisualBasic" id="contentdetail_option_visualbasic">Visual Basic Code</option>
+                        <option value="C#" id="contentdetail_option_csharp">C# Code</option>
+                        <option value="Python" id="contentdetail_option_python">Python Code</option>
+                        <option value="JavaScript" id="contentdetail_option_javascript">Java Script Code</option>
+                        <option value="HTML" id="contentdetail_option_html">HTML</option>
+                        <option value="HTML_Code" id="contentdetail_option_html_code">HTML Code</option>
+                        <option value="CSS" id="contentdetail_option_css">CSS Code</option>
+                        <option value="SQLServerQuery" id="contentdetail_option_sqlserver">SQL Server Query</option>
+                        <option value="AngelSQLQuery" id="contentdetail_option_angelsqlquery">AngelSQL Query</option>
+                        <option value="Image" id="contentdetail_option_image">Image</option>
+                        <option value="Video" id="contentdetail_option_video">Video</option>
+                        <option value="Url" id="contentdetail_option_url">Link</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="ContentText" id="contentdetail_content_label">Content</label>
+                            <textarea id="ContentText" name="ContentText" class="form-control" rows="9" scrollable="true" scrollbar="true"
+                                style="resize: vertical; overflow-y: auto;"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="content_order" id="contentdetail_label_content_order">Order</label>
+                    <input type="text" class="form-control" id="content_order" name="content_order">
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <button type="button" class="btn btn-primary" "
+                        style=" text-align: right; margin-top: 20px;; width: 100%;" onclick="SaveData()">
+                        <span id="contentdetail_button_save">
+                            Save
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-sm-6">
+                    <button type="button" class="btn btn-danger"
+                        style="text-align: right; margin-top: 20px; width: 100%;"
+                        onclick="ShowAcceptCancelDialog('Attention','Are you sure you want to remove the ContentDetail?', DeleteData)">
+                        <span id="contentdetail_button_delete">
+                            Delete
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <button id="closeSkuEdit" class="btn btn-secondary"
+                        style="text-align: right; margin-top: 5px; width: 100%;" onclick="closeContentDetailDialog()"
+                        style="text-align: right;">
+                        <span id="contentdetail_button_close">
+                            Close
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+
+    <script>
+
+        function UploadFile() {
+            if (document.getElementById('file_upload').files.length == 0) {
+                showDialog("Attention", "No file selected");
+                return;
+            }
+
+            const file = document.getElementById('file_upload').files[0];
+
+            var data_result = SendFileToDownload(Token.User, Token.Token, file, { Content_id: Content_id });
+
+            data_result.then(function (query) {
+
+                //clearFileInput("file_upload");
+                document.getElementById('file_upload').value = "";
+
+                if (query.startsWith("Error:")) {
+                    showDialog("Attention", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if( responce_query.IsImage ) {
+                    document.getElementById('ContentText').value = "<img src='" + responce_query.Url + "' style='max-width: 100%; height: auto;' />";
+                    setOptionValue("HTML");
+                } else {
+                    document.getElementById('ContentText').value = responce_query.Url;
+                    setOptionValue("Url"); 
+                }
+
+                showDialog("Attention", "File Uploaded: " + responce_query.Url);
+
+            });
+        }
+
+        function setOptionValue(value) {
+            const select = document.getElementById('Content_type');
+            const options = Array.from(select.options);
+            const optionToSelect = options.find(item => item.value === value);
+
+            if (optionToSelect) {
+                optionToSelect.selected = true;
+            } else {
+                console.error("Option with value '" + value + "' not found.");
+            }
+
+        }
+
+        function DeleteData() {
+            var id = document.getElementById('id').value;
+
+            var data_result = DeleteContentDetail(Token.User, Token.Token, id, Content_id);
+
+            data_result.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Attention", responce_query.result);
+                    return;
+                }
+
+                showDialog("Attention", "ContentDetail " + id + " deleted successfully");
+                GetData();
+                return;
+
+            });
+        }
+
+        function showContentDetailDialog(Id, new_topic = false) {
+
+            document.getElementById('id').value = "";
+            document.getElementById('id').readOnly = true;
+
+            if (new_topic) {
+                var dialog = document.getElementById("ContentDetail_dialog");
+                dialog.showModal();
+                document.getElementById('ContentText').value = "";
+                document.getElementById('Content_type').value = "";
+                document.getElementById('content_order').value = "";
+                document.getElementById('ContentText').focus();
+                return;
+            }
+
+            var data_result = GetContentDetailItem(Token.User, Token.Token, Id);
+
+            data_result.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    return;
+                }
+
+                let ContentDetail = JSON.parse(responce_query.result);
+                var dialog = document.getElementById("ContentDetail_dialog");
+                dialog.showModal();
+
+                let id = document.getElementById('id');
+                id.readOnly = true;
+
+                document.getElementById('id').value = ContentDetail.Id;
+                document.getElementById('ContentText').value = ContentDetail.Content;
+                document.getElementById('Content_type').value = ContentDetail.Content_type;
+                document.getElementById('content_order').value = ContentDetail.Content_order;
+                document.getElementById('ContentText').focus();
+            });
+
+        }
+
+        function closeContentDetailDialog() {
+            var dialog = document.getElementById("ContentDetail_dialog");
+            dialog.close();
+        }
+
+        function SaveData() {
+            let ContentDetail = {};
+
+            if (Content_id == null || Content_id == undefined || Content_id == "") {
+                showDialog("Error:", "Sub content id not found");
+                return;
+            }
+
+            ContentDetail.Id = document.getElementById('id').value;
+            ContentDetail.Content_id = Content_id;
+            ContentDetail.Content = document.getElementById('ContentText').value;
+            ContentDetail.Content_type = document.getElementById('Content_type').value;
+            ContentDetail.Content_order = document.getElementById('content_order').value;
+
+
+            var data_result = SaveContentDetail(Token.User, Token.Token, ContentDetail);
+
+            data_result.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error:", responce_query.result);
+                    return;
+                }
+
+                showDialog("Success:", "ContentDetail Saved");
+                GetData();
+
+            });
+
+        }
+
+        function GetData() {
+
+            var ShowContent = document.getElementById('ShowContent');
+            ShowContent.innerHTML = "";
+
+            var datos = GetContentDetail(Token.User, Token.Token, Content_id);
+
+            datos.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error:", responce_query.result);
+                    return;
+                }
+
+                var ContentDetail = JSON.parse(responce_query.result);
+
+                ContentDetail.forEach(element => {
+                    addContentDetail(element.id, element.Content, element.Content_type, "ShowContent", showContentDetailDialog);
+                });
+
+            });
+
+        }
+
+
+        document.addEventListener('keydown', function (event) {
+
+            if (event.key === "F2") {
+                event.preventDefault();
+                showContentDetailDialog('', true);
+            }
+
+            if (event.key === "F4") {
+                event.preventDefault();
+                GetData();
+            }
+
+        });
+
+
+        var tabla;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var datos = GetTitles(Token.User, Token.Token, Content_id);
+
+            datos.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error: GetTitles()", responce_query.result);
+                    return;
+                }
+
+                var titles = JSON.parse(responce_query.result);
+                document.getElementById('content_title').innerHTML = titles.Content + " - " + titles.Content_Description;
+
+                var topics_link = document.getElementById('topics_link');
+                topics_link.href = "topics.html";
+
+                var contentdetail_topics = document.getElementById('contentdetail_topics');
+                contentdetail_topics.innerHTML = titles.Topic + " - " + titles.Topic_Description;
+
+                var subtopics_menu = document.getElementById('subtopics_menu');
+                subtopics_menu.innerHTML = titles.Subtopic + " - " + titles.Subtopic_Description;
+
+                var subtopic_link = document.getElementById('subtopic_link');
+                subtopic_link.href = "topic.html?topic_id=" + titles.Topic_id;
+
+                account = "";
+
+                if (Token.User.includes("@")) {
+                    Account = Token.User.split("@")[1];
+                }
+
+            });
+
+            GetData();
+            translate_contentdetail(language);
+
+        });
+
+
+        function OpenContent() {
+            window.open("get.html?account=" + account + "&content_id=" + Content_id, '_blank');
+        }
+
+    </script>
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

@@ -299,7 +299,13 @@
                                 <label for="proxyPassword" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="proxyPassword">
                             </div>
+                            <div class="mb-3">
+                                <label for="public_account" class="form-label">Public Account</label>
+                                <input type="text" class="form-control" id="public_account">
+                            </div>
                         </div>
+
+
                         <div id="proxyMsg" class="text-danger small"></div>
                     </form>
                 </div>
@@ -859,6 +865,7 @@
             const proxyEnabled = document.getElementById("proxyEnabled").value;
             const user = document.getElementById("proxyUser").value.trim();
             const pass = document.getElementById("proxyPassword").value;
+            const publicAccount = document.getElementById("public_account").value.trim().toLowerCase();
             const msg = document.getElementById("proxyMsg");
 
             msg.classList.remove("text-success", "text-danger");
@@ -870,7 +877,7 @@
                     msg.classList.add("text-danger");
                     return;
                 }
-                command = `SET PROXY YES USER ${user} PASSWORD ${pass}`;
+                command = `SET PROXY YES USER ${user} PASSWORD ${pass} PUBLIC ACCOUNT ${publicAccount}`;
             } else {
                 command = `SET PROXY NO`;
             }
@@ -878,14 +885,16 @@
             ShowAcceptCancelDialog("Confirm Proxy Settings", `Are you sure you want to apply these settings?`, async function () {
                 msg.textContent = "Procesando...";
 
+                ShowAcceptCancelDialogClose();
+
                 try {
                     const result = await db.Server(command);
                     if (result.startsWith("Error:")) {
-                        showDialog("Error", result);
+                        //showDialog("Error", result);
                         msg.textContent = result;
                         msg.classList.add("text-danger");
                     } else {
-                        showDialog("Success", "Proxy settings updated successfully.");
+                        //showDialog("Success", "Proxy settings updated successfully.");
                         msg.textContent = "Proxy settings updated successfully.";
                         msg.classList.add("text-success");
 
@@ -894,10 +903,10 @@
                             showSuccessToast();
                         }, 800);
 
-                        ShowAcceptCancelDialogClose();
 
                     }
                 } catch (err) {
+
                     msg.textContent = "Error: " + err;
                     msg.classList.add("text-danger");
                 }

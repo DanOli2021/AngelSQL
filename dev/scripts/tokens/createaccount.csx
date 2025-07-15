@@ -1,6 +1,6 @@
 // GLOBALS
 // These lines of code go in each script
-#load "Globals.csx"
+#load "..\Globals.csx"
 // END GLOBALS
 
 // Script for system access management, it is based on the generation of Tokens, 
@@ -186,10 +186,10 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
         db_user = d.User.ToString(),
         name = d.Name,
         email = my_pin.User,
-        connection_string = $"DB USER {d.User} PASSWORD {d.Password} DATA DIRECTORY {main_directory}/{d.AccountName}",
+        connection_string = $"DB USER {d.User} PASSWORD {d.Password} DATA DIRECTORY main_directory/{d.AccountName}",
         db_password = d.Password.ToString(),
         database = $"{d.AccountName}_data1",
-        data_directory = $"{main_directory}/{d.AccountName}",
+        data_directory = $"main_directory/{d.AccountName}",
         account = d.AccountName.ToString(),
         super_user = $"user_{d.AccountName}",
         super_user_password = d.Password.ToString(),
@@ -306,6 +306,23 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
     };
     groups.Add(g);
 
+    g = new UsersGroup
+    {
+        id = "DOCEDITOR",
+        Name = "DOCEDITOR",
+        Permissions = ""
+    };
+    groups.Add(g);
+
+    g = new UsersGroup
+    {
+        id = "DOCADMIN",
+        Name = "DOCADMIN",
+        Permissions = ""
+    };
+    groups.Add(g);
+
+
     result = db.Prompt("UPSERT INTO usersgroup VALUES " + JsonConvert.SerializeObject(groups));
     if (result.StartsWith("Error:")) return "Error: insert group ADMINISTRATIVE " + result.Replace("Error:", "");
 
@@ -314,7 +331,7 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
         Id = d.User.ToString(),
         Name = d.Name.ToString(),
         Password = d.Password.ToString(),
-        UserGroups = "AUTHORIZERS, SUPERVISORS, PINSCONSUMER, ADMINISTRATIVE, CASHIER, WAITERS, HEAD_OF_WAISTERS, STAKEHOLDER, POS_DATA_CONSUMER, POS_DATA_UPSERT",
+        UserGroups = "AUTHORIZERS, SUPERVISORS, PINSCONSUMER, ADMINISTRATIVE, CASHIER, WAITERS, HEAD_OF_WAISTERS, STAKEHOLDER, POS_DATA_CONSUMER, POS_DATA_UPSERT, DOCEDITOR, DOCADMIN",
         Organization = "",
         Email = my_pin.User,
         Phone = "",
@@ -327,8 +344,8 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
 
     Users u1 = new()
     {
-        Id = "CASHIER",
-        Name = "CASHIER",
+        Id = "cashier",
+        Name = "cashier",
         Password = "CASHIER",
         UserGroups = "CASHIER",
         Organization = "",

@@ -839,7 +839,7 @@
             }
         }
 
-        async function GetBusinessInfo() {
+        async function GetBasicBusinessInfo() {
 
             // Crear un objeto BusinessInfo predeterminado
             let bi = new BusinessInfo(
@@ -857,7 +857,7 @@
 
             try {
                 // Llamar al backend
-                const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+                const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", "");
 
                 if (query.startsWith("Error:")) {
                     ShowDialog("Alert", query);
@@ -914,7 +914,7 @@
                 });
             });
 
-            businessinfo = await GetBusinessInfo();
+            businessinfo = await GetBasicBusinessInfo();
             GetCurrencies();
             initializeDates();
             GetCreditSales();

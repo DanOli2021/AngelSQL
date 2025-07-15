@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Python.Runtime;
 using Renci.SshNet;
+using Renci.SshNet.Security;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
@@ -107,12 +108,31 @@ if (parameters.ContainsKey("accounts_directory"))
 {
     if (string.IsNullOrEmpty(parameters["accounts_directory"]))
     {
-        parameters["accounts_directory"] = Environment.CurrentDirectory + "/data/accounts";
+        parameters["accounts_directory"] = app_directory + "/data/accounts";
     }
 }
 else
 {
-    parameters.Add("accounts_directory", Environment.CurrentDirectory + "/data/accounts");
+    parameters.Add("accounts_directory", app_directory + "/data/accounts");
+}
+
+
+if (parameters.ContainsKey("data_directory"))
+{
+    if (string.IsNullOrEmpty(parameters["data_directory"]))
+    {
+        parameters["data_directory"] = app_directory + "/data";
+    }
+}
+else
+{
+    parameters.Add("data_directory", app_directory + "/data");
+}
+
+//Determinamos el url de escucha
+if (!parameters.ContainsKey("proxy_url"))
+{
+    parameters.Add("proxy_url", parameters["urls"].Split(",")[0]);
 }
 
 Environment.SetEnvironmentVariable("ANGELSQL_PARAMETERS", JsonConvert.SerializeObject(parameters, Newtonsoft.Json.Formatting.Indented));
@@ -203,6 +223,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions()
 // End Create a builder for the web app
 // Server DB
 builder.Services.AddSingleton<AngelDB.DB>(server_db);
+builder.Services.AddSingleton<HttpClient>();
 // Object to save the connections
 builder.Services.AddSingleton<ConnectionMappingService>();
 
@@ -244,6 +265,7 @@ foreach (string key in parameters.Keys)
     }
 }
 
+result = server_db.Prompt("VAR db_app_directory = " + app_directory);
 
 foreach (string key in servers.Keys)
 {
@@ -874,7 +896,7 @@ app.MapPost("/AngelUpload", async (HttpContext httpContext) =>
 
         using var stream = File.OpenWrite(file_name);
         await file.CopyToAsync(stream);
-        return server_db.GetJson(file_info);
+        return angelResponce.result;
 
     }
     catch (Exception e)
@@ -1010,7 +1032,7 @@ string ProcessAngelData(string jsonstring, string RemoteIp, AngelApiOperation ap
                 }
 
                 string connection_string = dt.Rows[0]["connection_string"].ToString();
-                connection_string = connection_string.Replace("main_directory", Environment.CurrentDirectory);
+                connection_string = connection_string.Replace("main_directory", app_directory + "/data/accounts");
                 string db_user = dt.Rows[0]["db_user"].ToString();
                 string db_password = dt.Rows[0]["db_password"].ToString();
                 string db_database = dt.Rows[0]["database"].ToString();
@@ -1023,12 +1045,7 @@ string ProcessAngelData(string jsonstring, string RemoteIp, AngelApiOperation ap
                 {
                     result = db.Prompt(connection_string);
 
-                    if (connection_string.StartsWith("ANGEL"))
-                    {
-                        result = db.Prompt("ALWAYS USE ANGELSQL");
-                    }
-
-                    if (result.StartsWith("Error: AngelPOST"))
+                    if (result.StartsWith("Error:"))
                     {
                         if (save_activity)
                         {
@@ -1043,6 +1060,11 @@ string ProcessAngelData(string jsonstring, string RemoteIp, AngelApiOperation ap
                         }
 
                         return result;
+                    }
+
+                    if (connection_string.StartsWith("ANGEL"))
+                    {
+                        result = db.Prompt("ALWAYS USE ANGELSQL");
                     }
 
                     db.Prompt($"CREATE ACCOUNT {account} SUPERUSER {super_user} PASSWORD {super_user_password}", true);
@@ -1418,7 +1440,6 @@ _ = Task.Run(() =>
 });
 
 
-
 // Our Header
 void PutHeader()
 {
@@ -1447,6 +1468,8 @@ void PutHeader()
     }
 
     AngelDB.Monitor.ShowLine("APP DIRECTORY: " + app_directory, ConsoleColor.Gray);
+    AngelDB.Monitor.ShowLine("SERVER DATA DIRECTORY: " + server_db.BaseDirectory, ConsoleColor.Gray);
+    AngelDB.Monitor.ShowLine("ACCOUNTS DATA DIRECTORY: " + parameters["accounts_directory"], ConsoleColor.Gray);
 
     result = server_db.Prompt("SELECT * FROM accounts");
 
@@ -1575,8 +1598,10 @@ void ActivateProxy()
                     sshClient.KeepAliveInterval = TimeSpan.FromSeconds(60);
                     sshClient.Connect();
 
+                    AngelDBTools.UrlInfo urlinfo = server_db.jSonDeserialize<AngelDBTools.UrlInfo>(AngelDBTools.UrlParser.GetUrlInfoAsJson(parameters["proxy_url"]));
+
                     // Configura el túnel SSH reverso para redirigir tráfico desde el servidor público al servidor local
-                    var portForwarded = new ForwardedPortRemote("127.0.0.1", (uint)angelSQLsass.Ssh_port, angelSQLsass.Host, (uint)angelSQLsass.Host_Port);
+                    var portForwarded = new ForwardedPortRemote("127.0.0.1", (uint)angelSQLsass.Ssh_port, urlinfo.Host, (uint)urlinfo.Port);
                     sshClient.AddForwardedPort(portForwarded);
                     portForwarded.Start();
 
@@ -1695,6 +1720,22 @@ string ServerCommands(AngelSQL.Query query)
     responce.token = query.token;
     connections[query.token].date_of_last_access = DateTime.Now;
 
+    string user_level = connections[query.token].db.Prompt("MY LEVEL");
+
+    if (user_level.StartsWith("Error:"))
+    {
+        responce.result = user_level;
+        responce.type = "ERROR";
+        return JsonConvert.SerializeObject(responce);
+    }
+
+    if( user_level != "MASTER")
+    {
+        responce.result = "Error: You do not have permission to execute this command.";
+        responce.type = "ERROR";
+        return JsonConvert.SerializeObject(responce);
+    }
+
     Dictionary<string, string> d = serverLanguage.Interpreter(query.command);
 
     if (d == null)
@@ -1702,8 +1743,6 @@ string ServerCommands(AngelSQL.Query query)
         ShowMessage(serverLanguage.errorString);
         return serverLanguage.errorString;
     }
-
-    Console.WriteLine(d.First().Key);
 
     string result = "";
 
@@ -1937,6 +1976,23 @@ string SetProxy(Dictionary<string, string> d)
             return "Error: Proxy allowed values ​​are YES or NO";
         }
 
+        if (d["public_account"] == "null") 
+        {
+            return "Error: Public account is required.";
+        }
+
+        string result = server_db.Prompt($"SELECT * FROM accounts WHERE account = '{d["public_account"]}'");
+
+        if( result.StartsWith("Error:"))
+        {
+            return result + " (SELECT FROM accounts)";
+        }
+
+        if (result == "[]")
+        {
+            return $"Error: Public account {d["public_account"]} not found.";
+        }
+
         var proxyData = new Dictionary<string, string>
         {
             { "use_proxy", d["set_proxy"].ToLower() },
@@ -1955,14 +2011,15 @@ string SetProxy(Dictionary<string, string> d)
         {
             File.Delete(filePath);
         }
+
         File.WriteAllText(filePath, encryptedParameters);
 
         if (proxyData["use_proxy"] == "yes") 
         {
             parameters["use_proxy"] = proxyData["use_proxy"];
             parameters["proxy_account"] = proxyData["proxy_account"];
-            parameters["proxy_password"] = proxyData[d["password"]];
-            parameters["public_account"] = proxyData[d["public_account"]];
+            parameters["proxy_password"] = proxyData["proxy_password"];
+            parameters["public_account"] = proxyData["public_account"];
 
             ActivateProxy();
 

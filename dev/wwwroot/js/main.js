@@ -7,8 +7,148 @@ async function GetGroupsUsingTocken(user, token) {
 }
 
 async function GetUser(user, token, userToObtain) {
-    return sendToAngelPOST(user, "tokens/admintokens", token, "GetUser", { User: userToObtain });
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetUser", { User: userToObtain });
 }
+
+async function SaveUser(user, token, userToSave) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertUser", userToSave);
+}
+
+async function GetUsers(user, token, Where = {}) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetUsers", Where);
+}
+
+async function DeleteToken(user, token, TokenToDelete) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteToken", { TokenToDelete: TokenToDelete });
+}
+
+async function GetTokens(user, token) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetTokens", {});
+}
+
+async function GetToken(user, token, TokenId) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetToken", { TokenId: TokenId });
+}
+
+async function SaveToken(user, token, Token) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "SaveToken", Token);
+}
+
+async function DeleteUser(user, token, UserToDelete) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteUser", { UserToDelete: UserToDelete });
+}
+
+async function GetGroups(user, token) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", {});
+}
+
+async function GetGroup(user, token, id) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", { Where: "id = '" + id + "'" });
+}
+
+async function SaveGroup(user, token, GroupToSave) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertGroup", GroupToSave);
+}
+
+async function DeleteGroup(user, token, GroupToDelete) {
+  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteGroup", { UserGroupToDelete: GroupToDelete });
+}
+
+async function GetTopicsFromUser(user, token) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopicsFromUser", {});
+}
+
+async function GetTopics(user, token) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopics", {});
+}
+
+async function SaveTopic(user, token, topic) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertTopic", topic);
+}
+
+async function GetTopic(user, token, topic_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopic", { Id: topic_id });
+}
+
+async function GetSubTopicsFromTopic(user, token, topic_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopicsFromTopic", { Topic_id: topic_id });
+}
+
+async function GetSubTopic(user, token, subtopic_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopic", { Id: subtopic_id });
+}
+
+async function SaveSubTopic(user, token, subtopic) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertSubTopic", subtopic);
+}
+
+async function GetContentFromSubTopic(user, token, subtopic) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentFromSubTopic", { Subtopic_id: subtopic });
+}
+
+async function GetContent(user, token, Content_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContent", { Id: Content_id });
+}
+
+async function SaveContent(user, token, content) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContent", content);
+}
+
+async function DeleteContent(user, token, content_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContent", { Content_id: content_id });
+}
+
+async function GetContentDetail(user, token, content_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetail", { Content_id: content_id });
+}
+
+async function GetContentDetailItem(user, token, id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetailItem", { Id: id });
+}
+
+async function GetTitles(user, token, content_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTitles", { Content_id: content_id });
+}
+
+async function SaveContentDetail(user, token, contentdetail) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContentDetail", contentdetail);
+}
+
+async function DeleteContentDetail(user, token, id, Content_id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContentDetail", { Id: id, Content_id: Content_id } );
+}
+
+async function SendFileToDownload(user, token, file, dataMessage) {
+  return SendFile(user, "docs/helpdesk", token, "UploadFile", file, dataMessage);
+}
+
+async function SearchInfo(user, token, textToSerch) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "SearchInfo", { Search: textToSerch });
+}
+
+async function DeleteSubTopic(user, token, id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteSubTopic", { Id: id });
+}
+
+async function DeleteTopic(user, token, id) {
+  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteTopic", { Id: id });
+}
+
+async function GetPublicContent(account, Content_id) {
+    let user = "user@" + account;
+    return sendToAngelPOST(user, "docs/helpdesk", "", "GetPublicContent", { Content_id: Content_id }, account);
+}
+
+async function GetContentTitles(account, Content_id) {
+    let user = "user@" + account;
+    return sendToAngelPOST(user, "docs/helpdesk", "", "GetContentTitles", { Content_id: Content_id }, account);
+}
+
+async function GetContentDetailCSS(account, Content_id) {
+    let user = "user@" + account;
+    return sendToAngelPOST(user, "docs/helpdesk", "", "GetContentDetailCSS", { Content_id: Content_id }, account);
+}
+
 
 function generateGUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -118,10 +258,10 @@ async function SendFile(user, api_name, token, OperationType, file, dataMessage)
     formData.append('jSonString', JSON.stringify(api));
 
     if (typeof clientKey !== 'undefined' && clientKey) {
-        url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelPOST";
+        url = window.location.protocol + '//' + window.location.host + "/" + clientKey + "/AngelUpload";
     }
     else {
-        url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
+        url = window.location.protocol + '//' + window.location.host + "/AngelUpload";
     }
 
     const response = await fetch(url, {
@@ -148,6 +288,8 @@ async function sendPOST(data) {
     else {
         url = window.location.protocol + '//' + window.location.host + "/AngelPOST";
     }
+
+    console.log("Sending POST to: " + url);
 
     const response = await fetch(url, {
         method: 'POST',
@@ -262,35 +404,43 @@ function ShowDialog(title, message) {
 }
 
 function showDialog(title, message) {
-    // Elimina modales anteriores si existen
-    const existingModal = document.getElementById('genericModal');
-    if (existingModal) existingModal.remove();
+    // Elimina diálogos anteriores si existen
+    const existingDialog = document.getElementById('genericDialog');
+    if (existingDialog) existingDialog.remove();
 
-    const modalHtml = `
-    <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content rounded-4 shadow">
-          <div class="modal-header">
-            <h5 class="modal-title" id="genericModalLabel">${title}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
+    // Crear el HTML del diálogo
+    const dialogHtml = document.createElement('dialog');
+    dialogHtml.id = 'genericDialog';    
+    dialogHtml.style.padding = '20px';
+    dialogHtml.style.border = 'none';
+    dialogHtml.style.borderRadius = '10px';
+    dialogHtml.style.boxShadow = '0 0 20px rgba(0,0,0,0.4)';
+    dialogHtml.innerHTML = `
+        <form method="dialog">
+            <h3 style="margin-top:0;">${title}</h3>
             <p>${message}</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+            <div style="text-align:right;">
+                <button id="dialogAcceptBtn" value="ok" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    `;
 
     // Inyectar al body
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    document.body.appendChild(dialogHtml);
 
-    // Mostrar el modal
-    const myModal = new bootstrap.Modal(document.getElementById('genericModal'));
-    myModal.show();
+    // Mostrar el diálogo
+    dialogHtml.showModal();
+
+    // Cerrar al hacer clic en el botón o presionar Esc
+    dialogHtml.querySelector('#dialogAcceptBtn').addEventListener('click', () => {
+        dialogHtml.close();
+        dialogHtml.remove();
+    });
+
+    // También quitarlo al cerrar manualmente
+    dialogHtml.addEventListener('close', () => {
+        dialogHtml.remove();
+    });
 }
 
 
@@ -300,10 +450,43 @@ function CloseDialog() {
 }
 
 function ShowAcceptCancelDialog(title, message, callback) {
-    document.getElementById('dialog_accept_title').innerText = title;
-    document.getElementById('dialog_accept_message').innerText = '⚠️' + message;
-    document.getElementById('dialog_button_accept').onclick = callback;
-    document.getElementById('dialog_accept').showModal();
+    // Quitar diálogos anteriores si existen
+    const existing = document.getElementById('dynamicAcceptDialog');
+    if (existing) existing.remove();
+
+    // Crear el diálogo
+    const dialog = document.createElement('dialog');
+    dialog.id = 'dynamicAcceptDialog';
+    dialog.style.padding = '20px';
+    dialog.style.border = 'none';
+    dialog.style.borderRadius = '10px';
+    dialog.style.boxShadow = '0 0 20px rgba(0,0,0,0.4)';
+    dialog.innerHTML = `
+        <form method="dialog">
+            <h3>${title}</h3>
+            <p style="margin-bottom: 20px;">⚠️ ${message}</p>
+            <div style="text-align: right;">
+                <button value="cancel" style="margin-right: 10px;" class="btn btn-secondary">Cancelar</button>
+                <button id="confirmButton" value="accept" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    `;
+
+    // Insertar y mostrar
+    document.body.appendChild(dialog);
+    dialog.showModal();
+
+    // Manejar clic en aceptar
+    dialog.querySelector('#confirmButton').addEventListener('click', () => {
+        dialog.close();
+        dialog.remove();
+        callback(); // Ejecutar el callback
+    });
+
+    // Cerrar sin hacer nada si cancela
+    dialog.addEventListener('close', () => {
+        dialog.remove();
+    });
 }
 
 function ShowAcceptCancelDialogClose() {

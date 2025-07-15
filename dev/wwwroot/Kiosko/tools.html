@@ -129,7 +129,10 @@
                 if( findInString(user_groups.groups, "SUPERVISORS") )  
                 {
                     generateButton("chat_web_page.html", "images/Kiosco_chat_small.png", "Chat with contacts on the website", "btn btn-secondary btn-block btn-lg form-control");
-                    generateButton("pages.html", "images/WebPasges_small.png", "WebSite Manager", "btn btn-success btn-block btn-lg form-control");
+                    //generateButton("pages.html", "images/WebPasges_small.png", "WebSite Manager", "btn btn-success btn-block btn-lg form-control");
+                    generateButton("#", "images/WebPasges_small.png", "Code Editor", "btn btn-success btn-block btn-lg form-control", function() {
+                        window.open("code_editor.html", "_blank");
+                    });
                 }
             }
         }

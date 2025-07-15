@@ -6,10 +6,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <!-- Hints y autocompletado -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+
+
     <link rel="stylesheet" href="../css/kiosko.css">
     <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="./css/pages.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -93,29 +121,23 @@
             <div class="row col-12" style="margin-top: 10px;">
                 <div class="col-3">
                     <button id="button_head" class="btn btn-primary btn-lg form-control col-4"
-                        style="margin-bottom: 10px;">Head</button>
+                        style="margin-bottom: 10px;" onclick="EditHEAD()">Head</button>
                 </div>
 
                 <div class="col-3">
                     <button id="button_css" class="btn btn-primary btn-lg form-control col-4"
-                        style="margin-bottom: 10px;">CSS</button>
+                        style="margin-bottom: 10px;" onclick="EditCSS()">CSS</button>
                 </div>
 
                 <div class="col-3">
                     <button id="button_body" class="btn btn-primary btn-lg form-control col-4"
-                        style="margin-bottom: 10px;">Body</button>
+                        style="margin-bottom: 10px;" onclick="EditBODY()">Body</button>
                 </div>
 
                 <div class="col-3">
                     <button id="button_navigation" class="btn btn-primary btn-lg form-control col-4"
                         style="margin-bottom: 10px;">Navigation</button>
                 </div>
-
-                <div class="col-12">
-                    <button id="button_import" class="btn btn-primary btn-lg form-control col-4"
-                        style="margin-bottom: 10px;">Import existing page</button>
-                </div>
-
 
             </div>
             <!-- ** Action button area -->
@@ -124,10 +146,9 @@
             <!-- ** Action button area -->
             <div class="row col-12" style="margin-top: 10px;">
                 <div class="col-6">
-                    <a class="btn btn-success w-100" href="#" id="menu_navigation_logout"
-                        onclick="ImporFromSpreadSheet()">
+                    <a class="btn btn-success w-100" href="#" id="menu_navigation_logout" onclick="ImporFromFile()">
                         <img src="images/importfromexcel_small.png" alt="logo" style="width:48px;" class="me-2">
-                        <span id="menu_log_out">Imports from spreadsheet</span>
+                        <span id="menu_log_out">Import from an existing file</span>
                     </a>
                 </div>
 
@@ -225,11 +246,39 @@
 
 
         <!-- ** Dialog edit html -->
-
+        <!-- Modal Editor con iconos -->
+        <div class="modal fade" id="codeEditorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editor de Código 🍋</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body d-flex flex-column flex-md-row" style="height: 70vh;">
+                        <!-- Variables -->
+                        <div id="variables-container" class="border-end pe-3" style="width: 100%; max-width: 300px; overflow-y: auto;">
+                            <h6><i class="bi bi-list-stars me-2"></i>Variables disponibles:</h6>
+                            <ul id="editorVariableList" class="list-group list-group-flush text-light"></ul>
+                        </div>
+                        <!-- CodeMirror editor -->
+                        <div class="flex-grow-1 ps-3 h-100">
+                            <textarea id="codeEditor" name="code"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <span class="me-auto text-warning"><i class="bi bi-emoji-smile"></i> Edita con sabor a nieve de
+                            limón</span>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Cerrar
+                        </button>
+                        <button type="button" class="btn btn-primary" id="saveEditorContent">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- ** Dialog edit html -->
-        
-
-
 
         <!-- ** Footer bar-->
         <div class="bottom-bar" style="margin-top: 20px;">
@@ -259,42 +308,157 @@
 
         <script>
 
-            let site = 
+            class ModalCodeEditor {
+                constructor() {
+                    this.editor = null;
+                    this.mode = 'htmlmixed';
+                    this.modalInstance = null;
+                    this.variablesContainer = document.getElementById('variables-container');
+                }
+
+                open({ title = "Editor de Código", content = "", mode = "htmlmixed", variables = [] }, onSave) {
+                    if (!this.modalInstance) {
+                        this.modalInstance = new bootstrap.Modal(document.getElementById('codeEditorModal'));
+                    }
+
+                    document.querySelector("#codeEditorModal .modal-title").innerText = title;
+                    this.setVariables(variables);
+                    this.mode = mode;
+
+                    if (!this.editor) {
+                        this.editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+                            lineNumbers: true,
+                            theme: "material-darker",
+                            mode: mode,
+                            autoCloseBrackets: true,
+                            extraKeys: {
+                                "Ctrl-Space": "autocomplete",
+                                "Cmd-Space": "autocomplete",
+                                "Tab": (cm) => cm.execCommand("autocomplete")
+                            }
+                        });
+                        this.editor.setSize("100%", "100%");
+                    }
+
+                    this.editor.setValue(content);
+                    this.editor.setOption("mode", mode);
+
+                    // Reset display to avoid issues
+                    this.variablesContainer.style.display = 'block';
+                    this.editor.getWrapperElement().style.display = 'flex';
+
+
+                    this.modalInstance.show();
+
+                    setTimeout(() => {
+                        this.editor.refresh();
+                        this.editor.focus();
+                    }, 200);
+
+                    document.getElementById("saveEditorContent").onclick = () => {
+                        if (typeof onSave === "function") {
+                            onSave(this.editor.getValue());
+                        }
+                    };
+                }
+
+                setVariables(variables) {
+                    const ul = document.getElementById("editorVariableList");
+                    ul.innerHTML = "";
+                    variables.forEach(v => {
+                        const li = document.createElement("li");
+                        li.className = "list-group-item bg-dark text-light border-secondary";
+                        li.innerHTML = `<i class="bi bi-code-slash me-2"></i><strong>${v.name}</strong> <small class="text-muted">(${v.type})</small><br><small>${v.description || ""}</small>`;
+                        ul.appendChild(li);
+                    });
+                }
+            }
+
+        </script>
+
+
+        <script>
+
+            let site =
             {
-                "head": "",
-                "css": "",
-                "body": "",
-                "navigation": ""
+                "HEAD": "",
+                "BODY": "",
+                "CSS": "",
+                "JAVASCRIPT": "",
+                "FEATURES": []
             };
 
             let businessesInfo = null;
 
-            // Import from Excel
-            function ImporFromSpreadSheet() {
+            const editor = new ModalCodeEditor();
+
+            function EditHEAD() {
+                editor.open({
+                    title: "Edit HEAD",
+                    content: site.HEAD,
+                    mode: "htmlmixed",
+                    variables: [
+                        { name: "site", type: "object", description: "Site configuration object" },
+                        { name: "businessesInfo", type: "object", description: "Business information" }
+                    ]
+                }, (content) => {
+                    site.HEAD = content;
+                    //Save();
+                });
+            }
+
+            function EditBODY() {
+                editor.open({
+                    title: "Edit BODY",
+                    content: site.BODY,
+                    mode: "htmlmixed",
+                    variables: [
+                        { name: "site", type: "object", description: "Site configuration object" },
+                        { name: "businessesInfo", type: "object", description: "Business information" }
+                    ]
+                }, (content) => {
+                    site.BODY = content;
+                    //Save();
+                });
+            }
+
+            function EditCSS() {
+
+                editor.open({
+                    title: "Edit CSS",
+                    content: site.CSS,
+                    mode: "css",
+                    variables: [
+                        { name: "site", type: "object", description: "Site configuration object" },
+                        { name: "businessesInfo", type: "object", description: "Business information" }
+                    ]
+                }, (content) => {
+                    site.CSS = content;
+                    //Save();
+                });
+
+            }
+
+
+            function ImporFromFile() {
                 const input = document.createElement("input");
                 input.type = "file";
-                input.accept = ".xlsx,.xls";
+                input.accept = ".html,.htm";
                 input.click();
 
                 input.onchange = async (e) => {
-
                     const file = e.target.files[0];
-
                     if (!file) return;
 
                     const reader = new FileReader();
                     reader.onload = async function (event) {
-                        const data = new Uint8Array(event.target.result);
-                        const workbook = XLSX.read(data, { type: "array" });
+                        const htmlContent = event.target.result;
 
-                        const sheetName = workbook.SheetNames[0];
-                        const sheet = workbook.Sheets[sheetName];
-                        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                        console.log(htmlContent); // Para depurar
 
-                        var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "SaveImport", json);
+                        var response = sendToAngelPOST(Token.User, "pos_backend/pos_pages", Token.Token, "ImportHtml", htmlContent);
 
                         response.then(function (query) {
-
                             if (query.startsWith("Error:")) {
                                 ShowDialog("Alert", query);
                                 return;
@@ -307,19 +471,12 @@
                                 return;
                             }
 
-                            if (responce_query.result == "Ok.") {
-                                ShowDialog("Alert", "pages imported correctly.");
-                                Search(":ALL");
-                            } else {
-                                ShowDialog("Alert", "Failed to save pages info.");
-                            }
+                            site = JSON.parse(responce_query.result);
 
                         });
-
                     };
 
-                    reader.readAsArrayBuffer(file);
-
+                    reader.readAsText(file); // 👈 Corrección aquí
                 };
             }
 
@@ -447,7 +604,6 @@
 
             }
 
-
             function Save() {
 
                 const pageId = document.getElementById("page_id").value;
@@ -538,6 +694,8 @@
                 });
             }
 
+
+
             window.onload = async function () {
 
                 document.getElementById("dialog_button_close").onclick = function () {
@@ -579,7 +737,7 @@
                     return;
                 }
 
-                site = JSON.parse(responce_query.result);                
+                site = JSON.parse(responce_query.result);
 
                 translate_menu(language);
 

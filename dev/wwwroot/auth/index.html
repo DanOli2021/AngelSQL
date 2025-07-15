@@ -2,15 +2,14 @@
 <html>
 
 <head>
-    <title>AUTHORIZERS - Session start</title>
+    <title>AngelSQL - Authentication</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="./bootstrap-5.3.0/css/bootstrap.min.css">
-
     <link rel="stylesheet" href="./css/styles.css">
     <script src="./js/index_translate.js"></script>
-    <script src="./js/main.js"></script>
+    <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
 </head>
 
@@ -21,7 +20,7 @@
             <img src="./images/permissions.png" alt="logo" class="img-fluid mx-auto d-block"
                 style="margin-top: 20px; width: 250px">
 
-            <h1 class="text-center" id="auth_title">Authorizer</h1>
+            <h1 class="text-center" id="auth_title">AngelSQL - Authentication</h1>
 
 
             <div class="col-md-12">
@@ -113,20 +112,20 @@
                 if (responce_query.result.startsWith("Error:")) {
                     showDialog("Alert", responce_query.result);
                 } else {
+                    let token = {
+                        "User": username,
+                        "Token": responce_query.result,
+                        "expires": Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 días
+                    };
 
-                    let token =
-                    {
-                        "username": username,
-                        "token": responce_query.result
-                    }
-
-                    sessionStorage.setItem('Token', JSON.stringify(token));
+                    localStorage.setItem('Token', JSON.stringify(token));
                     window.location.href = "menu.html";
                 }
 
             });
 
         }
+
 
         document.addEventListener("DOMContentLoaded", function () {
             var url = new URL(window.location.href);

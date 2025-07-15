@@ -8,10 +8,17 @@
     <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/kiosko.css">
     <link rel="stylesheet" href="./css/bottom_bar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/material.min.css">
 
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
 
     <script>
 
@@ -104,9 +111,100 @@
             </div>
 
             <div class="mb-3">
+                <label for="description" class="form-label">Business Description</label>
+                <textarea class="form-control" id="description" rows="7" ></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="freeHtml" class="form-label">Free HTML</label>
+                <textarea class="form-control" id="freeHtml"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage1" class="form-label">Competitive Advantage 1</label>
+                <input type="text" class="form-control" id="advantage1">
+            </div>
+            <div class="mb-3">
+                <label for="advantage1ImageUpload" class="form-label">Upload Advantage 1 Image</label>
+                <input type="file" class="form-control" id="advantage1ImageUpload" accept="image/*">
+                <img id="advantage1ImagePreview" src="#" alt="Advantage 1 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage1Image">
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage2" class="form-label">Competitive Advantage 2</label>
+                <input type="text" class="form-control" id="advantage2">
+            </div>
+            <div class="mb-3">
+                <label for="advantage2ImageUpload" class="form-label">Upload Advantage 2 Image</label>
+                <input type="file" class="form-control" id="advantage2ImageUpload" accept="image/*">
+                <img id="advantage2ImagePreview" src="#" alt="Advantage 2 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage2Image">
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage3" class="form-label">Competitive Advantage 3</label>
+                <input type="text" class="form-control" id="advantage3">
+            </div>
+            <div class="mb-3">
+                <label for="advantage3ImageUpload" class="form-label">Upload Advantage 3 Image</label>
+                <input type="file" class="form-control" id="advantage3ImageUpload" accept="image/*">
+                <img id="advantage3ImagePreview" src="#" alt="Advantage 3 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage3Image">
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage4" class="form-label">Competitive Advantage 4</label>
+                <input type="text" class="form-control" id="advantage4">
+            </div>
+            <div class="mb-3">
+                <label for="advantage4ImageUpload" class="form-label">Upload Advantage 4 Image</label>
+                <input type="file" class="form-control" id="advantage4ImageUpload" accept="image/*">
+                <img id="advantage4ImagePreview" src="#" alt="Advantage 4 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage4Image">
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage5" class="form-label">Competitive Advantage 5</label>
+                <input type="text" class="form-control" id="advantage5">
+            </div>
+            <div class="mb-3">
+                <label for="advantage5ImageUpload" class="form-label">Upload Advantage 5 Image</label>
+                <input type="file" class="form-control" id="advantage5ImageUpload" accept="image/*">
+                <img id="advantage5ImagePreview" src="#" alt="Advantage 5 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage5Image">
+            </div>
+
+            <div class="mb-3">
+                <label for="advantage6" class="form-label">Competitive Advantage 6</label>
+                <input type="text" class="form-control" id="advantage6">
+            </div>
+            <div class="mb-3">
+                <label for="advantage6ImageUpload" class="form-label">Upload Advantage 6 Image</label>
+                <input type="file" class="form-control" id="advantage6ImageUpload" accept="image/*">
+                <img id="advantage6ImagePreview" src="#" alt="Advantage 6 Image Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="advantage6Image">
+            </div>
+
+            <div class="mb-3">
                 <label for="logoUpload" class="form-label">Upload Logo</label>
                 <input type="file" class="form-control" id="logoUpload" accept="image/*">
+                <img id="logoPreview" src="#" alt="Logo Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
                 <input type="hidden" id="logo">
+            </div>
+
+            <div class="mb-3">
+                <label for="backgroundUpload" class="form-label">Upload Background Image</label>
+                <input type="file" class="form-control" id="backgroundUpload" accept="image/*">
+                <img id="backgroundPreview" src="#" alt="Background Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="backgroundImage">
+            </div>
+
+            <div class="mb-3">
+                <label for="centralLogoUpload" class="form-label">Upload Central Logo</label>
+                <input type="file" class="form-control" id="centralLogoUpload" accept="image/*">
+                <img id="centralLogoPreview" src="#" alt="Central Logo Preview" class="img-fluid mt-2" style="display: none; max-height: 150px;">
+                <input type="hidden" id="centralLogo">
             </div>
 
             <button class="btn btn-success w-100" id="saveButton">Save Changes</button>
@@ -129,14 +227,82 @@
 
     <script>
 
-        document.getElementById('logoUpload').addEventListener('change', function () {
-            const file = this.files[0];
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                document.getElementById('logo').value = event.target.result;
-            };
-            if (file) reader.readAsDataURL(file);
+        function handleImageUpload(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    resolve(event.target.result);
+                };
+                reader.onerror = reject;
+                if (file) {
+                    reader.readAsDataURL(file);
+                } else {
+                    reject('No file selected');
+                }
+            });
+        }
+
+        document.getElementById('logoUpload').addEventListener('change', async function () {
+            if (this.files[0]) {
+                try {
+                    const compressedBase64 = await handleImageUpload(this.files[0]);
+                    document.getElementById('logo').value = compressedBase64;
+                    const preview = document.getElementById('logoPreview');
+                    preview.src = compressedBase64;
+                    preview.style.display = 'block';
+                } catch (error) {
+                    console.error("Error processing logo image:", error);
+                    ShowDialog("Error", "Could not process the logo image.");
+                }
+            }
         });
+
+        document.getElementById('backgroundUpload').addEventListener('change', async function () {
+            if (this.files[0]) {
+                try {
+                    const compressedBase64 = await handleImageUpload(this.files[0]);
+                    document.getElementById('backgroundImage').value = compressedBase64;
+                    const preview = document.getElementById('backgroundPreview');
+                    preview.src = compressedBase64;
+                    preview.style.display = 'block';
+                } catch (error) {
+                    console.error("Error processing background image:", error);
+                    ShowDialog("Error", "Could not process the background image.");
+                }
+            }
+        });
+
+        document.getElementById('centralLogoUpload').addEventListener('change', async function () {
+            if (this.files[0]) {
+                try {
+                    const compressedBase64 = await handleImageUpload(this.files[0]);
+                    document.getElementById('centralLogo').value = compressedBase64;
+                    const preview = document.getElementById('centralLogoPreview');
+                    preview.src = compressedBase64;
+                    preview.style.display = 'block';
+                } catch (error) {
+                    console.error("Error processing central logo image:", error);
+                    ShowDialog("Error", "Could not process the central logo image.");
+                }
+            }
+        });
+
+        for (let i = 1; i <= 6; i++) {
+            document.getElementById(`advantage${i}ImageUpload`).addEventListener('change', async function () {
+                if (this.files[0]) {
+                    try {
+                        const compressedBase64 = await handleImageUpload(this.files[0]);
+                        document.getElementById(`advantage${i}Image`).value = compressedBase64;
+                        const preview = document.getElementById(`advantage${i}ImagePreview`);
+                        preview.src = compressedBase64;
+                        preview.style.display = 'block';
+                    } catch (error) {
+                        console.error(`Error processing advantage ${i} image:`, error);
+                        ShowDialog("Error", `Could not process the advantage ${i} image.`);
+                    }
+                }
+            });
+        }
 
         document.getElementById('saveButton').addEventListener('click', function () {
             const businessInfo = {
@@ -146,7 +312,23 @@
                 Email: document.getElementById('email').value,
                 Website: document.getElementById('website').value,
                 Slogan: document.getElementById('slogan').value,
-                Logo: document.getElementById('logo').value
+                Description: document.getElementById('description').value,
+                Advantage1: document.getElementById('advantage1').value,
+                Advantage2: document.getElementById('advantage2').value,
+                Advantage3: document.getElementById('advantage3').value,
+                Advantage4: document.getElementById('advantage4').value,
+                Advantage5: document.getElementById('advantage5').value,
+                Advantage6: document.getElementById('advantage6').value,
+                Logo: document.getElementById('logo').value,
+                BackgroundImage: document.getElementById('backgroundImage').value,
+                CentralLogo: document.getElementById('centralLogo').value,
+                Advantage1Image: document.getElementById('advantage1Image').value,
+                Advantage2Image: document.getElementById('advantage2Image').value,
+                Advantage3Image: document.getElementById('advantage3Image').value,
+                Advantage4Image: document.getElementById('advantage4Image').value,
+                Advantage5Image: document.getElementById('advantage5Image').value,
+                Advantage6Image: document.getElementById('advantage6Image').value,
+                FreeHtml: freeHtmlEditor.getValue()
             };
 
             var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "SaveBusinessInfo", businessInfo);
@@ -167,7 +349,7 @@
 
                 if (responce_query.result == "Ok.") {
                     ShowDialog("Alert", "Business info saved successfully.");
-                    window.location.href = "menu.html";
+                    //window.location.href = "menu.html";
                 } else {
                     ShowDialog("Alert", "Failed to save business info.");
                 }
@@ -175,6 +357,8 @@
             });
 
         });
+
+        let freeHtmlEditor;
 
         window.onload = async function () {
 
@@ -185,6 +369,12 @@
             document.getElementById("dialog_button_close1").onclick = function () {
                 document.getElementById("dialog_accept").close();
             };
+
+            freeHtmlEditor = CodeMirror.fromTextArea(document.getElementById('freeHtml'), {
+                mode: 'htmlmixed',
+                theme: 'material',
+                lineNumbers: true
+            });
 
             var response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", {});
 
@@ -215,7 +405,46 @@
                 document.getElementById('email').value = bi.Email;
                 document.getElementById('website').value = bi.Website;
                 document.getElementById('slogan').value = bi.Slogan;
-                document.getElementById('logo').value = bi.Logo;
+                document.getElementById('description').value = bi.Description || '';
+                document.getElementById('advantage1').value = bi.Advantage1 || '';
+                document.getElementById('advantage2').value = bi.Advantage2 || '';
+                document.getElementById('advantage3').value = bi.Advantage3 || '';
+                document.getElementById('advantage4').value = bi.Advantage4 || '';
+                document.getElementById('advantage5').value = bi.Advantage5 || '';
+                document.getElementById('advantage6').value = bi.Advantage6 || '';
+                freeHtmlEditor.setValue(bi.FreeHtml || '');               
+
+                document.getElementById('logo').value = bi.LogoBase64 || '';
+                if (bi.LogoBase64) {
+                    const logoPreview = document.getElementById('logoPreview');
+                    logoPreview.src = bi.LogoBase64;
+                    logoPreview.style.display = 'block';
+                }
+                
+                document.getElementById('backgroundImage').value = bi.BackgroundImage || '';
+                if (bi.BackgroundImage) {
+                    const backgroundPreview = document.getElementById('backgroundPreview');
+                    // Assuming the backend returns a direct URL or base64 string for the background
+                    backgroundPreview.src = bi.BackgroundImage; 
+                    backgroundPreview.style.display = 'block';
+                }
+
+                document.getElementById('centralLogo').value = bi.CentralLogoBase64 || '';
+                if (bi.CentralLogoBase64) {
+                    const centralLogoPreview = document.getElementById('centralLogoPreview');
+                    centralLogoPreview.src = bi.CentralLogoBase64;
+                    centralLogoPreview.style.display = 'block';
+                }
+
+                for (let i = 1; i <= 6; i++) {
+                    document.getElementById(`advantage${i}Image`).value = bi[`Advantage${i}ImageBase64`] || '';
+                    if (bi[`Advantage${i}ImageBase64`]) {
+                        const preview = document.getElementById(`advantage${i}ImagePreview`);
+                        preview.src = bi[`Advantage${i}ImageBase64`];
+                        preview.style.display = 'block';
+                    }
+                }
+
 
                 translate_menu(language);
 

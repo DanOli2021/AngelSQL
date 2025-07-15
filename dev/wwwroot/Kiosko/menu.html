@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Kiosko Admin (MyBusiness POS for small businesses)</title>
+    <title>Kiosko Admin</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
@@ -59,10 +59,7 @@
             <img src="./images/Kiosko_logo.png" alt="logo" class="img-fluid mx-auto d-block"
                 style="margin-top: 20px;width:200px">
 
-            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin</h1>
-            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for
-                small businesses</h1>
-
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder; margin-bottom: 20px;" id="auth_title">Kiosko Admin</h1>            
             <div class="col-sm-12" id="buttonszone">
             </div>
 
@@ -100,10 +97,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             let response = GetGroupsUsingTocken(Token.User, Token.Token);
 
-            response.then(function (query) {
-
-                console.log("Response from GetGroupsUsingTocken: " + query);
-
+            response.then(function (query) {                
                 let response_query = JSON.parse(query);
 
                 if (response_query.result.startsWith("Error:")) {
@@ -154,7 +148,7 @@
                 Privacy Policy
             </span>
         </a>
-        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="https://angelsql.net" target="_blank">AngelSQL</a>
         <a href="about.html" target="_blank" id="index_about_url">
             <span id="index_about_us">
                 About us...

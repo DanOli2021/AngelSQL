@@ -41,6 +41,7 @@ return api.OperationType switch
     "GetMany" => GetMany(),
     "UpsertCurrency" => UpsertCurrency(),
     "Delete" => Delete(),
+    "ImportHtml" => ImportHtml(),
     _ => $"Error: No service found {api.OperationType}",
 };
 
@@ -285,8 +286,6 @@ string GetSiteParameters()
         return result + " (1)";
     }
 
-    string data = api.DataMessage.ToString().Trim();
-
     result = db.Prompt($"SELECT * FROM Site WHERE id = '1'", true);
 
     if (result.StartsWith("Error:"))
@@ -360,4 +359,35 @@ public class Site
     public string Css { get; set; }
     public string Body { get; set; }
     public string Navigation_bar { get; set; }
+}
+
+
+
+string ImportHtml()
+{
+    string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    dynamic html = api.DataMessage.ToString().Trim();
+
+    if (html == null || html.ToString().Trim() == "")
+    {
+        return "Error: HTML is empty.";
+    }
+
+    try
+    {
+        // Assuming html is a string containing the HTML content to be imported
+        string htmlJson = AngelDB.HtmlParser.GetHtmlSectionsAsJson(html.ToString());
+        return htmlJson;
+    }
+    catch (Exception ex)
+    {
+        return "Error: " + ex.Message;
+    }
+
 }

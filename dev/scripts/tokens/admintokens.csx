@@ -1,6 +1,6 @@
 ﻿// GLOBALS
 // These lines of code go in each script
-#load "Globals.csx"
+#load "../Globals.csx"
 // END GLOBALS
 
 // Script for system access management, it is based on the generation of Tokens, 
@@ -25,16 +25,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Globalization;
-using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net.Mail;
-using System.Net;
 using System.Text.RegularExpressions;
-using System.Net.Http;
-using System.Text;
-using System.Xml.Linq;
 
 public class AngelApiOperation
 {
@@ -842,8 +833,7 @@ public static class AdminAuth
             return $"Error: GetUser() {translation.Get("User is null", language)}";
         }
 
-        DataTable t = JsonConvert.DeserializeObject<DataTable>(result);
-        t.Columns.Remove("Password");
+        DataTable t = JsonConvert.DeserializeObject<DataTable>(result);        
 
         var user = new
         {
@@ -853,7 +843,8 @@ public static class AdminAuth
             Email = t.Rows[0]["Email"],
             Phone = t.Rows[0]["Phone"],
             UserGroups = t.Rows[0]["UserGroups"],
-            permissions_list = t.Rows[0]["permissions_list"]
+            permissions_list = t.Rows[0]["permissions_list"],
+            Password = t.Rows[0]["Password"],
         };
 
         return JsonConvert.SerializeObject(user, Formatting.Indented);

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Docs Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="../css/bottom_bar.css">
+    <script src="../proxy.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: Consolas, 'Courier New', monospace;
+        }
+
+        #sidebar {
+            width: 260px;
+            padding: 10px;
+            background-color: #252526;
+            border-right: 1px solid #3c3c3c;
+            overflow-y: auto;
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        #editorContainer {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            height: 100%;
+        }
+
+        #editor {
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        #toolbar {
+            background-color: #333333;
+            padding: 10px;
+            border-bottom: 1px solid #3c3c3c;
+        }
+
+        #toolbar button {
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            margin-right: 5px;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #toolbar button:hover {
+            background-color: #1177bb;
+        }
+
+        #fileInput {
+            margin-bottom: 10px;
+            width: 100%;
+            color: #d4d4d4;
+            background-color: #3c3c3c;
+            border: none;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            color: #d4d4d4;
+        }
+
+        li:hover {
+            background-color: #094771;
+        }
+
+        #statusToast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007ACC;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00000088;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+
+    <script>
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search);
+        var Content_id = params.get('content_id');
+        var Account = Token.User.split("@")[1];
+
+    </script>
+
+</head>
+
+<body>
+    <!-- HEADER CON BOTONES -->
+    <div class="container-fluid flex-shrink-0">
+        <div class="row py-2">
+            <div class="col-sm-6 mb-2">
+                <a class="btn btn-primary w-100" href="topics.html" id="topics_link">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px; margin-right: 5px">
+                    <span id="contentdetail_topics">Topics</span>
+                </a>
+            </div>
+            <div class="col-sm-6 mb-2">
+                <a class="btn btn-secondary w-100" href="topic.html" id="subtopic_link">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px; margin-right: 5px">
+                    <span id="subtopics_menu">Sub Topics</span>
+                </a>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col-sm-12">
+                <h3 id="content_title">
+                    Content
+                </h3>
+            </div>
+        </div>
+
+        <br />
+
+
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL: SIDEBAR + EDITOR -->
+    <div class="d-flex flex-grow-1" style="min-height: 0;">
+        <div id="sidebar">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect width="48" height="48" rx="8" fill="#007ACC" />
+                    <path
+                        d="M38.35 10.33L30.56 7.06C29.4 6.54 28.43 7.17 28.43 8.48V39.52C28.43 40.83 29.4 41.46 30.56 40.94L38.35 37.67C39.23 37.27 40 36.18 40 34.92V13.08C40 11.82 39.23 10.73 38.35 10.33ZM24.62 20.77L20.66 24L24.62 27.23V31.48L16.25 25.34V22.66L24.62 16.52V20.77Z"
+                        fill="white" />
+                </svg>
+                <h3 style="color: #d4d4d4; font-size: 16px; margin-top: 5px;">HTML Editor</h3>
+            </div>
+            <h3>📂 Files</h3>
+            <input type="file" id="fileInput" multiple>
+            <ul id="filesList"></ul>
+        </div>
+
+        <div id="editorContainer">
+            <div id="toolbar">
+                <button onclick="saveContent()">💾 Save</button>
+                <button onclick="preview()">👁️ Preview</button>
+            </div>
+            <div id="editor"></div>
+        </div>
+    </div>
+
+    <!-- TOAST DE ESTADO -->
+    <div id="statusToast">Guardado correctamente ✅</div>
+
+    <script>
+        let editor;
+        let uploadedFiles = [];
+
+        async function GetData() {
+
+            var datos = GetContentDetail(Token.User, Token.Token, Content_id);
+
+            datos.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error:", responce_query.result);
+                    return;
+                }
+
+                editor.setValue(responce_query.result);
+
+            });
+
+        }
+
+        // Simulación de guardado
+        async function saveContent() {
+            const content = editor.getValue();
+            await fakeFetchSave(content);
+            showToast("Guardado correctamente ✅");
+        }
+
+        // Subida de archivos
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            for (let file of e.target.files) {
+                const url = await fakeUpload(file);
+                uploadedFiles.push({ name: file.name, url });
+            }
+            renderFileList();
+        });
+
+        // Muestra la lista de archivos
+        function renderFileList() {
+            const ul = document.getElementById('filesList');
+            ul.innerHTML = '';
+            uploadedFiles.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.onclick = () => {
+                    const current = editor.getValue();
+                    const link = `<a href="${file.url}" class="btn btn-link" target="_blank">${file.name}</a>`;
+                    editor.setValue(current + '\n' + link);
+                };
+                ul.appendChild(li);
+            });
+        }
+
+        // Previsualiza el contenido
+        function preview() {
+            const html = editor.getValue();
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+        }
+
+        // Configuración de Monaco
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: "<h2>Documento de ayuda</h2><p>Empieza a escribir aquí...</p>",
+                language: 'html',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+        });
+
+        // Atajo Ctrl+S para guardar
+        window.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveContent();
+            }
+        });
+
+        // Simulaciones
+        async function fakeFetchLoad() {
+            return `<h2>Contenido cargado desde la base</h2>\n<p>Solo usuarios con permisos pueden editar.</p>`;
+        }
+
+        async function fakeFetchSave(content) {
+            console.log("Guardando en la base de datos:", content);
+        }
+
+        async function fakeUpload(file) {
+            return `https://archivos.kiosko.fake/${encodeURIComponent(file.name)}`;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('statusToast');
+            toast.textContent = message;
+            toast.style.opacity = 1;
+            setTimeout(() => {
+                toast.style.opacity = 0;
+            }, 2000);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var datos = GetTitles(Token.User, Token.Token, Content_id);
+
+            datos.then(function (query) {
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    showDialog("Error: GetTitles()", responce_query.result);
+                    return;
+                }
+
+                var titles = JSON.parse(responce_query.result);
+                document.getElementById('content_title').innerHTML = titles.Content + " - " + titles.Content_Description;
+
+                var topics_link = document.getElementById('topics_link');
+                topics_link.href = "topics.html";
+
+                var contentdetail_topics = document.getElementById('contentdetail_topics');
+                contentdetail_topics.innerHTML = titles.Topic + " - " + titles.Topic_Description;
+
+                var subtopics_menu = document.getElementById('subtopics_menu');
+                subtopics_menu.innerHTML = titles.Subtopic + " - " + titles.Subtopic_Description;
+
+                var subtopic_link = document.getElementById('subtopic_link');
+                subtopic_link.href = "topic.html?topic_id=" + titles.Topic_id;
+
+                account = "";
+
+                if (Token.User.includes("@")) {
+                    Account = Token.User.split("@")[1];
+                }
+
+            });
+
+            GetData();
+
+        });
+
+
+    </script>
+</body>
+
+</html>

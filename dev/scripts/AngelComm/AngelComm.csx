@@ -1,7 +1,9 @@
 // GLOBALS
-// These lines of code go in each script
-#r "C:/AngelSQLNet/AngelSQL/db.dll"
-#r "C:/AngelSQLNet/AngelSQL/Newtonsoft.Json.dll"
+#r "System.Runtime"
+#r "System.Private.CoreLib"
+#r "netstandard"
+#r "C:\AngelSQLNet\AngelSQL\db.dll"
+#r "C:\AngelSQLNet\AngelSQL\Newtonsoft.Json.dll"
 // END GLOBALS
 
 using System;
@@ -27,9 +29,12 @@ public class AngelApiOperation
     public string language { get; set; }
     public string UserLanguage { get; set; }
     public dynamic message { get; set; }
-    public dynamic DataMessage { get; set; } 
+    public dynamic DataMessage { get; set; }
     public AngelDB.DB db { get; set; } = null;
     public AngelDB.DB server_db { get; set; } = null;
+    public string File { get; set; } = null;
+    public long FileSize { get; set; } = 0;
+    public string FileType { get; set; } = null;
 }
 
 public string Login(AngelApiOperation api, string password) 

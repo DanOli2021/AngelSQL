@@ -41,43 +41,43 @@ return api.OperationType switch
 private string UpdateDatabase()
 {
     Sale sale = new();
-    db.CreateTable(sale, "Sale", false, "Sale_detail, Payments", true);
+    db.CreateTable(sale, "Sale", false, "Sale_detail, Payments");
 
     Sale_index sale_index = new();
-    db.CreateTable(sale_index, "Sale_index", false, "", true);
+    db.CreateTable(sale_index, "Sale_index", false, "");
 
     Sale_detail sale_detail = new();
-    db.CreateTable(sale_detail, "Sale_detail", false, "", true);
+    db.CreateTable(sale_detail, "Sale_detail", false, "");
 
     CashFlow cashFlow = new();
-    db.CreateTable(cashFlow, "CashFlow", false, "", true);
+    db.CreateTable(cashFlow, "CashFlow", false, "");
 
     POS_Status pos_status = new();
-    db.CreateTable(pos_status, "POS_Status", false, "", true);
+    db.CreateTable(pos_status, "POS_Status", false, "");
 
     Payments payment_method = new();
-    db.CreateTable(payment_method, "Payments", false, "", true);
+    db.CreateTable(payment_method, "Payments", false, "");
 
     Sale_customer sale_customer = new();
-    db.CreateTable(sale_customer, "Sale_customer", false, "", true);
+    db.CreateTable(sale_customer, "Sale_customer", false, "");
 
     Customer customer = new();
-    db.CreateTable(customer, "Customer", false, "", true);
-    db.CreateTable(customer, "Customer_search", true, "", true);
+    db.CreateTable(customer, "Customer", false, "");
+    db.CreateTable(customer, "Customer_search", true, "");
 
     BusinessLine businessLine = new();
-    db.CreateTable(businessLine, "BusinessLine", false, "", true);
+    db.CreateTable(businessLine, "BusinessLine", false, "");
 
     Series series = new();
-    db.CreateTable(series, "Series", false, "", true);
+    db.CreateTable(series, "Series", false, "");
 
     Kardex kardex = new();
-    db.CreateTable(kardex, "Kardex", false, "", true);
+    db.CreateTable(kardex, "Kardex", false, "");
 
     Storage storage = new();
-    db.CreateTable(storage, "Storage", false, "", true);
+    db.CreateTable(storage, "Storage", false, "");
 
-    string result = db.Prompt($"SELECT * FROM Storage LIMIT 1", true);
+    string result = db.Prompt($"SELECT * FROM Storage LIMIT 1");
 
     if( result == "[]" )
     {
@@ -100,38 +100,40 @@ private string UpdateDatabase()
     }
 
     Inventory inventory = new();
-    db.CreateTable(inventory, "Inventory", false, "", true);
+    db.CreateTable(inventory, "Inventory", false, "");
 
     PhysicalInventory physicalInventory = new();
-    db.CreateTable(physicalInventory, "PhysicalInventory", false, "Details", true);
+    db.CreateTable(physicalInventory, "PhysicalInventory", false, "Details");
 
     PhysicalInventoryDetail physicalInventoryDetail = new();
-    db.CreateTable(physicalInventoryDetail, "PhysicalInventoryDetail", false, "", true);
+    db.CreateTable(physicalInventoryDetail, "PhysicalInventoryDetail", false, "");
 
     BusinessInfo business = new();
-    db.CreateTable(business, "BusinessInfo", false, "", true);
+    db.CreateTable(business, "BusinessInfo", false, "");
+
+    db.Prompt("ALTER TABLE BusinessInfo ADD COLUMN FreeHtml TEXT");
 
     SkuClassification classification = new();
-    db.CreateTable(classification, "SkuClassification", false, "", true);
+    db.CreateTable(classification, "SkuClassification", false, "");
 
     KioskoParameters kioskoParameters = new();
-    db.CreateTable(kioskoParameters, "KioskoParameters", false, "", true);
+    db.CreateTable(kioskoParameters, "KioskoParameters", false, "");
 
-    AddParameter("Version", "1.0.0", true);
-    AddParameter("storebranch", "Headquarters", true);
-    AddParameter("description", "Kiosko for sales and orders", true);
-    AddParameter("storage", "MainWarehouse", true);
-    AddParameter("sale_series", "TICKET", true);
-    AddParameter("Initial_receipt_number", "1", true);
-    AddParameter("Currency", "USD", true);
-    AddParameter("Payment_method", "Cash", true);
-    AddParameter("WorkStation", "WorkStation001", true);
-    AddParameter("MasterAccount", "Master", true);
+    AddParameter("Version", "1.0.0");
+    AddParameter("storebranch", "Headquarters");
+    AddParameter("description", "Kiosko for sales and orders");
+    AddParameter("storage", "MainWarehouse");
+    AddParameter("sale_series", "TICKET");
+    AddParameter("Initial_receipt_number", "1");
+    AddParameter("Currency", "USD");
+    AddParameter("Payment_method", "Cash");
+    AddParameter("WorkStation", "WorkStation001");
+    AddParameter("MasterAccount", "Master");
     
     Currency currency = new();
-    db.CreateTable(currency, "Currency", false, "", true);
+    db.CreateTable(currency, "Currency", false, "");
 
-    result = db.Prompt($"SELECT COUNT(*) AS 'Count' FROM Currency", true);
+    result = db.Prompt($"SELECT COUNT(*) AS 'Count' FROM Currency");
 
     if (result == "[]")
     {
@@ -165,43 +167,43 @@ private string UpdateDatabase()
     }
 
     Inventory Inventory = new();
-    db.CreateTable(Inventory, "Inventory", false, "", true);
+    db.CreateTable(Inventory, "Inventory", false, "");
 
     OrderUser orderuser = new();
-    db.CreateTable(orderuser, "OrderUser", false, "", true);
+    db.CreateTable(orderuser, "OrderUser", false, "");
     
     CustomerOrder customerOrder = new();
-    db.CreateTable(customerOrder, "CustomerOrder", false, "", true);
+    db.CreateTable(customerOrder, "CustomerOrder", false, "");
 
     Sku sku = new();
-    db.CreateTable(sku, "Sku", false, "SkuClassification, Sku_dictionary ", true);
+    db.CreateTable(sku, "Sku", false, "SkuClassification, Sku_dictionary ");
 
     Consumption_tax consumption_tax = new();
-    db.CreateTable(consumption_tax, "Consumption_tax", false, "", true);
+    db.CreateTable(consumption_tax, "Consumption_tax", false, "");
 
     Sku_dictionary sku_dictionary = new();
-    db.CreateTable(sku_dictionary, "Sku_dictionary", false, "", true);
+    db.CreateTable(sku_dictionary, "Sku_dictionary", false, "");
 
     SkuClassification skuclassification = new();
-    db.CreateTable(skuclassification, "SkuClassification", false, "Image", true);
+    db.CreateTable(skuclassification, "SkuClassification", false, "Image");
 
     SkuChange skuChange = new();
-    db.CreateTable(skuChange, "SkuChange", false, "", true);
+    db.CreateTable(skuChange, "SkuChange", false, "");
 
     Chat chat = new();
-    db.CreateTable(chat, "Chat", false, "", true);  
+    db.CreateTable(chat, "Chat", false, "");  
 
     ContactChat contactChat = new();
-    db.CreateTable(contactChat, "ContactChat", false, "", true);
+    db.CreateTable(contactChat, "ContactChat", false, "");
 
     ContactMessage contactMessage = new();
-    db.CreateTable(contactMessage, "ContactMessage", false, "", true);
+    db.CreateTable(contactMessage, "ContactMessage", false, "");
 
     ChatGroup chatGroup = new();
-    db.CreateTable(chatGroup, "ChatGroup", false, "", true);
+    db.CreateTable(chatGroup, "ChatGroup", false, "");
 
     ChatGroupMessage GroupChatMessage = new();
-    db.CreateTable(GroupChatMessage, "GroupChatMessage", false, "", true);
+    db.CreateTable(GroupChatMessage, "GroupChatMessage", false, "");
 
     return "Ok. Database updated successfully.";
 
@@ -216,7 +218,7 @@ public string AddParameter(string id, string value, bool AcceptUnique = true)
 
     if( AcceptUnique )
     {
-        result = db.Prompt($"SELECT * FROM KioskoParameters WHERE Id = '{id}'", true);
+        result = db.Prompt($"SELECT * FROM KioskoParameters WHERE Id = '{id}'");
 
         if( result != "[]" )
         {

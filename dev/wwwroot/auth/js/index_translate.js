@@ -1,4 +1,4 @@
-const app_name = "MyBusiness POS Control de Acceso";
+const app_name = "AngelSQL - Authentication";
 
 function translate_login( language ) 
 {

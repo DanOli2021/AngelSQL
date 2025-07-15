@@ -209,7 +209,7 @@ async function GetParameteres() {
 }
 
 
-async function GetBusinessInfo() {
+async function GetBasicBusinessInfo() {
 
     // Crear un objeto BusinessInfo predeterminado
     let bi = new BusinessInfo(
@@ -227,7 +227,7 @@ async function GetBusinessInfo() {
 
     try {
         // Llamar al backend
-        const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBusinessInfo", "");
+        const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", "");
 
         if (query.startsWith("Error:")) {
             ShowDialog("Alert", query);
@@ -1435,7 +1435,7 @@ window.onload = async function () {
 
 
     GetBusinessLines();
-    businessinfo = await GetBusinessInfo();
+    businessinfo = await GetBasicBusinessInfo();
     document.getElementById("sku_description").innerText = businessinfo.Slogan;
     let image = document.getElementById("sku_image");
     image.src = businessinfo.Logo;

@@ -71,7 +71,9 @@ namespace AngelSQLServer
             {
                 byte[] keyBytes = new byte[KeySize / 8]; // 256 bits -> 32 bytes
                 rng.GetBytes(keyBytes);
-                return Encoding.UTF8.GetString(keyBytes);
+                // Convert the random bytes to Base64 so the key can be reliably
+                // stored and later converted back to the original bytes.
+                return Convert.ToBase64String(keyBytes);
             }
         }
     }

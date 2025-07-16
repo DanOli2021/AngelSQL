@@ -14,11 +14,10 @@ string result = server_db.Prompt($"SELECT * FROM accounts WHERE account = '{comm
 
 if (result != "[]")
 {
-    Console.WriteLine("The account already exist: " + commands["create_server_account"]);
-    return;
+    return "Error: The account already exist: " + commands["create_server_account"];
 }
 
-Console.WriteLine("Creating account: " + commands["create_server_account"]);
+//Console.WriteLine("Creating account: " + commands["create_server_account"]);
 
 var pin = new
 {
@@ -63,14 +62,14 @@ var api_message = new
 
 if (!AngelDBTools.StringFunctions.IsStringValidPassword(commands["password"]))
 {
-    Console.WriteLine($"Syntax error, the following KeyWord PASSWORD, has invalid characters, minimum 8 characters: {commands["password"]}");
+    return $"Syntax error, the following KeyWord PASSWORD, has invalid characters, minimum 8 characters: {commands["password"]}";
 }
 else 
 {
-    Console.WriteLine("Password fine");
+    //Console.WriteLine("Password fine");
 }
 
 result = server_db.Prompt("SCRIPT FILE dev/scripts/tokens/createaccount.csx MESSAGE " + server_db.GetJson(api_message));
 
-Console.WriteLine("-->" + result);
+return result;
 

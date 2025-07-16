@@ -59,7 +59,7 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
 
     if (d.User == null) return "Error: User is required";
 
-    d.User = d.User.ToString().Trim().ToLower();;
+    d.User = d.User.ToString().Trim().ToLower();
 
     d.Pin = d.Pin.ToString().Trim();
 
@@ -136,7 +136,8 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
         result = db.Prompt($"DB USER db PASSWORD db DATA DIRECTORY {d.DataDirectory}");
     }
 
-    Console.WriteLine($"Creating account {d.AccountName} with user {d.User} and password {d.Password} data directory {d.DataDirectory}");
+    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+    sb.AppendLine($"Creating account {d.AccountName} with user {d.User} and password {d.Password} data directory {d.DataDirectory}");
 
     if (result.StartsWith("Error:"))
     {
@@ -370,9 +371,8 @@ string CreateNewAccount(AngelDB.DB server_db, AngelApiOperation api)
 
     db.Prompt("UPSERT INTO tokens VALUES " + JsonConvert.SerializeObject(t), true);
 
-    Console.WriteLine($"Account {d.AccountName} and user {d.User}@{d.AccountName} created successfully.");
-
-    return "Ok.";
+    sb.AppendLine($"Account {d.AccountName} and user {d.User}@{d.AccountName} created successfully.");
+    return "Ok." + sb.ToString();
 
 }
 

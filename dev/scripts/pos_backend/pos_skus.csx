@@ -20,10 +20,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Globalization;
-using System.Reflection;
 using System.IO;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 private AngelApiOperation api = JsonConvert.DeserializeObject<AngelApiOperation>(message);
 api.db = db;
@@ -38,14 +35,18 @@ translation.SpanishValues();
 return api.OperationType switch
 {
     "GetSimpleSku" => GetSimpleSku(),
-    "SaveImportSkus" => SaveImportSkus(api, translation),
-    "SaveStock" => SaveStock(api, translation),
-    "GetSku" => GetSku(api, translation),
-    "GetSkus" => GetSkus(api, translation),
-    "GetStock" => GetStock(api, translation),
-    "GetPublicSkus" => GetPublicSkus(api, translation),
-    "UpsertSku" => UpsertSku(api, translation),
-    "DeleteSku" => DeleteSku(api, translation),
+    "SaveImportSkus" => SaveImportSkus(),
+    "SaveStock" => SaveStock(),
+    "GetSku" => GetSku(),
+    "GetSkus" => GetSkus(),
+    "GetStock" => GetStock(),
+    "GetPublicSkus" => GetPublicSkus(),
+    "UpsertSku" => UpsertSku(),
+    "DeleteSku" => DeleteSku(),
+    "GetSkuDocs" => GetSkuDocs(),
+    "GetSkuDoc" => GetSkuDoc(),
+    "GetSkuMainDoc" => GetSkuMainDoc(),
+    "SaveSkuDoc" => SaveSkuDoc(),
     _ => $"Error: No service found {api.OperationType}",
 };
 
@@ -150,7 +151,7 @@ string GetSimpleSku()
 
 
 
-string SaveImportSkus(AngelApiOperation api, Translations translation)
+string SaveImportSkus()
 {
 
     string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
@@ -234,8 +235,6 @@ string SaveImportSkus(AngelApiOperation api, Translations translation)
                 Sku_dictionary = []
             };
 
-            Console.WriteLine(db.GetJson(sku));
-
             if (row.Table.Columns.Contains("Cost"))
             {
                 decimal cost = decimal.TryParse(row["cost"].ToString(), out decimal parsedCost) ? parsedCost : 0;
@@ -251,6 +250,11 @@ string SaveImportSkus(AngelApiOperation api, Translations translation)
 
                     foreach (string classString in classification_string)
                     {
+
+                        if (classString.Trim() == "")
+                        {
+                            continue;
+                        }
 
                         result = db.Prompt($"SELECT * FROM SkuClassification WHERE id = '{classString.Trim().ToUpper()}'", true);
 
@@ -459,7 +463,7 @@ string SaveImportSkus(AngelApiOperation api, Translations translation)
 }
 
 
-string SaveStock(AngelApiOperation api, Translations translation)
+string SaveStock()
 {
 
     string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR");
@@ -476,7 +480,7 @@ string SaveStock(AngelApiOperation api, Translations translation)
 }
 
 
-string GetStock(AngelApiOperation api, Translations translation)
+string GetStock()
 {
 
     string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
@@ -513,7 +517,7 @@ string GetStock(AngelApiOperation api, Translations translation)
 
 
 
-string GetSkus(AngelApiOperation api, Translations translation)
+string GetSkus()
 {
 
     string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
@@ -530,24 +534,76 @@ string GetSkus(AngelApiOperation api, Translations translation)
         return "Error: " + translation.Get("Data is too short", api.UserLanguage);
     }
 
+    string fields = "id, description, price, Consumption_taxes, ClaveUnidad, Image"; 
+
     if (data.ToUpper().Trim() == ":ALL")
     {
-        return db.Prompt($"SELECT id, description, price, Consumption_taxes FROM sku ORDER BY description", true);
+        return db.Prompt($"SELECT {fields} FROM sku ORDER BY description", true);
     }
 
     if (data.ToUpper().Trim() == ":TODAY")
     {
         string today = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd");
-        return db.Prompt($"SELECT id, description, price, Consumption_taxes FROM sku WHERE timestamp >= '" + today + " 00:00' ORDER BY timestamp DESC", true);
+        return db.Prompt($"SELECT {fields} FROM sku WHERE timestamp >= '" + today + " 00:00' ORDER BY timestamp DESC", true);
     }
 
-    result = db.Prompt($"SELECT id, description, price, Consumption_taxes FROM sku WHERE id LIKE '%{api.DataMessage.ToString()}%' OR description LIKE '%{api.DataMessage.ToString().Replace(" ", "%")}%' ORDER BY description LIMIT 25", true);
+    result = db.Prompt($"SELECT {fields} FROM sku WHERE id LIKE '%{api.DataMessage.ToString()}%' OR description LIKE '%{api.DataMessage.ToString().Replace(" ", "%")}%' ORDER BY description LIMIT 25", true);
     return result;
 
 }
 
 
-string GetPublicSkus(AngelApiOperation api, Translations translation)
+string SaveSkuDoc()
+{
+
+    string result = IsTokenValid(api, "STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+    
+    dynamic data = JsonConvert.DeserializeObject(api.DataMessage.ToString());
+
+    if (data == null || data.Sku_id == null || data.Sku_id.ToString().Trim() == "")
+    {
+        return "Error: Sku_id is required.";
+    }
+
+    if( data.Id == null || data.Id.ToString().Trim() == "")
+    {
+        data.Id = Guid.NewGuid().ToString();
+    }
+
+    if (data.Content_id == null || data.Content_id.ToString().Trim() == "")
+    {
+        return "Error: Content is required.";
+    }
+
+    string skuId = data.Sku_id.ToString().Trim().ToUpper();
+    string contentId = data.Content_id.ToString().Trim();
+
+    SkuDocs skuDocs = new()
+    {
+        Id = data.Id,
+        Sku_id = skuId,
+        Content_id = contentId,
+        User_id = api.User,
+        Type = data.Type?.ToString() ?? "document",
+        Description = data.Description?.ToString() ?? "",
+        Url = data.Url?.ToString() ?? "",
+        For_main_page = data.For_main_page != null ? Convert.ToBoolean(data.For_main_page) : false,
+        In_banner_list = data.In_banner_list != null ? Convert.ToBoolean(data.In_banner_list) : false   
+    };
+
+    result = db.UpsertInto("SkuDocs", skuDocs);
+
+    return result;
+
+}
+
+
+string GetPublicSkus()
 {
 
     //string result = IsTokenValid(api, translation, "ANY");
@@ -578,13 +634,14 @@ string GetPublicSkus(AngelApiOperation api, Translations translation)
     }
 
     string result = db.Prompt($"SELECT {fields} FROM sku WHERE SkuClassification LIKE '%{api.DataMessage.ToString().Trim().Replace(" ", "%")}%' OR description LIKE '%{api.DataMessage.ToString().Trim().Replace(" ", "%")}%' ORDER BY description LIMIT 25", true);
+
     return result;
 
 }
 
 
 
-string UpsertSku(AngelApiOperation api, Translations translation)
+string UpsertSku()
 {
 
     string result = IsTokenValid(api, "POS_DATA_UPSERT, STAKEHOLDER, SUPERVISOR");
@@ -668,7 +725,7 @@ string UpsertSku(AngelApiOperation api, Translations translation)
 
 
 
-string GetSku(AngelApiOperation api, Translations translation)
+string GetSku()
 {
 
     string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
@@ -699,7 +756,7 @@ string GetSku(AngelApiOperation api, Translations translation)
 }
 
 
-string DeleteSku(AngelApiOperation api, Translations translation)
+string DeleteSku()
 {
 
     string result = IsTokenValid(api, "STAKEHOLDER");
@@ -718,11 +775,104 @@ string DeleteSku(AngelApiOperation api, Translations translation)
         return "Error: " + translation.Get("Sku not found", api.UserLanguage);
     }
 
+    result = db.Prompt($"DELETE FROM SkuDocs PARTITION KEY main WHERE Sku_id = '{data}'", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
     result = db.Prompt($"DELETE FROM sku PARTITION KEY main WHERE id = '{data}'", true);
 
     return result;
 
 }
+
+
+string GetSkuDocs()
+{
+
+    string result = IsTokenValid(api, "CASHIER, STAKEHOLDER, POS_DATA_UPSERT, POS_DATA_GET, SUPERVISOR, ADMINISTRATOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    string data = api.DataMessage.ToString().Trim();
+
+    result = db.Prompt($"SELECT * FROM SkuDocs WHERE Sku_id = '" + data + "'", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return result;
+    }
+
+    return result;
+
+}
+
+
+string GetSkuDoc()
+{
+
+    string result = IsTokenValid(api, "ANY");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    string data = api.DataMessage.ToString().Trim();
+
+    result = db.Prompt($"SELECT * FROM SkuDocs WHERE id = '" + data + "'", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return result;
+    }
+
+    result = result[1..^1];
+
+    return result;
+
+}
+
+
+string GetSkuMainDoc()
+{
+
+    string data = api.DataMessage.ToString().Trim();
+
+    string result = db.Prompt($"SELECT * FROM SkuDocs WHERE Sku_id = '" + data + "' AND For_main_page = true", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return result;
+    }
+
+    result = result[1..^1];
+
+    return result;
+
+}
+
+
 
 
 class SimpleSku

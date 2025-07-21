@@ -144,94 +144,270 @@
         <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
     </dialog>
 
-    <dialog id="sku_edit" style="width: 60%; overflow-y: auto;">
+    <dialog id="sku_edit" style="max-width: 800px; width: 90%; overflow-y: auto;">
         <div class="form-group">
             <h1 id="sku_edit_title" class="form-group">Edit SKU</h1>
 
-            <table class="table table-striped table-bordered table-hover" id="sku_edit_table">
-                <tr>
-                    <td><label for="sku_id" class="form-label">SKU</label></td>
-                    <td colspan="3"><input type="text" id="sku_id" class="form-control" /></td>
-                </tr>
-                <tr>
-                    <td><label for="sku_description" class="form-label">Description</label></td>
-                    <td colspan="3"><input type="text" id="sku_description" class="form-control" /></td>
-                </tr>
-                <tr>
-                    <td><label for="sku_price" class="form-label">Price</label></td>
-                    <td><input type="number" id="sku_price" class="form-control" step="0.01" /></td>
-                    <td><label for="sku_cost" class="form-label">Cost</label></td>
-                    <td><input type="number" id="sku_cost" class="form-control" step="0.01" /></td>
-                </tr>
-                <tr>
-                    <td><label for="sku_tax" class="form-label">Tax %</label></td>
-                    <td><input type="number" id="sku_tax" class="form-control" /></td>
-                    <td><label for="sku_tax_name" class="form-label">Tax Name</label></td>
-                    <td><input type="text" id="sku_tax_name" class="form-control" /></td>
-                </tr>
-                <tr>
-                    <td><label for="sku_tax2" class="form-label">Second Tax %</label></td>
-                    <td><input type="number" id="sku_tax2" class="form-control" /></td>
-                    <td><label for="sku_tax_name2" class="form-label">Second Tax Name</label></td>
-                    <td><input type="text" id="sku_tax_name2" class="form-control" /></td>
-                </tr>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="sku_id" class="form-label">SKU</label>
+                        <input type="text" id="sku_id" class="form-control" />
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label for="sku_description" class="form-label">Description</label>
+                        <input type="text" id="sku_description" class="form-control" />
+                    </div>
+                </div>
 
-                <tr>
-                    <td>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_price" class="form-label">Price</label>
+                        <input type="number" id="sku_price" class="form-control" step="0.01" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_cost" class="form-label">Cost</label>
+                        <input type="number" id="sku_cost" class="form-control" step="0.01" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_tax" class="form-label">Tax %</label>
+                        <input type="number" id="sku_tax" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_tax_name" class="form-label">Tax Name</label>
+                        <input type="text" id="sku_tax_name" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_tax2" class="form-label">Second Tax %</label>
+                        <input type="number" id="sku_tax2" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sku_tax_name2" class="form-label">Second Tax Name</label>
+                        <input type="text" id="sku_tax_name2" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
                         <button id="sku_clasification_button" class="btn btn-light btn-lg form-control"
                             style="margin-bottom: 10px;" onclick="ShowClassifications()">Clasifications</button>
-                    </td>
-                    <td colspan="3">
                         <textarea id="sku_clasification" class="form-control" rows="3" readonly="true"></textarea>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="sku_alternative" class="form-label">Alternative SKU</label></td>
-                    <td colspan="3"><input type="text" id="sku_alternative" class="form-control" /></td>
-                </tr>
-                <tr>
-                    <td><label for="sku_main_image" class="form-label">Main Image</label></td>
-                    <td colspan="3">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="sku_alternative" class="form-label">Alternative SKU</label>
+                        <input type="text" id="sku_alternative" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-3">
+                        <label for="sku_main_image" class="form-label">Main Image</label>
                         <img id="sku_main_image" src="" alt="Sku Image"
-                            style="width: 150px; height: auto; margin-bottom: 20px;" />
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
+                            style="width: 150px; height: auto; margin-bottom: 10px;" />
+                    </div>
+                    <div class="col-md-8 mb-3">
                         <label for="sku_url_image" class="form-label">Img Url</label>
-                    </td>
-                    <td colspan="4">
                         <input type="text" id="sku_url_image" class="form-control" />
-                    </td>
-                </tr>
+                    </div>
+                </div>
 
-                <tr>
-                    <td colspan="4"><input type="file" id="sku_image" class="form-control" accept="image/*"
-                            style="margin-bottom: 10px;" /></td>
-                </tr>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="sku_image" class="form-label">Upload Image</label>
+                        <input type="file" id="sku_image" class="form-control" accept="image/*" />
+                    </div>
+                </div>
 
-            </table>
-
-            <table class="table table-striped table-bordered table-hover" id="sku_edit_table">
-                <tr>
-                    <td><button id="sku_edit_save_button" class="btn btn-success btn-lg form-control col-6"
-                            style="margin-bottom: 10px;" onclick="Save();">Save</button></td>
-
-                    <td><button id="sku_edit_delete_button" class="btn btn-warning btn-lg form-control col-6"
-                            style="margin-bottom: 10px;" onclick="ConfirmDeleteSku();">Delete</button></td>
-
-                    <td><button id="sku_edit_cancel_button" class="btn btn-danger btn-lg form-control col-6"
-                            style="margin-bottom: 10px;">Cancel</button></td>
-
-                </tr>
-
-            </table>
-
-
-
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-2">
+                        <button id="sku_edit_save_button" class="btn btn-success btn-lg w-100"
+                            onclick="Save();">Save</button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button id="sku_edit_delete_button" class="btn btn-warning btn-lg w-100"
+                            onclick="ConfirmDeleteSku();">Delete</button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button id="sku_edit_cancel_button" class="btn btn-danger btn-lg w-100">Cancel</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </dialog>
+
+
+
+    <dialog id="skuDocsDialog" style="width: 90%; padding: 20px;">
+
+        <h5 id="sku_id_doc" class="mb-3"></h5>
+        <p id="sku_description_doc" class="mb-3"></p>
+
+        <h5 class="mb-3">SKU Documents</h5>
+
+        <div class="row mb-">
+            <div class="col-9">
+                <input type="text" id="searchdocs" class="form-control" style="width: 100%;"
+                    placeholder="Search Docs..." />
+            </div>
+            <div class="col-3">
+                <button id="search_docs_button" class="btn btn-primary" style="width: 100%;"
+                    onclick="SearchDocs()">Search</button>
+            </div>
+        </div>
+
+        <div id="tableDocsContainer"></div>
+
+        <div class="row mt-4">
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+                <button id="sku_edit_cancel_button" class="btn btn-warning btn-lg w-100"
+                    onclick="document.getElementById('skuDocsDialog').close()">Close</button>
+            </div>
+        </div>
+    </dialog>
+
+
+    <dialog id="DocsDialog" style="width: 70%; padding: 20px;">
+        <h5 class="mb-3">Documents</h5>
+
+        <div id="tableDocs"></div>
+
+        <div class="row mt-4">
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+            </div>
+
+            <div class="col-md-3 mb-2">
+                <button id="sku_edit_cancel_button" class="btn btn-warning btn-lg w-100"
+                    onclick="document.getElementById('DocsDialog').close()">Close</button>
+            </div>
+        </div>
+    </dialog>
+
+
+
+
+
+    <dialog id="skuEditDocsDialog" style="width: 70%; padding: 20px;">
+
+        <div class="container-fluid">
+            <h5 class="mb-3">Documents</h5>
+
+            <div class="row col-12">
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_id" class="form-label">Document ID</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_id" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_sku" class="form-label">Sku</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_sku" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_content_id" class="form-label">Content_id</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_content_id" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_type" class="form-label">Type</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_type" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_description" class="form-label">Description</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_description" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_url" class="form-label">Url</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="text" id="sku_edit_doc_url" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_for_main_page" class="form-label">For main page</label>
+                </div>
+
+               <div class="col-9">
+                    <input type="checkbox" id="sku_edit_doc_for_main_page" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_edit_doc_for_banner_list" class="form-label">In banner list</label>
+                </div>
+
+                <div class="col-9">
+                    <input type="checkbox" id="sku_edit_doc_for_banner_list" class="form-check-input" />
+                </div>
+
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-3 mb-2">
+                </div>
+
+                <div class="col-md-3 mb-2">
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <button id="sku_edit_cancel_button" class="btn btn-success btn-lg w-100"
+                        onclick="SaveSkuDoc()">Save</button>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <button id="sku_edit_cancel_button" class="btn btn-warning btn-lg w-100"
+                        onclick="document.getElementById('skuEditDocsDialog').close()">Cancel</button>
+                </div>
+            </div>
+
+        </div>
+
+
+    </dialog>
+
+
+
 
 
     <dialog id="checkDialog" style="width: 400px; padding: 20px;">
@@ -252,7 +428,7 @@
                 Privacy Policy
             </span>
         </a>
-        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="https://AngelSQL.net" target="_blank">AngelSQL</a>
         <a href="about.html" target="_blank" id="index_about_url">
             <span id="index_about_us">
                 About us...
@@ -270,7 +446,6 @@
                 class="btn btn-secondary ms-2">Cancel</button>
         </div>
     </dialog>
-
 
     <dialog id="dialog_accept" class="dialog-box">
         <h1 id="dialog_accept_title">Title</h1>
@@ -549,52 +724,126 @@
             reader.readAsDataURL(file);
         }
 
-        window.onload = async function () {
 
-            document.getElementById("dialog_button_close").onclick = function () {
-                document.getElementById("generic_dialog").close();
+        function SearchDocs() {
+
+            const searchValue = document.getElementById("searchdocs").value.trim();
+
+            if (searchValue === "") {
+                ShowDialog("Alert", "Please enter a search term.");
+                return;
+            }
+
+            var resolve = sendToAngelPOST(Token.User, "docs/helpdesk", Token.Token, "SearchInfo", { Search: searchValue });
+
+            resolve.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const docs = JSON.parse(responce_query.result);
+
+                if (docs.length === 0) {
+                    ShowDialog("Alert", "No documents found.");
+                    return;
+                }
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        visible: false
+                    },
+                    "Content_id":
+                    {
+                        "title": "Content id",
+                        "html": (value) => `<button class="btn btn-primary"><strong>Assign</strong></button>`,
+                        "onclick": (val, row) => SaveContentToSku(row["Content_id"]),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Content":
+                    {
+                        "title": "Content",
+                        "html": (value) => `<button class="btn btn-link"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => OpenContent(row.Content_id),
+                        "style": "text-align: left;"
+                    },
+                };
+
+                renderPaginatedTable(docs, "tableDocs", 10, customCols, null, false);
+
+                document.getElementById("DocsDialog").showModal();
+            });
+
+        }
+
+
+        function SaveContentToSku(content_id) {
+            const skuId = document.getElementById("sku_id_doc").value.trim();
+            const description = document.getElementById("sku_description_doc").innerText.trim();
+
+            if (skuId === "") {
+                ShowDialog("Alert", "Please enter a SKU ID.");
+                return;
+            }
+
+            const accountId = Token.User.split("@")[1];
+
+            var skuDoc = {
+                Id: content_id,
+                Sku_id: skuId,
+                Content_id: content_id,
+                User_id: accountId,
+                Description: description,
+                Type: "document",
+                Url: `../docs/get.html?account=${accountId}&content_id=${content_id}`,
+                For_main_paige: false,
+                In_banner_list: false
             };
 
-            document.getElementById("sku_edit_cancel_button").onclick = function () {
-                document.getElementById("sku_edit").close();
-            };
-
-            document.getElementById("dialog_button_close1").onclick = function () {
-                document.getElementById("dialog_accept").close();
-            };
-
-            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "SaveSkuDoc", skuDoc);
 
             response.then(function (query) {
-                let response_query = JSON.parse(query);
 
-                if (response_query.result.startsWith("Error:")) {
-                    ShowDialog("Alert", response_query.result);
-                } else {
-                    sessionStorage.setItem('user_groups', response_query.result);
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
                 }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                ShowDialog("Alert", "Document assigned successfully.", function () {
+                    document.getElementById("DocsDialog").close();
+                });
+
+                SkuDocs(skuId, description);
+
             });
 
-            document.getElementById("search_button").addEventListener("click", async function () {
-                const searchValue = document.getElementById("searchsku").value.trim();
-                SearchSkus(searchValue);
+        }
 
-            });
 
-            document.getElementById("searchsku").onkeydown = function (event) {
-                if (event.key === "Enter") {
-                    const searchValue = document.getElementById("searchsku").value.trim();
-                    SearchSkus(searchValue);
-                }
-            };
+        function OpenContent(contentId) {
 
-            SearchSkus(":ALL");
+            var accountId = Token.User.split("@")[1];
 
-            translate_menu(language);
-
-            document.getElementById("searchsku").focus();
-
-        };
+            const url = `../docs/get.html?account=${accountId}&content_id=${contentId}`;
+            window.open(url, '_blank');
+        }
 
 
         function SearchSkus(searchValue) {
@@ -627,17 +876,30 @@
                     },
                     "Price":
                     {
-                        "html": (value) => `<strong>$${ThousandsSeparator(value)}</strong>`,
+                        "html": (value) => `<span class="badge bg-success" style="font-weight: bold; font-size: 1.2em; width: 100%; display: inline-block;"><strong>$${ThousandsSeparator(value)}</strong></span>`,
                         "style": "text-align: right;"
                     },
                     "Consumption_taxes":
                     {
                         "visible": false
-                    }
+                    },
+                    "ClaveUnidad":
+                    {
+                        "title": "Documents",
+                        "html": (value, row) => `<button class="btn btn-info" style="width:100%""><strong>Documents</strong></button>`,
+                        "onclick": (val, row) => SkuDocs(`${row.id}`, `${row.Description}`),
+                        "style": "text-align: right;"
+                    },
+                    "Image":
+                    {
+                        "title": "Image",
+                        "html": (value) => `<img src="${value}" alt="Sku Image" style="width: 50px; height: auto;">`,
+                        "style": "text-align: center;"
+                    },
                 };
 
                 if (responce_query.result == "[]") {
-                    ShowDialog("Alert", "No SKUs found.");
+                    //ShowDialog("Alert", "No SKUs found.");
                     return;
                 }
 
@@ -647,6 +909,197 @@
 
             });
 
+        }
+
+
+        function SkuDocs(skuId, skuDescription) {
+
+            if (skuId == null || skuId == "") {
+                ShowDialog("Alert", "Please select a SKU to configure.");
+                return;
+            }
+
+            document.getElementById("sku_id_doc").value = skuId;
+            document.getElementById("sku_description_doc").innerText = skuDescription;
+            document.getElementById("searchdocs").value = skuDescription; // Limpiar el campo de búsqueda
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "GetSkuDocs", skuId);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                if (responce_query.result == "[]") {
+                    document.getElementById("searchdocs").focus(); // Regresar el foco al campo de búsqueda
+                    document.getElementById("skuDocsDialog").showModal();
+                    return;
+                }
+
+                const docs = JSON.parse(responce_query.result);
+
+                const customCols = {
+                    "id": {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary"><strong>${value.substring(32)}</strong></button>`,
+                        "onclick": (val, row) => EditSkuDoc(`${val}`),
+                        "style": "color: blue; cursor: pointer;"
+                    },
+                    "Sku_id": {
+                        visible: false
+                    },
+                    "Type": {
+                        "title": "Type",
+                        "html": (value) => `<strong>${value}</strong>`,
+                        "style": "text-align: left;"
+                    },
+                    "Description": {
+                        "title": "Description",
+                        "html": (value) => `<strong>${value}</strong>`,
+                        "style": "text-align: left;"
+                    },
+                    "Url": {
+                        "title": "URL",
+                        "html": (value) => `<a href="${value}" target="_blank">${value}</a>`,
+                        "style": "text-align: left;"
+                    },
+                    "For_main_paige": {
+                        "title": "Main Page",
+                        "html": (value) => `<input type="checkbox" ${value ? 'checked' : ''} disabled>`,
+                        "style": "text-align: center;"
+                    },
+                    "In_banner_list": {
+                        "title": "In Banner List",
+                        "html": (value) => `<input type="checkbox" ${value ? 'checked' : ''} disabled>`,
+                        "style": "text-align: center;"
+                    },
+                    "For_main_page": {
+                        "title": "For Main Page",
+                        "html": (value) => `<input type="checkbox" ${value ? 'checked' : ''} disabled>`,
+                        "style": "text-align: center;"
+                    },
+                    "timestamp": {
+                        visible: false
+                    },
+                    "Type": {
+                        visible: false
+                    },
+                    "PartitionKey": {
+                        visible: false
+                    },
+                    "Content_id": {
+                        visible: false
+                    },
+                    "User_id": {
+                        visible: false
+                    }
+                };
+
+                renderPaginatedTable(docs, "tableDocsContainer", 20, customCols);
+                document.getElementById("searchdocs").focus(); // Regresar el foco al campo de búsqueda
+                document.getElementById("skuDocsDialog").showModal();
+
+            });
+        }
+
+
+        //Esta funcion llama al dialogo que permite editar un documento asociado a un SKU
+        // En la edición se puede cambiar el tipo de documento, la descripción, la URL y si es para la página principal o lista de banners.
+        // Tamnbien si es necesario se puede eliminar el documento.
+        async function EditSkuDoc(docId) {
+
+            document.getElementById("sku_edit_doc_id").value = docId;
+
+            var requet = await sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "GetSkuDoc", docId);
+
+            if (requet.startsWith("Error:")) {
+                ShowDialog("Alert", requet);
+                return;
+            }
+
+
+            let responce_query = JSON.parse(requet);
+
+            if (responce_query.result.startsWith("Error:")) {
+                ShowDialog("Alert", responce_query.result);
+                return;
+            }
+
+            const doc = JSON.parse(responce_query.result);
+
+            document.getElementById("sku_edit_doc_id").value = doc.id;
+            document.getElementById("sku_edit_doc_sku").value = doc.Sku_id;
+            document.getElementById("sku_edit_doc_content_id").value = doc.Content_id;
+
+            document.getElementById("sku_edit_doc_sku").disabled = true; // Deshabilitar el campo Sku_id para edición
+            document.getElementById("sku_edit_doc_content_id").disabled = true; // Deshabilitar el campo Content_id para edición
+            document.getElementById("sku_edit_doc_id").disabled = true; // Deshabilitar el campo Id para edición
+
+            document.getElementById("sku_edit_doc_type").value = doc.Type;
+            document.getElementById("sku_edit_doc_description").value = doc.Description;
+            document.getElementById("sku_edit_doc_url").value = doc.Url;
+            document.getElementById("sku_edit_doc_for_main_page").checked = doc.For_main_page;
+            document.getElementById("sku_edit_doc_for_banner_list").checked = doc.In_banner_list;
+
+            if (docId == null || docId == "") {
+                ShowDialog("Alert", "Please select a document to edit.");
+                return;
+            }
+
+            document.getElementById("skuEditDocsDialog").showModal();
+
+        }
+
+
+
+        function SaveSkuDoc() {
+
+            var doc = {
+                Id: document.getElementById("sku_edit_doc_id").value,
+                Sku_id: document.getElementById("sku_edit_doc_sku").value,
+                Content_id: document.getElementById("sku_edit_doc_content_id").value,
+                Type: document.getElementById("sku_edit_doc_type").value,
+                Description: document.getElementById("sku_edit_doc_description").value,
+                Url: document.getElementById("sku_edit_doc_url").value,
+                For_main_page: document.getElementById("sku_edit_doc_for_main_page").checked,
+                In_banner_list: document.getElementById("sku_edit_doc_for_banner_list").checked
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "SaveSkuDoc", doc);
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                // Aquí puedes agregar los campos necesarios para editar el documento
+                // Por ejemplo, un campo para la URL, tipo de documento, etc.
+
+                ShowDialog("Alert", "Document saved successfully.", function () {
+                    document.getElementById("skuEditDocsDialog").close();
+                    SkuDocs(doc.Sku_id, document.getElementById("sku_description_doc").innerText);
+                });
+
+                // Mostrar el diálogo de edición
+                document.getElementById("skuDocsDialog").showModal();
+
+            });
         }
 
 
@@ -790,8 +1243,6 @@
 
             response.then(function (query) {
 
-                console.log("Response: " + query);
-
                 if (query.startsWith("Error:")) {
                     ShowDialog("Alert", query);
                     return;
@@ -858,6 +1309,56 @@
 
             });
         }
+
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("sku_edit_cancel_button").onclick = function () {
+                document.getElementById("sku_edit").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                }
+            });
+
+            document.getElementById("search_button").addEventListener("click", async function () {
+                const searchValue = document.getElementById("searchsku").value.trim();
+                SearchSkus(searchValue);
+
+            });
+
+            document.getElementById("searchsku").onkeydown = function (event) {
+                if (event.key === "Enter") {
+                    const searchValue = document.getElementById("searchsku").value.trim();
+                    SearchSkus(searchValue);
+                }
+            };
+
+            SearchSkus(":ALL");
+
+            translate_menu(language);
+
+            document.getElementById("searchsku").focus();
+
+        };
+
+
 
     </script>
 

@@ -128,8 +128,10 @@
     <div class="container">
         <div class="row search-bar">
             <div class="col-md-12">
-                <input id="searchInput" type="text" class="form-control" placeholder="Search products..."
-                    autocomplete="off" oninput="renderProducts()" />
+                <form autocomplete="off">
+                    <input id="searchInput" type="text" class="form-control" placeholder="Search products..."
+                        oninput="renderProducts()" />
+                </form>
             </div>
         </div>
 
@@ -295,20 +297,23 @@
     </div>
 
 
-    <!-- Modal de Detalles del Producto -->
     <div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="height: 90vh;">
+            <div class="modal-content" style="height: 100%;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailTitle">Detalles del Producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body d-flex flex-column">
                     <img id="detailImage" class="img-fluid mb-3" style="max-height: 300px; object-fit: contain;" />
                     <h5 id="detailDescription"></h5>
                     <p><strong id="detailPrice"></strong></p>
                     <p class="text-muted" id="detailUnit"></p>
                     <p id="detailNotes"></p>
+
+                    <iframe id="detailDoc" class="w-100 flex-grow-1" style="display: none;">
+                    </iframe>
+
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-success" id="detailAddBtn">Agregar al carrito</button>
@@ -316,7 +321,6 @@
             </div>
         </div>
     </div>
-
 
     <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
 
@@ -507,29 +511,55 @@
             if (resultSku.result.startsWith("Error:")) return ShowDialog("Alert", resultSku.result);
 
             skus = JSON.parse(resultSku.result);
+
         }
 
+        // 1) Renderiza las categorías y atacha el click correctamente
         function renderCategories(filtered = categories) {
             const container = document.getElementById("productList");
             container.innerHTML = "";
 
             filtered.forEach(cat => {
+                // Crea columna y tarjeta
                 const div = document.createElement("div");
                 div.className = "col-md-4 mb-4";
-                div.innerHTML = `
-                <div class="card h-100" style="cursor:pointer;" onclick="selectCategory('${cat.id}')">
-                    ${cat.Image ? `<img src="${cat.Image}" class="card-img-top" style="max-height:200px;object-fit:contain;">` : ''}
-                    <div class="card-body text-center">
-                        <h5 class="card-title">${cat.id || cat.Description}</h5>
-                    </div>
-                </div>`;
+
+                const card = document.createElement("div");
+                card.className = "card h-100 hover-scale";
+                card.style.cursor = "pointer";
+
+                // Listener en vez de onclick inline
+                card.addEventListener("click", () => selectCategory(cat.id));
+
+                // Contenido de la tarjeta
+                card.innerHTML = `
+            ${cat.Image
+                        ? `<img src="${cat.Image}" class="card-img-top" style="max-height:200px;object-fit:contain;">`
+                        : ""}
+            <div class="card-body text-center">
+                <h5 class="card-title">${cat.Description || cat.id}</h5>
+            </div>`;
+
+                div.appendChild(card);
                 container.appendChild(div);
             });
         }
 
+        // 2) Al hacer click, pasa bien el ID y filtra
         async function selectCategory(categoryId) {
+
+            // 1) Carga SKUs (aquí recibes el categoryId)
             await loadSkus(categoryId);
-            renderProducts(skus.filter(s => JSON.parse(s.SkuClassification)[0].Id === categoryId), categoryId);
+
+            //2) Filtra client‑side por categoría
+            const filtered = skus;
+
+            document.getElementById("searchInput").value = ""; // Limpia la barra de búsqueda
+
+            // 3) Muestra los productos y título
+            const cat = categories.find(c => c.id === categoryId);
+            const title = cat ? cat.Description : categoryId;
+            renderProducts(filtered, title);
         }
 
         function renderProducts(filteredSkus, categoryTitle = "") {
@@ -568,62 +598,37 @@
                     <button class="btn btn-success btn-sm" onclick="addToCart('${prod.id}')">${t("addToCart")}</button>
                     </div>
                 </div>`;
+
                 container.appendChild(card);
             });
         }
 
+        // Listener para la barra de búsqueda
         document.getElementById("searchInput").addEventListener("input", async function () {
             const term = this.value.trim().toLowerCase();
-            if (term.length < 3) {
-                renderCategories();
-                return;
-            }
-
-            await loadSkus(term);
-
-            const filteredByCategory = {};
-
-            skus.forEach(sku => {
-                const classObj = JSON.parse(sku.SkuClassification)[0];
-                if (sku.Description.toLowerCase().includes(term)) {
-                    if (!filteredByCategory[classObj.Id]) {
-                        filteredByCategory[classObj.Id] = [];
-                    }
-                    filteredByCategory[classObj.Id].push(sku);
-                }
-            });
-
             const container = document.getElementById("productList");
             container.innerHTML = "";
 
-            const categoryIds = Object.keys(filteredByCategory);
-            if (categoryIds.length === 0) {
-                container.innerHTML = `<p>No hay resultados para "${term}"</p>`;
-                return;
+            if (term.length >= 3) {
+                // 1) Agrega botón “← Return to categories”
+                const backBtn = document.createElement("div");
+                backBtn.className = "col-12 mb-3";
+                backBtn.innerHTML = `
+            <button class="btn btn-outline-secondary"
+                    onclick="document.getElementById('searchInput').value=''; renderCategories();">
+                ← Return to categories
+            </button>`;
+                container.appendChild(backBtn);
+
+                // 2) Carga SKUs filtrados por término de búsqueda
+                await loadSkus(term); // asume que carga en la variable global `skus`
+
+                // 3) Renderiza los productos encontrados
+                renderProducts(skus, `Resultados de “${term}”`);
+            } else {
+                // Menos de 3 caracteres: vuelve al listado de categorías
+                renderCategories();
             }
-
-            categoryIds.forEach(catId => {
-                const cat = categories.find(c => c.id === catId);
-                if (!cat) return;
-
-                const title = document.createElement("div");
-                title.className = "col-12 category-title";
-                title.textContent = cat.Description || cat.id;
-                container.appendChild(title);
-
-                filteredByCategory[catId].forEach(prod => {
-                    const card = document.createElement("div");
-                    card.className = "col-md-4";
-                    card.innerHTML = `
-                    <div class="product-card">
-                        ${prod.Image ? `<img src="${prod.Image}" class="w-100 mb-2" style="max-height:150px;object-fit:contain;">` : ""}
-                        <h5>${prod.Description}</h5>
-                        <p><strong>$${prod.Price.toFixed(2)}</strong></p>
-                        <button class="btn btn-success btn-sm" onclick="addToCart('${prod.id}')">Add to cart</button>
-                    </div>`;
-                    container.appendChild(card);
-                });
-            });
         });
 
         function addToCart(skuId) {
@@ -1012,24 +1017,59 @@
             modal.hide();
         }
 
-        function showProductDetails(prod) {
+        async function showProductDetails(prod) {
+            // Poblas datos base
             document.getElementById("detailTitle").textContent = prod.Description;
             document.getElementById("detailDescription").textContent = prod.Description;
             document.getElementById("detailPrice").textContent = `$${prod.Price.toFixed(2)}`;
             document.getElementById("detailUnit").textContent = prod.Unit || "";
             document.getElementById("detailNotes").textContent = prod.Notes || "";
-            document.getElementById("detailImage").src = prod.Image || "";
+            const img = document.getElementById("detailImage");
+            img.src = prod.Image || "";
+            img.style.display = prod.Image ? "block" : "none";
 
-            const addBtn = document.getElementById("detailAddBtn");
-            addBtn.onclick = function () {
+            // Limpias iframe antes
+            const docIframe = document.getElementById("detailDoc");
+            docIframe.style.display = "none";
+            docIframe.removeAttribute("src");
+
+            // Traes doc de Angel
+            const response = await sendToAngelPOST(username, "pos_backend/pos_skus", "", "GetSkuMainDoc", prod.id);
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", "Could not load product details: " + response);
+                return;
+            }
+            const query = JSON.parse(response);
+            if (query.result.startsWith("Error:")) {
+                ShowDialog("Alert", "Could not load product details: " + query.result);
+                return;
+            }
+
+            // Modal element y dialog
+            const modalEl = document.getElementById("productDetailModal");
+            const dialog = modalEl.querySelector(".modal-dialog");
+
+            // Si hay URL, muestras iframe y fullscreen
+            if (query.result !== "[]") {
+                const result = JSON.parse(query.result);
+                docIframe.src = result.Url + "&titles=false";
+                docIframe.style.display = "block";
+                img.style.display = "none";
+                dialog.classList.add("modal-fullscreen");      // <-- full screen
+            } else {
+                dialog.classList.remove("modal-fullscreen");   // <-- vuelves a tamaño normal
+            }
+
+            // Botón agregar
+            document.getElementById("detailAddBtn").onclick = () => {
                 addToCart(prod.id);
-                bootstrap.Modal.getInstance(document.getElementById("productDetailModal")).hide();
+                bootstrap.Modal.getInstance(modalEl).hide();
             };
 
-            const modal = new bootstrap.Modal(document.getElementById("productDetailModal"));
+            // Finalmente muestras el modal
+            const modal = new bootstrap.Modal(modalEl);
             modal.show();
         }
-
 
 
         const translations = {
@@ -1136,6 +1176,18 @@
         loadCartFromStorage();
         loadData();
 
+        var sku = urlParams.get('sku');
+
+        if (sku) {
+            sku = sku.trim();
+            if (sku.length >= 3) {
+                document.getElementById("searchInput").value = sku;
+                loadSkus(sku).then(() => {
+                    renderProducts(skus, `Resultados de “${sku}”`);
+                    showProductDetails(skus[0]); // Muestra el primer producto encontrado
+                });
+            }
+        }
 
     </script>
 

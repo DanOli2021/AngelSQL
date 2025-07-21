@@ -34,6 +34,8 @@ public class FileUploadInfo
 }
 
 private AngelApiOperation api = JsonConvert.DeserializeObject<AngelApiOperation>(message);
+api.db = db;
+api.server_db = server_db;
 
 //Server parameters
 private Dictionary<string, string> parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(Environment.GetEnvironmentVariable("ANGELSQL_PARAMETERS"));
@@ -73,7 +75,7 @@ return api.OperationType switch
 string UpsertTopic(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation, "DOCADMIN");
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -175,7 +177,7 @@ string UpsertTopic(AngelApiOperation api, Translations translation)
 string UpsertSubTopic(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation, "DOCADMIN");
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -275,7 +277,7 @@ string UpsertSubTopic(AngelApiOperation api, Translations translation)
 
 string UpsertContent(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -378,7 +380,7 @@ string UpsertContent(AngelApiOperation api, Translations translation)
 string UpsertContentDetail(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -543,7 +545,7 @@ string UpsertContentDetail(AngelApiOperation api, Translations translation)
 
 string GetTopicsFromUser(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation, "DOCADMIN");
+    string result = IsTokenValid(api, "DOCADMIN");
 
     if (result.StartsWith("Error:"))
     {
@@ -565,7 +567,7 @@ string GetTopicsFromUser(AngelApiOperation api, Translations translation)
 
 string GetTopics(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "ANY");
 
     if (result.StartsWith("Error:"))
     {
@@ -588,7 +590,7 @@ string GetTopics(AngelApiOperation api, Translations translation)
 
 string GetSubTopicsFromTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -612,7 +614,7 @@ string GetSubTopicsFromTopic(AngelApiOperation api, Translations translation)
 
 string GetContentFromSubTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -636,7 +638,7 @@ string GetContentFromSubTopic(AngelApiOperation api, Translations translation)
 
 string GetSubTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation, "DOCADMIN");
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -684,7 +686,7 @@ string GetSubTopic(AngelApiOperation api, Translations translation)
 
 string GetContent(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -735,7 +737,7 @@ string GetContent(AngelApiOperation api, Translations translation)
 
 string GetTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -776,7 +778,7 @@ string GetTopic(AngelApiOperation api, Translations translation)
 
 string DeleteContent(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -811,7 +813,7 @@ string DeleteContent(AngelApiOperation api, Translations translation)
 
 string DeleteSubTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -846,7 +848,7 @@ string DeleteSubTopic(AngelApiOperation api, Translations translation)
 
 string DeleteTopic(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -881,7 +883,7 @@ string DeleteTopic(AngelApiOperation api, Translations translation)
 
 string DeleteContentDetail(AngelApiOperation api, Translations translation)
 {
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -933,7 +935,7 @@ string DeleteContentDetail(AngelApiOperation api, Translations translation)
 private string GetContentDetail(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -1029,7 +1031,7 @@ private string GetTitles(AngelApiOperation api, Translations translation)
 
     try
     {        
-        string result = IsUserValid(api, translation, "DOCADMIN, DOCEDITOR");
+        string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
         if (result.StartsWith("Error:"))
         {
@@ -1160,7 +1162,7 @@ private string GetContentTitles(AngelApiOperation api, Translations translation)
 private string GetContentDetailItem(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -1213,7 +1215,7 @@ private string GetContentDetailItem(AngelApiOperation api, Translations translat
 private string SearchInfo(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation);
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -1245,36 +1247,10 @@ private string SearchInfo(AngelApiOperation api, Translations translation)
 
 
 
-string IsUserValid(AngelApiOperation api, Translations translation, string group = "DOCEDITOR")
-{
-    string result = GetGroupsUsingTocken(api.Token, api.User, api.UserLanguage);
-
-    if (result.StartsWith("Error:"))
-    {
-        return result;
-    }
-
-    dynamic user_data = JsonConvert.DeserializeObject<dynamic>(result);
-
-    if (user_data.groups == null)
-    {
-        return "Error: " + translation.Get("No groups found", api.UserLanguage);
-    }
-
-    if (!user_data.groups.ToString().Contains(group))
-    {
-        return "Error: " + translation.Get("User does not have permission to edit", api.UserLanguage);
-    }
-
-    return "Ok.";
-
-}
-
-
 string UploadFile(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsUserValid(api, translation, "DOCEDITOR");
+    string result = IsTokenValid(api, "DOCADMIN, DOCEDITOR");
 
     if (result.StartsWith("Error:"))
     {
@@ -1375,25 +1351,6 @@ string CreateTables(AngelDB.DB db)
 
     result = db.CreateTable(content_details, "HelpdeskContentDetails_search", true);
     return result;
-}
-
-private string GetGroupsUsingTocken(string token, string user, string language)
-{
-
-    var d = new
-    {
-        TokenToObtainPermission = token
-    };
-
-    string result = SendToAngelPOST("tokens/admintokens", user, token, "GetGroupsUsingTocken", language, d);
-
-    if (result.StartsWith("Error:"))
-    {
-        return $"Error: {result}";
-    }
-
-    return result;
-
 }
 
 

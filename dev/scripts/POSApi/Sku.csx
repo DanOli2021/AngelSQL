@@ -190,3 +190,51 @@ public class SkuChange
     // User name
     public string User_name { get; set; }
 }
+
+
+
+public class Series 
+{
+    // Series identifier
+    public string Id { get; set; }
+    // Sku identifier
+    public string Sku_id { get; set; }
+    // Series number
+    public string Series_number { get; set; }
+    // Reference Type
+    public string Reference_type { get; set; }
+    // Reference number
+    public string Reference_number { get; set; }
+    // If the series is active
+    public bool Active { get; set; }
+    // Blocked series
+    public bool Blocked { get; set; }
+    // Date and time of the series
+    public string DateTime { get; set; }
+    // User identifier
+    public string User_id { get; set; } 
+}
+
+
+
+public class SkuDocs
+{
+    // Document identifier
+    public string Id { get; set; }
+    // Sku identifier
+    public string Sku_id { get; set; }
+    // Document identifier
+    public string Content_id { get; set; }
+    // User identifier
+    public string User_id { get; set; }
+    // Document type
+    public string Type { get; set; }
+    // Document description
+    public string Description { get; set; }
+    // Document url
+    public string Url { get; set; }
+    // For_banner
+    public bool For_main_page { get; set; }
+    // In Banner List
+    public bool In_banner_list { get; set; }
+}

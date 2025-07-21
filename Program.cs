@@ -1567,7 +1567,7 @@ app.Use(async (context, next) =>
 });
 
 
-void ActivateProxy()
+string ActivateProxy()
 {
     if (parameters.ContainsKey("use_proxy"))
     {
@@ -1581,6 +1581,7 @@ void ActivateProxy()
                 if (result.StartsWith("Error:"))
                 {
                     LogFile.Log("Error: Use Proxy " + result);
+                    return "Error: Use Proxy " + result;
                 }
                 else
                 {
@@ -1589,7 +1590,7 @@ void ActivateProxy()
                     if (result.StartsWith("Error:"))
                     {
                         LogFile.Log("Error: Use Proxy " + result);
-                        return;
+                        return "Error: Use Proxy " + result;
                     }
 
                     AngelSQLsass angelSQLsass = JsonConvert.DeserializeObject<AngelSQLsass>(result);
@@ -1636,6 +1637,7 @@ void ActivateProxy()
             catch (Exception e)
             {
                 LogFile.Log("Error: Use Proxy " + e);
+                return "Error: Use Proxy " + e.Message;
             }
         }
         else
@@ -1645,6 +1647,8 @@ void ActivateProxy()
             File.WriteAllTextAsync(jsFilePath, jsContent);
         }
     }
+
+    return "Error: Proxy deactivated";
 
 }
 
@@ -1681,8 +1685,11 @@ if (File.Exists(parameters["wwwroot"] + "/js/account.js") == false)
     File.Delete(parameters["wwwroot"] + "/js/account.js");
 }
 
-//Save Account for remote orders
-File.WriteAllText(parameters["wwwroot"] + "/js/account.js", $"var angelsql_account = '{parameters["public_account"]}'");
+if (!string.IsNullOrEmpty(parameters["public_account"])) 
+{
+    //Save Account for remote orders
+    File.WriteAllText(parameters["wwwroot"] + "/js/account.js", $"var angelsql_account = '{parameters["public_account"]}'");
+}
 
 //server_db.Prompt("VAR db_public_url = ''");
 

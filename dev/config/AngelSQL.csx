@@ -57,7 +57,7 @@ Dictionary<string, string> parameters = new()
     { "use_proxy", "yes" },
     { "proxy_account", GetVariable( "ANGELSQL_PROXY_ACCOUNT", "" ) },
     { "proxy_password", GetVariable( "ANGELSQL_PROXY_PASSWORD", "" ) },
-    { "public_account", GetVariable( "ANGELSQL_PUBLIC_ACCOUNT", "angelsql" ) },
+    { "public_account", GetVariable( "ANGELSQL_PUBLIC_ACCOUNT", "" ) },
     { "gpt_key", GetVariable( "ANGELSQL_GPT_KEY", "" ) },
     { "save_activity", "false" },
     { "use_black_list", "false" },

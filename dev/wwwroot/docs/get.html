@@ -18,6 +18,8 @@
         var params = new URLSearchParams(url.search);
         var Content_id = params.get('content_id');
         var Account = params.get('account');
+        var titles = params.get('titles');
+
         var datos = GetContentDetailCSS(Account, Content_id);
 
         datos.then(function (query) {
@@ -147,33 +149,41 @@
 
     <div class="container">
 
-        <hr />
-
         <div class="row justify-ContentDetail-center">
 
-            <h1 id="topic" class="row justify-ContentDetail-center">
-            </h1>
+             <h1 id="topic">
+             </h1>
 
-            <h2 id="subtopic" class="row justify-ContentDetail-center">
-            </h2>
+             <h2 id="subtopic">
+             </h2>
 
-            <h2 id="content_title" class="row justify-ContentDetail-center">
-            </h2>
+            <h3 id="content_title">
+            </h3>
 
-            <hr />
+            <div id="extra_div">
+            </div>
 
             <div id="ShowContent" class="row justify-ContentDetail-center">
             </div>
+
+        
         </div>
 
-        <hr />
 
     </div>
 
     <script>
 
         document.addEventListener("DOMContentLoaded", function () {
-            GetContentData(Account, Content_id);
+            
+            var includ_titles = true;
+
+            if (titles != null && titles != undefined) {
+                includ_titles = titles.toLowerCase() === "true";
+            }
+
+            GetContentData(Account, Content_id, includ_titles);
+
         });
 
     </script>

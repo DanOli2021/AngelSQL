@@ -205,6 +205,9 @@ private string UpdateDatabase()
     ChatGroupMessage GroupChatMessage = new();
     db.CreateTable(GroupChatMessage, "GroupChatMessage", false, "");
 
+    SkuDocs skuDocs = new();
+    db.CreateTable(skuDocs, "SkuDocs", false, "");
+
     return "Ok. Database updated successfully.";
 
 }

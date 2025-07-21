@@ -246,6 +246,7 @@ async function SendFile(user, api_name, token, OperationType, file, dataMessage)
         message:
         {
             OperationType: OperationType,
+            account: account,
             Token: token,
             User: user,
             DataMessage: dataMessage,
@@ -397,10 +398,15 @@ function generateParagraph(element, text, classstring, stylestring) {
 }
 
 
-function ShowDialog(title, message) {
+function ShowDialog(title, message, callback = null) {
     document.getElementById('generic_dialog_title').innerText = title;
     document.getElementById('generic_dialog_message').innerText = '⚠️' + message;
     document.getElementById('generic_dialog').showModal();
+
+    if (callback) {
+        callback();
+    }
+
 }
 
 function showDialog(title, message) {

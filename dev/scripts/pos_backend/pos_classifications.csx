@@ -178,7 +178,7 @@ string GetMany(AngelApiOperation api, Translations translation)
     string fields = "id, timestamp, Type, Description, Image";
     if (data == ":ALL")
     {
-        return db.Prompt($"SELECT {fields} FROM SkuClassification ORDER BY id", true);
+        return db.Prompt($"SELECT {fields} FROM SkuClassification WHERE id IS NOT NULL AND id <> '' ORDER BY id", true);
     }
 
     if (data == ":TODAY")

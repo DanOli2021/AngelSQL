@@ -1,29 +1,36 @@
-function GetContentData(Account, Content_id) {
+function GetContentData(Account, Content_id, includeTitles = true) {
 
-    var datos = GetContentTitles(Account, Content_id);
+    if (includeTitles) {
+        var datos = GetContentTitles(Account, Content_id);
 
-    datos.then(function (query) {
+        datos.then(function (query) {
 
-        let responce_query = JSON.parse(query);
+            let responce_query = JSON.parse(query);
 
-        if (responce_query.result.startsWith("Error:")) {
-            console.log(responce_query.result);
-            return;
-        }
+            if (responce_query.result.startsWith("Error:")) {
+                console.log(responce_query.result);
+                return;
+            }
 
-        var titles = JSON.parse(responce_query.result);
-        document.getElementById('PageTitle').innerHTML = titles.Content + " - " + titles.Content_Description;
+            var titles = JSON.parse(responce_query.result);
+            document.getElementById('PageTitle').innerText = titles.Content + " - " + titles.Content_Description;
 
-        var contentdetail_topics = document.getElementById('topic');
-        contentdetail_topics.innerHTML = titles.Topic + " - " + titles.Topic_Description;
+            var contentdetail_topics = document.getElementById('topic');
+            contentdetail_topics.innerText = titles.Topic + " - " + titles.Topic_Description;
 
-        var subtopics_menu = document.getElementById('subtopic');
-        subtopics_menu.innerHTML = titles.Subtopic + " - " + titles.Subtopic_Description;
+            var subtopics_menu = document.getElementById('subtopic');
+            subtopics_menu.innerText = titles.Subtopic + " - " + titles.Subtopic_Description;
 
-        var content_title = document.getElementById('content_title');
-        content_title.innerHTML = titles.Content + " - " + titles.Content_Description;
+            var content_title = document.getElementById('content_title');
+            content_title.innerText = titles.Content + " - " + titles.Content_Description;
 
-    });
+            var extra_div = document.getElementById('extra_div');
+            extra_div.innerHTML = "<hr>";
+
+
+        });
+    }
+
 
     var ShowContent = document.getElementById('ShowContent');
     ShowContent.innerHTML = "";
@@ -120,7 +127,7 @@ function identifyLinks(text) {
 function createAnchors(text, links) {
     let anchoredText = text;
 
-    if( links == null || links == undefined || links.length == 0)
+    if (links == null || links == undefined || links.length == 0)
         return anchoredText;
 
     links.forEach(link => {
@@ -134,8 +141,7 @@ function createAnchors(text, links) {
 async function addContentDetail(Id, Content, Content_type, element, editFunction = null) {
     // Crear el elemento h1
 
-    if (Content_type == "CSS" && editFunction == null)  
-    {
+    if (Content_type == "CSS" && editFunction == null) {
         return;
     }
 
@@ -145,7 +151,7 @@ async function addContentDetail(Id, Content, Content_type, element, editFunction
         let formattedContent = formatText(Content);
         formattedContent = addHorizontalRule(formattedContent);
         const links = identifyLinks(formattedContent);
-        formattedContent = createAnchors(formattedContent, links);    
+        formattedContent = createAnchors(formattedContent, links);
         html_block = document.createElement('p');
         html_block.innerHTML = formattedContent;
     }
@@ -214,15 +220,14 @@ async function addContentDetail(Id, Content, Content_type, element, editFunction
         html_block.innerHTML = Content;  // Utiliza textContent para evitar la interpretación de HTML
     }
     else if (Content_type == "CSS") {
-        if (editFunction != null && editFunction != undefined) 
-        {
+        if (editFunction != null && editFunction != undefined) {
             html_block = document.createElement('pre');
             html_block.className = 'line-numbers language-css';
             var code_block = document.createElement('code');
             code_block.className = 'line-numbers language-css';
             code_block.textContent = Content;  // Utiliza textContent para evitar la interpretación de HTML
-            html_block.appendChild(code_block);    
-        } 
+            html_block.appendChild(code_block);
+        }
     }
     else if (Content_type == "Python") {
         html_block = document.createElement('pre');

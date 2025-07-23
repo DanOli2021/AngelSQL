@@ -19,11 +19,6 @@ using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Globalization;
-using System.Reflection;
-using System.IO;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 private AngelApiOperation api = JsonConvert.DeserializeObject<AngelApiOperation>(message);
 api.db = db;
@@ -142,25 +137,59 @@ string GetMany(AngelApiOperation api, Translations translation)
         return result;
     }
 
-    string data = api.DataMessage.ToString().Trim();
-
-    if (data.Length < 3)
+    if (api.DataMessage == null)
     {
-        return "Error: " + translation.Get("Data is too short", api.UserLanguage);
+        return "Error: No data provided.";
     }
 
-    if( data == ":ALL")
+    if (api.DataMessage.Search == null)
     {
-        return db.Prompt($"SELECT * FROM Inventory ORDER BY id", true);
+        api.DataMessage.Search = ":ALL";
     }
 
-    if( data == ":TODAY")
+    if (api.DataMessage.Search.ToString().Trim() == "")
+    {
+        api.DataMessage.Search = ":ALL";
+    }
+
+    if (api.DataMessage.Warehouse == null)
+    {
+        api.DataMessage.Warehouse = ":ALL";
+    }
+
+    string search = api.DataMessage.Search.ToString().Trim();
+    string Warehouse = api.DataMessage.Warehouse.ToString().Trim();
+
+    string fields = "id, Storage_id, description, stock, dateTime, user_id";
+
+    if (search == ":ALL")
+    {
+        if (Warehouse != ":ALL")
+        {
+            return db.Prompt($"SELECT {fields} FROM Inventory WHERE Storage_id = '{api.DataMessage.Warehouse}' ORDER BY id", true);
+        }
+
+        return db.Prompt($"SELECT {fields} FROM Inventory ORDER BY id", true);
+    }
+
+    if (search == ":TODAY")
     {
         string today = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd");
-        return db.Prompt($"SELECT * FROM Inventory WHERE timestamp >= '" + today +  " 00:00' ORDER BY timestamp DESC", true);
+
+        if (Warehouse != ":ALL")
+        {
+            return db.Prompt($"SELECT {fields} FROM Inventory WHERE Storage_id = '{Warehouse}' AND timestamp >= '" + today + " 00:00' ORDER BY timestamp DESC", true);
+        }
+
+        return db.Prompt($"SELECT {fields} FROM Inventory WHERE timestamp >= '" + today + " 00:00' ORDER BY timestamp DESC", true);
     }
 
-    result = db.Prompt($"SELECT * FROM Inventory WHERE Sku_id LIKE '%{api.DataMessage.ToString()}%' OR description LIKE '%{api.DataMessage.ToString().Replace(" ", "%")}%' ORDER BY description LIMIT 25", true);
+    if (Warehouse != ":ALL")
+    {        
+        return db.Prompt($"SELECT {fields} FROM Inventory WHERE Storage_id = '{Warehouse}' AND id LIKE '%{api.DataMessage.ToString()}%' OR description LIKE '%{api.DataMessage.ToString().Replace(" ", "%")}%' ORDER BY id", true);
+    }
+
+    result = db.Prompt($"SELECT {fields} FROM Inventory WHERE id LIKE '%{api.DataMessage.ToString()}%' OR description LIKE '%{api.DataMessage.ToString().Replace(" ", "%")}%' ORDER BY description LIMIT 25", true);
     return result;
 
 }
@@ -266,7 +295,7 @@ string Delete(AngelApiOperation api, Translations translation)
         return "Error: " + translation.Get("Inventory not found", api.UserLanguage);
     }
 
-    result = db.Prompt($"DELETE FROM Inventory PARTITION KEY main WHERE id = '{data}'", true);   
+    result = db.Prompt($"DELETE FROM Inventory PARTITION KEY main WHERE id = '{data}'", true);
 
     return result;
 

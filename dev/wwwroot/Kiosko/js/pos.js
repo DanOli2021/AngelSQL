@@ -6,8 +6,6 @@ var search_result;
 var searchcustomer_result;
 var sale = undefined;
 var sale_detail_style = 0;
-var language;
-var Token;
 var localCustomer;
 var customer_text;
 var dialog_customer;
@@ -113,7 +111,7 @@ function GetBusinessLines() {
 
 async function GetCurrencies() {
 
-    var response = await sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetCurrencies", "");
+    var response = await sendToAngelPOST(Token.User, "pos_backend/pos_currencies", Token.Token, "GetMany", "");
 
     if (response.startsWith("Error:")) {
         ShowDialog("Alert", response);
@@ -1214,27 +1212,6 @@ function SaveSale(credit = false) {
 }
 
 window.onload = async function () {
-
-    let Token = null;
-    const saved = localStorage.getItem('Token');
-
-    if (saved) {
-        const data = JSON.parse(saved);
-        if (Date.now() < data.expires) {
-            Token = data;
-            sessionStorage.setItem("Token", JSON.stringify(Token));
-        } else {
-            localStorage.removeItem("Token");
-            window.location.href = "index.html";
-        }
-    } else {
-        window.location.href = "index.html";
-    }
-
-    const language = getSelectedLanguage();
-    language = getSelectedLanguage();
-    
-    Token = JSON.parse(sessionStorage.getItem("Token"));
 
     textSku = document.getElementById("textSku");
     btnItems_text = document.getElementById("btnItems_text");

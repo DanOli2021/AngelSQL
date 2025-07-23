@@ -154,11 +154,6 @@ string GetMany(AngelApiOperation api, Translations translation)
 
     string data = api.DataMessage.ToString().Trim();
 
-    if (data.Length < 3)
-    {
-        return "Error: " + translation.Get("Data is too short", api.UserLanguage);
-    }
-
     if( data == ":ALL")
     {
         return db.Prompt($"SELECT * FROM Currency ORDER BY id", true);

@@ -19,11 +19,6 @@ using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Globalization;
-using System.Reflection;
-using System.IO;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 private AngelApiOperation api = JsonConvert.DeserializeObject<AngelApiOperation>(message);
 api.db = db;

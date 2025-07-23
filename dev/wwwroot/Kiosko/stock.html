@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kiosko Admin (Storage)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/kiosko.css">
+    <link rel="stylesheet" href="./css/bottom_bar.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./js/translate.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../proxy.js"></script>
+
+    <script>
+
+        let Token = null;
+        const saved = localStorage.getItem('Token');
+
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (Date.now() < data.expires) {
+                Token = data;
+                sessionStorage.setItem("Token", JSON.stringify(Token));
+            } else {
+                localStorage.removeItem("Token");
+                window.location.href = "index.html";
+            }
+        } else {
+            window.location.href = "index.html";
+        }
+
+        const language = getSelectedLanguage();
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ** Navigation menu -->
+        <div class="row col-12" style="margin-top: 10px;">
+
+            <!-- Botón de logout -->
+            <div class="col-4" ;">
+                <a class="btn btn-primary btn-block" href="#" style="width: 100%;" id="menu_navigation_logout"
+                    onclick="LogOut()">
+                    <span style="float: left;">
+                        <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;">
+                    </span>
+                    <span id="menu_log_out">
+                        Log Out
+                    </span>
+                </a>
+            </div>
+
+            <!-- Botón de menu -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="menu.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Menu</span>
+                </a>
+            </div>
+
+            <!-- Botón de configuration -->
+            <div class="col-4">
+                <a class="btn btn-primary w-100" href="inventory.html" id="menu_navigation_logout">
+                    <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
+                    <span id="menu_menu">Inventory</span>
+                </a>
+            </div>
+
+
+        </div>
+        <!-- ** Navigation menu -->
+
+
+        <!-- ** Logo and title of the module -->
+        <div class="row justify-content-center">
+            <img src="./images/Warehousecatalog_small.png" alt="logo" class="img-fluid mx-auto d-block"
+                style="margin-top: 20px;width:200px">
+
+            <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin
+                (Stock)
+            </h1>
+
+            <div class="col-sm-12" id="buttonszone">
+            </div>
+        </div>
+        <!-- ** Logo and title of the module -->
+
+
+        <!-- ** Application body -->
+        <div class="row col-12 justify-content-center" style="margin-top: 20px; margin-bottom: 20px;">
+
+            <div class="col-9">
+                <input type="text" id="search_text" class="form-control" style="width: 100%;" placeholder="Search..." />
+            </div>
+
+            <!-- ** Search button in the results table -->
+            <div class="col-3">
+                <button id="search_button" class="btn btn-primary" style="width: 100%;">Search</button>
+            </div>
+
+            <!-- ** Search button in the results table -->
+
+        </div>
+
+
+        <div class="row">
+            <div class="col-2">
+                <label for="Warehouse" class="form-label"><strong>Warehouse:</strong></label>
+            </div>
+
+            <div class="col-4">
+                <select id="Warehouse" class="form-select">
+                    <option value=":ALL">All Warehouses</option>
+                </select>
+            </div>
+        </div>
+        
+        <hr />
+
+        <div class="row col-12 justify-content-center">
+            <!-- ** Results table -->
+            <div id="tableContainer"></div>
+            <!-- ** Results table -->
+        </div>
+
+
+        <!-- ** Application body -->
+
+
+    </div>
+
+    <!-- ** Generic warning dialogue -->
+    <dialog id="generic_dialog" class="dialog-box">
+        <h1 id="generic_dialog_title">Title</h1>
+        <p id="generic_dialog_message">Message</p>
+        <button id="dialog_button_close" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+    <!-- ** Generic warning dialogue -->
+
+
+    <!-- ** Footer bar-->
+    <div class="bottom-bar" style="margin-top: 20px;">
+        <a href="privacy.html" target="_blank" id="index_privacy_policy_url">
+            <span id="index_privacy_policy">
+                Privacy Policy
+            </span>
+        </a>
+        <a href="https://angelsql.net" target="_blank">AngelSQL</a>
+        <a href="about.html" target="_blank" id="index_about_url">
+            <span id="index_about_us">
+                About us...
+            </span>
+        </a>
+    </div>
+    <!-- ** Footer bar-->
+
+    <!-- ** Generic Dialog to confirm -->
+    <dialog id="dialog_accept" class="dialog-box">
+        <h1 id="dialog_accept_title">Title</h1>
+        <p id="dialog_accept_message">Message</p>
+        <button id="dialog_button_accept" class="btn btn-success"
+            style="width: 100%; margin-bottom: 10px;">Accept</button>
+        <button id="dialog_button_close1" class="btn btn-warning" style="width: 100%;">Close</button>
+    </dialog>
+    <!-- ** Generic Dialog to confirm -->
+
+
+    <script>
+
+        document.getElementById("search_button").addEventListener("click", async function () {
+            Search();
+        });
+
+        function Search() {
+            
+            let searchValue = {
+                "Search": document.getElementById("search_text").value.trim(),
+                "Warehouse": document.getElementById("Warehouse").value.trim()
+            };
+
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_inventory", Token.Token, "GetMany", searchValue);
+
+            response.then(function (query) {
+
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                if (responce_query.result == "[]") {
+                    document.getElementById("tableContainer").innerHTML = "<p class='text-center'>No results found.</p>";
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const customCols =
+                {
+                    "id":
+                    {
+                        "title": "ID",
+                        "html": (value) => `<button class="btn btn-primary form-control"><strong>${value}</strong></button>`,
+                        "onclick": (val, row) => ShowKardex(`${val, row.Storage_id}`),
+                    },
+                    "Description":
+                    {
+                        "title": "Description",
+                        "html": (value) => `<strong>${value}</strong>`,
+                    },
+                    "Storage_id":
+                    {
+                        "title": "Warehouse",
+                    },
+                    "User_id":
+                    {
+                        "visible": false
+                    },
+                    "Stock":
+                    {
+                        "title": "Stock",
+                        "html": (value) => `<span class="badge bg-success" style="font-weight: bold; font-size: 1.2em;"><strong>${ThousandsSeparator(value)}</strong></span>`,
+                        "style": "text-align: right; "
+                    },
+                };
+
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+
+                document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
+
+            });
+
+        }
+
+        function FillWeraHouse() 
+        {
+            var response = sendToAngelPOST(Token.User, "pos_backend/pos_storage", Token.Token, "GetMany", ":ALL");
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                const JsonData = JSON.parse(responce_query.result);
+
+                const warehouseSelect = document.getElementById("Warehouse");
+                warehouseSelect.innerHTML = '<option value=":ALL">All Warehouses</option>'; // Reset options
+
+                JsonData.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.Description;
+                    option.innerText = item.Description; // Ensure the text is set correctly
+                    warehouseSelect.appendChild(option);
+                });
+
+            });
+
+        }
+
+        window.onload = async function () {
+
+            document.getElementById("dialog_button_close").onclick = function () {
+                document.getElementById("generic_dialog").close();
+            };
+
+            document.getElementById("dialog_button_close1").onclick = function () {
+                document.getElementById("dialog_accept").close();
+            };
+
+            document.getElementById("Warehouse").addEventListener("change", function () {
+                const selectedValue = this.value;
+                Search();
+            });
+
+
+            let response = GetGroupsUsingTocken(Token.User, Token.Token);
+
+            response.then(function (query) {
+                let response_query = JSON.parse(query);
+
+                if (response_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", response_query.result);
+                } else {
+                    sessionStorage.setItem('user_groups', response_query.result);
+                }
+            });
+
+            translate_menu(language);
+
+            FillWeraHouse();
+            Search();
+
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+            document.getElementById("search_text").focus();
+
+        };
+
+
+    </script>
+
+
+    <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

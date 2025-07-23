@@ -45,7 +45,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-6">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -66,7 +66,6 @@
                 style="margin-top: 20px;width:200px">
 
             <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Inventory)</h1>
-            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for small businesses</h1>
 
             <div class="col-sm-12" id="buttonszone">
             </div>
@@ -116,6 +115,8 @@
                 }
             });
 
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
             translate_menu(language);
 
         });
@@ -147,7 +148,7 @@
                 Privacy Policy
             </span>
         </a>
-        <a href="https://mybusinesspos.com" target="_blank">MyBusinessPOS</a>
+        <a href="https://AngelSQL.net" target="_blank">AngelSQL</a>
         <a href="about.html" target="_blank" id="index_about_url">
             <span id="index_about_us">
                 About us...

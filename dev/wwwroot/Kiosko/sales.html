@@ -45,7 +45,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-6">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -106,6 +106,8 @@
                 }
             });
 
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
             translate_menu(language);
 
         });
@@ -115,8 +117,6 @@
             if (sessionStorage.getItem("user_groups") != null) {
 
                 let user_groups = JSON.parse(sessionStorage.getItem("user_groups"));
-
-                console.log("User groups: ", user_groups);
 
                 if( findInString(user_groups.groups, "SUPERVISORS") )  
                 {

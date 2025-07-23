@@ -20,7 +20,6 @@
 #load "..\POSApi\Parameters.csx"
 #load "..\POSApi\Chat.csx"
 
-using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;

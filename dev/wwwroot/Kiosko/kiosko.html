@@ -92,6 +92,7 @@
 
 <body>
 
+
     <div
         class="bg-light p-3 border-bottom shadow rounded d-flex flex-column flex-md-row justify-content-center align-items-center text-start">
         <img id="companyLogo" src="logo.png" alt="Company Logo" class="img-fluid mb-3 mb-md-0 me-md-4"
@@ -315,9 +316,27 @@
                     </iframe>
 
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-success" id="detailAddBtn">Agregar al carrito</button>
+
+                <div class="row mb-12">
+
+                    <div class="col-2">
+                        <div class="modal-footer">
+                            <button class="btn btn-warning" style="width: 100%;" id="detail_CloseBtn">Close</button>
+                        </div>
+                    </div>
+
+                    <div class="col-2">
+                    </div>
+
+                    <div class="col-3">
+                        <div class="modal-footer">
+                            <button class="btn btn-success" id="detailAddBtn" style="width: 100%;">Agregar al carrito</button>
+                        </div>
+                    </div>
+
                 </div>
+
+
             </div>
         </div>
     </div>
@@ -987,6 +1006,8 @@
             document.getElementById("noteText").placeholder = t("addNote");
             document.getElementById("noteSaveBtn").innerText = t("saveNote");
 
+
+
             renderCategories();
 
         }
@@ -1063,6 +1084,11 @@
             // Botón agregar
             document.getElementById("detailAddBtn").onclick = () => {
                 addToCart(prod.id);
+                bootstrap.Modal.getInstance(modalEl).hide();
+            };
+
+            // Botón cerrar
+            document.getElementById("detail_CloseBtn").onclick = () => {
                 bootstrap.Modal.getInstance(modalEl).hide();
             };
 

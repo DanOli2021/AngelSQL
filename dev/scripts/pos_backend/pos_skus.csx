@@ -47,8 +47,98 @@ return api.OperationType switch
     "GetSkuDoc" => GetSkuDoc(),
     "GetSkuMainDoc" => GetSkuMainDoc(),
     "SaveSkuDoc" => SaveSkuDoc(),
+    "GetSkuProperties" => GetSkuProperties(),
+    "SaveSkuProperties" => SaveSkuProperties(),
     _ => $"Error: No service found {api.OperationType}",
 };
+
+
+string SaveSkuProperties()
+{
+    string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR, ADMINISTRATOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    try
+    {
+
+        if (api.DataMessage == null || api.DataMessage.ToString().Trim() == "")
+        {
+            return "Error: No data provided.";
+        }
+
+        if (!api.DataMessage.ContainsKey("Id") || string.IsNullOrEmpty(api.DataMessage["Id"].ToString().Trim()))
+        {
+            return "Error: Sku Id is required.";
+        }
+
+        if (!api.DataMessage.ContainsKey("Requires_inventory") || !api.DataMessage.ContainsKey("It_is_for_sale"))
+        {
+            return "Error: Missing required properties.";
+        }
+
+        if (!api.DataMessage.ContainsKey("Sale_in_bulk"))
+        {
+            api.DataMessage["Sale_in_bulk"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Require_series"))
+        {
+            api.DataMessage["Require_series"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Require_lots"))
+        {
+            api.DataMessage["Require_lots"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Its_kit"))
+        {
+            api.DataMessage["Its_kit"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Sell_below_cost"))
+        {
+            api.DataMessage["Sell_below_cost"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Locked"))
+        {
+            api.DataMessage["Locked"] = false;
+        }
+
+        if (!api.DataMessage.ContainsKey("Weight_request"))
+        {
+            api.DataMessage["Weight_request"] = false;
+        }
+
+        dynamic data = api.DataMessage;
+
+        Sku sku = new Sku();
+        sku.Id = data.Id.ToString().Trim();
+        sku.Requires_inventory = Convert.ToBoolean(data.Requires_inventory);
+        sku.It_is_for_sale = Convert.ToBoolean(data.It_is_for_sale);
+        sku.Sale_in_bulk = Convert.ToBoolean(data.Sale_in_bulk);
+        sku.Require_series = Convert.ToBoolean(data.Require_series);
+        sku.Require_lots = Convert.ToBoolean(data.Require_lots);
+        sku.Its_kit = Convert.ToBoolean(data.Its_kit);
+        sku.Sell_below_cost = Convert.ToBoolean(data.Sell_below_cost);
+        sku.Locked = Convert.ToBoolean(data.Locked);
+        sku.Weight_request = Convert.ToBoolean(data.Weight_request);
+
+        result = db.UpsertInto("sku", sku);
+
+        return result;
+
+    }
+    catch (Exception ex)
+    {
+        return "Error: " + ex.Message + " " + ex.StackTrace;
+    }
+}
 
 
 string GetSimpleSku()
@@ -105,38 +195,61 @@ string GetSimpleSku()
             Cost = Convert.ToDecimal(dt.Rows[0]["cost"])
         };
 
-        List<Consumption_tax> taxes = db.jSonDeserialize<List<Consumption_tax>>(dt.Rows[0]["consumption_taxes"].ToString());
-
-        if (taxes != null && taxes.Count > 0)
+        try
         {
-            sku.Tax = taxes[0].Rate;
-            sku.Tax_name = taxes[0].Description;
+            List<Consumption_tax> taxes = db.jSonDeserialize<List<Consumption_tax>>(dt.Rows[0]["consumption_taxes"].ToString());
 
-            if (taxes.Count > 1)
+            if (taxes != null && taxes.Count > 0)
             {
-                sku.Tax2 = taxes[1].Rate;
-                sku.Tax_name2 = taxes[1].Description;
+                sku.Tax = taxes[0].Rate;
+                sku.Tax_name = taxes[0].Description;
+
+                if (taxes.Count > 1)
+                {
+                    sku.Tax2 = taxes[1].Rate;
+                    sku.Tax_name2 = taxes[1].Description;
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            return "Error: " + ex.Message + " " + ex.StackTrace;
+        }
+
+        try
+        {
+            List<SkuClassification> classifications = db.jSonDeserialize<List<SkuClassification>>(dt.Rows[0]["SkuClassification"].ToString());
+
+            sku.Classification = "";
+
+            if (classifications != null && classifications.Count > 0)
+            {
+                sku.Classification = classifications[0].Description;
             }
         }
-
-        List<SkuClassification> classifications = db.jSonDeserialize<List<SkuClassification>>(dt.Rows[0]["SkuClassification"].ToString());
-
-        sku.Classification = "";
-
-        if (classifications != null && classifications.Count > 0)
+        catch (Exception ex)
         {
-            sku.Classification = classifications[0].Description;
+            return "Error: " + ex.Message + " " + ex.StackTrace;
         }
 
-        List<Sku_dictionary> sku_dictionaries = db.jSonDeserialize<List<Sku_dictionary>>(dt.Rows[0]["sku_dictionary"].ToString());
-
-        sku.Sku_alternativ = "";
-
-        if (sku_dictionaries != null && sku_dictionaries.Count > 0)
+        try
         {
-            sku.Sku_alternativ = sku_dictionaries[0].Id;
+            List<Sku_dictionary> sku_dictionaries = db.jSonDeserialize<List<Sku_dictionary>>(dt.Rows[0]["sku_dictionary"].ToString());
 
+            sku.Sku_alternativ = "";
+
+            if (sku_dictionaries != null && sku_dictionaries.Count > 0)
+            {
+                sku.Sku_alternativ = sku_dictionaries[0].Id;
+
+            }
         }
+        catch (Exception ex)
+        {
+            return "Error: " + ex.Message + " " + ex.StackTrace;
+        }
+
 
         sku.Sku_image = dt.Rows[0]["Image"].ToString();
 
@@ -215,7 +328,7 @@ string SaveImportSkus()
                 Description = row["description"].ToString(),
                 Price = price,
                 Cost = 0,
-                Requires_inventory = false,
+                Requires_inventory = true,
                 It_is_for_sale = true,
                 Sale_in_bulk = true,
                 Require_series = false,
@@ -403,6 +516,7 @@ string SaveImportSkus()
             sku.Price_code_id = "";
             sku.DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             sku.User_id = "";
+
             skus.Add(sku);
 
             SkuChange skuChange = new()
@@ -534,7 +648,7 @@ string GetSkus()
         return "Error: " + translation.Get("Data is too short", api.UserLanguage);
     }
 
-    string fields = "id, description, price, Consumption_taxes, ClaveUnidad, Image"; 
+    string fields = "id, description, price, Consumption_taxes, ClaveUnidad, Universal_id, Image";
 
     if (data.ToUpper().Trim() == ":ALL")
     {
@@ -562,7 +676,7 @@ string SaveSkuDoc()
     {
         return result;
     }
-    
+
     dynamic data = JsonConvert.DeserializeObject(api.DataMessage.ToString());
 
     if (data == null || data.Sku_id == null || data.Sku_id.ToString().Trim() == "")
@@ -570,7 +684,7 @@ string SaveSkuDoc()
         return "Error: Sku_id is required.";
     }
 
-    if( data.Id == null || data.Id.ToString().Trim() == "")
+    if (data.Id == null || data.Id.ToString().Trim() == "")
     {
         data.Id = Guid.NewGuid().ToString();
     }
@@ -593,7 +707,7 @@ string SaveSkuDoc()
         Description = data.Description?.ToString() ?? "",
         Url = data.Url?.ToString() ?? "",
         For_main_page = data.For_main_page != null ? Convert.ToBoolean(data.For_main_page) : false,
-        In_banner_list = data.In_banner_list != null ? Convert.ToBoolean(data.In_banner_list) : false   
+        In_banner_list = data.In_banner_list != null ? Convert.ToBoolean(data.In_banner_list) : false
     };
 
     result = db.UpsertInto("SkuDocs", skuDocs);
@@ -683,7 +797,7 @@ string UpsertSku()
         }
 
         sku.Sku_dictionary ??= [];
-        sku.SkuClassification ??= [];        
+        sku.SkuClassification ??= [];
         sku.Consumption_taxes ??= [];
 
         Object sku_clone = AngelDB.ObjectConverter.CreateDictionaryOrListFromObject(sku);
@@ -738,6 +852,39 @@ string GetSku()
     string data = api.DataMessage.ToString().Trim();
 
     result = db.Prompt($"SELECT * FROM sku WHERE id = '" + data + "'", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (result == "[]")
+    {
+        return "Error: " + translation.Get("Sku not found", api.UserLanguage);
+    }
+
+    result = result[1..^1];
+
+    return result;
+
+}
+
+
+string GetSkuProperties()
+{
+
+    string result = IsTokenValid(api, "STAKEHOLDER, SUPERVISOR, ADMINISTRATOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    string data = api.DataMessage.ToString().Trim();
+
+    string fields = "id, description, Requires_inventory, It_is_for_sale, Sale_in_bulk, Require_series, Require_lots, Its_kit, Sell_below_cost, Locked, Weight_request";
+
+    result = db.Prompt($"SELECT {fields} FROM sku WHERE id = '" + data + "'", true);
 
     if (result.StartsWith("Error:"))
     {

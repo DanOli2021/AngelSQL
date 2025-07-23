@@ -6,10 +6,12 @@ public class Kardex
     public string Id { get; set; }
     // Entry or exit
     public string EntryOrExit { get; set; }
-    // Souce identifier
-    public string ReferenceID { get; set; }
     // Source type
     public string ReferenceType { get; set; }
+    // Souce identifier
+    public string ReferenceID { get; set; }
+    // Source document
+    public string ReferenceDocument { get; set; }
     // Sku identifier    
     public string Sku_id { get; set; }
     // Sku description
@@ -41,20 +43,20 @@ public class Storage
     // Storage capacity
     public decimal Capacity { get; set; }
     // Storage current usage
+    public string User_id { get; set; }
     public decimal CurrentUsage { get; set; }
 }
 
 
 public class Inventory
 {
-    // Inventory identifier
+    // Inventory identifier equals to Sku identifier
     public string Id { get; set; }
     // Date and time of the inventory
     public string DateTime { get; set; }
     // User identifier who created the inventory
     public string User_id { get; set; }
     // User name who created the inventory
-    public string Sku_id { get; set; }
     public string Description { get; set; }
     public string Storage_id { get; set; }
     public decimal Stock { get; set; }

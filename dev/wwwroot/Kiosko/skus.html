@@ -28,7 +28,9 @@
                 localStorage.removeItem("Token");
                 window.location.href = "index.html";
             }
-        } else {
+        } 
+        else 
+        {
             window.location.href = "index.html";
         }
 
@@ -57,7 +59,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="logout()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -245,6 +247,105 @@
     </dialog>
 
 
+    <dialog id="skuPropertiesDialog" style="max-width: 800px; width: 90%; overflow-y: auto;">
+        <div class="container-fluid">
+            <div class="row col-12">
+
+                <div class="col-3">
+                    <label for="sku_properties_id" class="form-label">Sku</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="sku_properties_id" class="form-control" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_properties_description" class="form-label">Description</label>
+                </div>
+                <div class="col-9">
+                    <input type="text" id="sku_properties_description" class="form-control" />
+                </div>
+
+                <hr>
+
+                <div class="col-3">
+                    <label for="sku_requires_inventory" class="form-label">Request Inventory</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_requires_inventory" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_is_for_sale" class="form-label">Is For Sale</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_is_for_sale" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_sale_in_bulk" class="form-label">Sale in Bulk</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_sale_in_bulk" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_require_series" class="form-label">Require Series</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_require_series" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_require_lots" class="form-label">Require Lots</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_require_lots" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_its_kit" class="form-label">Its Kit</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_its_kit" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_sell_below_cost" class="form-label">Sell Below Cost</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_sell_below_cost" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_locked" class="form-label">Locked</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_locked" class="form-check-input" />
+                </div>
+
+                <div class="col-3">
+                    <label for="sku_weight_request" class="form-label">Weight Request</label>
+                </div>
+                <div class="col-9">
+                    <input type="checkbox" id="sku_weight_request" class="form-check-input" />
+                </div>
+
+                <hr>
+
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-2">
+                        <button id="sku_properties_save_button" class="btn btn-success btn-lg w-100"
+                            onclick="SaveProperties();">Save</button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button id="sku_properties_cancel_button" class="btn btn-danger btn-lg w-100" onclick="document.getElementById('skuPropertiesDialog').close()">Cancel</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </dialog>
+
 
     <dialog id="skuDocsDialog" style="width: 90%; padding: 20px;">
 
@@ -369,7 +470,7 @@
                     <label for="sku_edit_doc_for_main_page" class="form-label">For main page</label>
                 </div>
 
-               <div class="col-9">
+                <div class="col-9">
                     <input type="checkbox" id="sku_edit_doc_for_main_page" class="form-check-input" />
                 </div>
 
@@ -890,6 +991,13 @@
                         "onclick": (val, row) => SkuDocs(`${row.id}`, `${row.Description}`),
                         "style": "text-align: right;"
                     },
+                    "Universal_id":
+                    {
+                        "title": "Sku properties",
+                        "html": (value, row) => `<button class="btn btn-info" style="width:100%""><strong>Properties</strong></button>`,
+                        "onclick": (val, row) => EditProperties(`${row.id}`, `${row.Description}`),
+                        "style": "text-align: right;"
+                    },
                     "Image":
                     {
                         "title": "Image",
@@ -909,6 +1017,92 @@
 
             });
 
+        }
+
+
+        async function SaveProperties() {
+            const skuId = document.getElementById("sku_properties_id").value.trim();
+            const description = document.getElementById("sku_properties_description").value.trim();
+
+            if (skuId === "" || description === "") {
+                ShowDialog("Alert", "Please fill in all fields.");
+                return;
+            }
+
+            const properties = {
+                Id: skuId,
+                Requires_inventory: document.getElementById("sku_requires_inventory").checked,
+                It_is_for_sale: document.getElementById("sku_is_for_sale").checked,
+                Sale_in_bulk: document.getElementById("sku_sale_in_bulk").checked,
+                Require_series: document.getElementById("sku_require_series").checked,
+                Require_lots: document.getElementById("sku_require_lots").checked,
+                Its_kit: document.getElementById("sku_its_kit").checked,
+                Sell_below_cost: document.getElementById("sku_sell_below_cost").checked,
+                Locked: document.getElementById("sku_locked").checked,
+                Weight_request: document.getElementById("sku_weight_request").checked
+            };
+
+            console.log("Properties to save:", properties); 
+
+            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "SaveSkuProperties", properties);
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", response);
+                return;
+            }
+
+            let responce_query = JSON.parse(response);
+
+            if (responce_query.result.startsWith("Error:")) {
+                ShowDialog("Alert", responce_query.result);
+                return;
+            }
+
+            ShowDialog("Success", "Properties saved successfully to sku: " + skuId + " " + description);
+            document.getElementById("skuPropertiesDialog").close();
+
+        }
+
+
+        async function EditProperties( sku, description ) 
+        {
+            if (sku == null || sku == "") {
+                ShowDialog("Alert", "Please select a SKU to configure.");
+                return;
+            }
+
+            document.getElementById("sku_properties_id").value = sku;
+            document.getElementById("sku_properties_description").value = description;
+            document.getElementById("sku_properties_id").disabled = true; // Deshabilitar el campo Sku_id para edición
+            document.getElementById("sku_properties_description").disabled = true; // Deshabilitar
+
+            var response = await sendToAngelPOST(Token.User, "pos_backend/pos_skus", Token.Token, "GetSkuProperties", sku);
+
+            if (response.startsWith("Error:")) {
+                ShowDialog("Alert", response);
+                return;
+            }
+
+            let responce_query = JSON.parse(response);
+
+            if (responce_query.result.startsWith("Error:")) {
+                ShowDialog("Alert", responce_query.result);
+                return;
+            }
+
+            const properties = JSON.parse(responce_query.result);
+
+            document.getElementById("sku_requires_inventory").checked = properties.Requires_inventory;
+            document.getElementById("sku_is_for_sale").checked = properties.It_is_for_sale;
+            document.getElementById("sku_sale_in_bulk").checked = properties.Sale_in_bulk;
+            document.getElementById("sku_require_series").checked = properties.Require_series;
+            document.getElementById("sku_require_lots").checked = properties.Require_lots;
+            document.getElementById("sku_its_kit").checked = properties.Its_kit;
+            document.getElementById("sku_sell_below_cost").checked = properties.Sell_below_cost;
+            document.getElementById("sku_locked").checked = properties.Locked;
+            document.getElementById("sku_weight_request").checked = properties.Weight_request;
+
+            document.getElementById("skuPropertiesDialog").showModal();   
         }
 
 
@@ -1352,7 +1546,10 @@
 
             SearchSkus(":ALL");
 
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
             translate_menu(language);
+
 
             document.getElementById("searchsku").focus();
 

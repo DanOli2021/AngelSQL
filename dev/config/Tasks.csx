@@ -5,13 +5,13 @@
 
 #r "Newtonsoft.Json.dll"
 
+using System;
 //using Newtonsoft.Json;
-using System.Collections.Generic;
 using System.Data;
 
 string result = "";
 
-//result = MakeTasks();
+result = MakeTasks();
 
 if (result.StartsWith("Error:"))
 {
@@ -29,11 +29,15 @@ string MakeTasks()
     foreach (DataRow row in accounts.Rows)
     {
         AngelDB.DB local_db = new();
-        result = local_db.Prompt(row["connection_string"].ToString());
+
+        string connection_string = row["connection_string"].ToString();
+        connection_string = connection_string.Replace("main_directory", server_db.Prompt("VAR db_accounts_directory"));
+
+        result = local_db.Prompt(connection_string);
 
         if (result.StartsWith("Error:"))
         {
-            return "Error: " + result.Replace("Error:", "");
+            return "Error: " + result.Replace("Error:", "") + " (Account: " + row["account"] + ")";
         }
 
         result = local_db.Prompt("USE ACCOUNT " + row["account"]);

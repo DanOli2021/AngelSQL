@@ -16,10 +16,10 @@ public class Sku
     public decimal Price { get; set; }
     // SKU Cost
     public decimal Cost { get; set; }
+    // If the sku has an associated web url
+    public string Url_media { get; set; }    
     // If the sku requires inventory
     public bool Requires_inventory { get; set; }
-    // If the sku has an associated web url
-    public string Url_media { get; set; }
     // If the sku is for sale
     public bool It_is_for_sale { get; set; }
     // If the sku is for sale in bulk
@@ -193,7 +193,7 @@ public class SkuChange
 
 
 
-public class Series 
+public class SkuSeries 
 {
     // Series identifier
     public string Id { get; set; }

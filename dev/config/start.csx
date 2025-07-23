@@ -6,9 +6,6 @@
 #r "Newtonsoft.Json.dll"
 
 using System;
-using System.Data;
-using Newtonsoft.Json;
-using System.Collections.Generic;
 
 string result = server_db.Prompt( "SELECT * FROM accounts" );
 
@@ -19,7 +16,7 @@ if (result == "[]")
 
     var pin = new
     {
-        id = System.Guid.NewGuid().ToString(),
+        id = Guid.NewGuid().ToString(),
         authorizer = "SYSTEM",
         authorizer_name = "SYSTEM",
         branch_store = "SYSTEM",

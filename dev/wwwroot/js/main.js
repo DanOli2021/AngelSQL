@@ -740,7 +740,7 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
         const end = start + rowsPerPage;
         const pageData = filteredData.slice(start, end);
 
-        let html = `<div class="table-responsive"><table class="table table-bordered table-striped"><thead><tr>`;
+        let html = `<div class="table-responsive" style="width:100% !important; max-width:100% !important;"><table class="table table-bordered table-striped" style="width:100%;"> <thead><tr>`;
 
         for (let header of visibleHeaders) {
             const colConf = customColumns[header] || {};
@@ -796,6 +796,10 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
         html += `<li class="page-item ${currentPage === totalPages() ? 'disabled' : ''}">` +
             `<button class="page-link" onclick="changePage(1)">&#8594;</button></li>`;
         html += '</ul></nav>';
+
+        container.style.width = "100%";
+        container.style.maxWidth = "100%";
+        container.style.overflowX = "auto";
 
         container.innerHTML = '';
         container.appendChild(topControls);

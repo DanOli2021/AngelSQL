@@ -38,13 +38,80 @@ return api.OperationType switch
     "GetMany" => GetMany(api, translation),
     "UpsertInventory" => UpsertInventory(api, translation),
     "Delete" => Delete(api, translation),
+    "GetKardex" => GetKardex(),
     _ => $"Error: No service found {api.OperationType}",
 };
+
+
+string GetKardex()
+{
+
+    string result = IsTokenValid(api, "STEAKHOLDER, SUPERVISOR, ADMINISTRATOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    if (api.DataMessage == null)
+    {
+        return "Error: No data provided.";
+    }
+
+    if( api.DataMessage.Search == null)
+    {
+        api.DataMessage.Search = ":ALL";
+    }
+
+    if (api.DataMessage.Search.ToString().Trim() == "")
+    {
+        api.DataMessage.Search = ":ALL";
+    }
+
+    if( api.DataMessage.Start_date == null)
+    {
+        return "Error: No start date provided.";
+    }
+
+    if( api.DataMessage.End_date == null)
+    {
+        return "Error: No end date provided.";
+    }
+
+    if (api.DataMessage.Sku_id == null)
+    {
+        return "Error: No Sku_id provided.";
+    }
+
+    if (api.DataMessage.Storage_id == null)
+    {
+        return "Error: No Storage_id provided.";
+    }
+
+    string search = api.DataMessage.Search.ToString().Trim();
+    string start_date = api.DataMessage.Start_date.ToString().Trim() + " 00:00:00";
+    string end_date = api.DataMessage.End_date.ToString().Trim() + " 23:59:59";
+
+    string start_partion = start_date.Substring(0, 7);
+    string end_partion = end_date.Substring(0, 7);
+
+    string fields = "*";
+
+    if (search == ":ALL")
+    {
+        return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC", true);
+    }
+
+    return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND (ReferenceDocument LIKE '%{search}%' OR Sku_description LIKE '%{search}%') AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC", true);
+
+}
+
+
 
 string SaveImport(AngelApiOperation api, Translations translation)
 {
 
-    string result = IsTokenValid(api, "SUPERVISOR");
+    string result = IsTokenValid(api, "STEAKHOLDER, SUPERVISOR, ADMINISTRATOR");
 
     if (result.StartsWith("Error:"))
     {

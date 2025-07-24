@@ -38,7 +38,7 @@ string AffectSales()
         return "Ok.";
     }
 
-    result = db.Prompt("SELECT PartitionKey, id, Sale_detail, Storage_id, User_id FROM sale WHERE IsInventoryAffected = 0", true);
+    result = db.Prompt("SELECT PartitionKey, id, Sale_detail, Storage_id, User_id, Account_id, Receipt_serie, Receipt_number FROM sale WHERE IsInventoryAffected = 0", true);
 
     DataTable sales = db.GetDataTable(result);
     
@@ -144,15 +144,18 @@ string AffectSales()
             {
                 Id = saleDetail.Id,
                 EntryOrExit = "Exit",
+                Account_id = sale["Account_id"].ToString(),
                 ReferenceID = sale["id"].ToString(),
                 ReferenceType = "Sale",
                 Sku_id = saleDetail.Sku_id,
                 Sku_description = saleDetail.Description,
+                Storage_id = sale["Storage_id"].ToString(),
                 Quantity = saleDetail.Qty,
                 Cost = saleDetail.Cost,
                 Price = saleDetail.Price,
                 DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                Stock = inventoryUpdate.Stock
+                Stock = inventoryUpdate.Stock,
+                ReferenceDocument = sale["Receipt_serie"].ToString() + " " + sale["Receipt_number"].ToString(),
             };
 
             result = db.UpsertInto("Kardex", kardex, kardex.DateTime[..7]);

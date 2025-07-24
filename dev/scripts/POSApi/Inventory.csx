@@ -6,6 +6,8 @@ public class Kardex
     public string Id { get; set; }
     // Entry or exit
     public string EntryOrExit { get; set; }
+    // Account identifier
+    public string Account_id { get; set; }
     // Source type
     public string ReferenceType { get; set; }
     // Souce identifier
@@ -16,6 +18,8 @@ public class Kardex
     public string Sku_id { get; set; }
     // Sku description
     public string Sku_description { get; set; }
+    // Storage identifier
+    public string Storage_id { get; set; }
     // Sku Quantity
     public decimal Quantity { get; set; }
     // Sku cost

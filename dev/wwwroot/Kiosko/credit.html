@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -52,7 +55,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -306,33 +309,7 @@
 
     <script>
 
-        var businessinfo = null;
-
-        /**
-         * BusinessInfo class, used to store the business information
-         */
-        class BusinessInfo {
-            // Business identifier
-            id;
-            // Business Address
-            Address;
-            // Business Name
-            Name;
-            // Business Phone
-            Phone;
-            // Business Email
-            Email;
-            // Business Website
-            Website;
-            // Business Logo
-            Logo;
-            // Business Slogan
-            Slogan;
-            // Currency ID
-            Currency_id;
-            // Currency Name
-            Currency_name;
-        }
+        var BusinessInfo = null;
 
         // Función para inicializar las fechas en los campos de fecha
         function initializeDates() {
@@ -384,7 +361,7 @@
                     "id":
                     {
                         "title": "ID",
-                        "html": (value) => `<button class="btn btn-link"><strong>${value}</strong></button>`,
+                        "html": (value) => `<button class="btn btn-link"><strong>${value.substring(32)}</strong></button>`,
                         "onclick": (val, row) => OpenCreditSaleDialog(val, row),
                         "style": "color: blue; cursor: pointer;"
                     },
@@ -426,7 +403,7 @@
                     },
                 };
 
-                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text");
+                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text", true, BusinessInfo, "Credit Sales from " + startDate + " to " + endDate);
 
             });
 
@@ -622,7 +599,7 @@
                 },
             };
 
-            renderPaginatedTable(payments, "tablePaymentsContainer", 20, customPaymentCols, null, false);
+            renderPaginatedTable(payments, "tablePaymentsContainer", 20, customPaymentCols, null, false, BusinessInfo, "Payments for Sale ID: " + sale_id);
 
 
         }
@@ -637,7 +614,7 @@
                 document.getElementById('payment_description').value = "";
                 document.getElementById('Payments').value = "cash";
                 document.getElementById('payment_amount').value = 0;
-                document.getElementById('currency_id').value = businessinfo.Currency_id;
+                document.getElementById('currency_id').value = BusinessInfo.Currency_id;
                 document.getElementById('exchange_rate').value = 1;
                 document.getElementById('payment_edit_title').innerText = "New Payment";
                 document.getElementById('payment_delete').disabled = true; // Disable delete button for new payments
@@ -822,7 +799,7 @@
                 }
             }
 
-            document.getElementById("currency_id").value = businessinfo.Currency_id;
+            document.getElementById("currency_id").value = BusinessInfo.Currency_id;
             document.getElementById("exchange_rate").value = 1;
 
         }
@@ -914,7 +891,9 @@
                 });
             });
 
-            businessinfo = await GetBasicBusinessInfo();
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
+            BusinessInfo = await GetBasicBusinessInfo();
             GetCurrencies();
             initializeDates();
             GetCreditSales();

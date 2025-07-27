@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -46,7 +49,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -155,6 +158,8 @@
 
     <script>
 
+        var BusinessInfo = null;
+
         // Función para inicializar las fechas en los campos de fecha
         function initializeDates() {
             const today = new Date();
@@ -221,7 +226,10 @@
                     },
                 };
 
-                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text");
+                let startDate = document.getElementById("start_date").value;
+                let endDate = document.getElementById("end_date").value;
+
+                renderPaginatedTable(jsonData, "tableContainer", 20, customCols, "search_text", true, BusinessInfo, "Sales List from " + startDate + " to " + endDate, true, true, true, true, true);
 
             });
 
@@ -249,8 +257,10 @@
                 document.getElementById("dialog_accept").close();
             };
 
-            translate_menu(language);
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
 
+            translate_menu(language);
+            GetBusinessInfo();
             initializeDates();
             GetSales();
 

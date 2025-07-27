@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -47,7 +50,7 @@
         <div class="row col-12" style="margin-top: 10px;">
             <!-- Botón de logout -->
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="Logout()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -472,8 +475,8 @@
             let Total_payments = 0;
             let Total = 0;
             let Change = 0;
-            let businessinfo = undefined;
-            let default_currency = undefined;
+            let BusinessInfo = null;
+            let default_currency = null;
 
             document.getElementById("order_edit").addEventListener("close", function () {
                 OrderPayments = [];
@@ -583,7 +586,6 @@
                     Type: document.getElementById("payment_method").value
                 };
 
-                console.log("Payment: ", OrderPayments);
                 OrderPayments.push(payment);
                 ShowPayments();
 
@@ -947,7 +949,9 @@
                         return;
                     }
 
-                    renderPaginatedTable(JsonData, "tableContainer", 25, customCols, "search_text");
+                    let start_date = document.getElementById("start_date").value;
+                    let end_date = document.getElementById("end_date").value;
+                    renderPaginatedTable(JsonData, "tableContainer", 25, customCols, "search_text", true, BusinessInfo, "Orders List, from " + start_date + " to " + end_date);
 
                     document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
 
@@ -1055,7 +1059,6 @@
                 }
 
                 default_currency = await GetDefaultCurrency();
-
                 document.getElementById("currency_id").value = default_currency.Id;
                 document.getElementById("exchange_rate").value = 1;
 
@@ -1068,73 +1071,24 @@
 
                     if (query.startsWith("Error:")) {
                         ShowDialog("Alert", query);
-                        return "USD"; // Devolver el valor predeterminado en caso de error
+                        return; // Devolver el valor predeterminado en caso de error
                     }
 
                     const responce_query = JSON.parse(query);
 
                     if (responce_query.result.startsWith("Error:")) {
                         ShowDialog("Alert", responce_query.result);
-                        return "USD"; // Devolver el valor predeterminado en caso de error
+                        return; // Devolver el valor predeterminado en caso de error
                     }
 
                     if (responce_query.result == "[]") {
-                        return "USD"; // Devolver el valor predeterminado si no hay datos
+                        ShowDialog("Alert", "No default currency found.");
+                        return; // Devolver el valor predeterminado si no hay datos
                     }
 
-                    default_currency = JSON.parse(responce_query.result);
+                    return JSON.parse(responce_query.result);
 
             }
-
-            async function GetBasicBusinessInfo() {
-
-                // Crear un objeto BusinessInfo predeterminado
-                let bi = new BusinessInfo(
-                    "1",
-                    "",
-                    "Kiosko",
-                    "",
-                    "info@angelsql.net",
-                    "https://angelsql.net",
-                    "images/Kiosko_logo.png",
-                    "The best helper for your business",
-                    "USD",
-                    "US Dollar"
-                );
-
-                try {
-                    // Llamar al backend
-                    const query = await sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", "");
-
-                    if (query.startsWith("Error:")) {
-                        ShowDialog("Alert", query);
-                        return bi; // Devolver el objeto predeterminado en caso de error
-                    }
-
-                    const responce_query = JSON.parse(query);
-
-                    if (responce_query.result.startsWith("Error:")) {
-                        ShowDialog("Alert", responce_query.result);
-                        return bi; // Devolver el objeto predeterminado en caso de error
-                    }
-
-                    if (responce_query.result == "[]") {
-                        return bi; // Devolver el objeto predeterminado si no hay datos
-                    }
-
-                    // Actualizar el objeto bi con los datos recibidos
-                    bi = JSON.parse(responce_query.result);
-                    return bi; // Devolver el objeto actualizado
-
-                } catch (error) {
-
-                    console.error("Error fetching business info:", error);
-                    ShowDialog("Alert", "An error occurred while fetching business info.");
-                    return bi; // Devolver el objeto predeterminado en caso de excepción
-
-                }
-            }
-
 
             function StatusHtml(value) {
                 if (value == "Pending") {
@@ -1432,32 +1386,6 @@
                 Exchange_rate;  // Instance of Currency
             }
 
-            /**
-             * BusinessInfo class, used to store the business information
-             */
-            class BusinessInfo {
-                // Business identifier
-                id;
-                // Business Address
-                Address;
-                // Business Name
-                Name;
-                // Business Phone
-                Phone;
-                // Business Email
-                Email;
-                // Business Website
-                Website;
-                // Business Logo
-                Logo;
-                // Business Slogan
-                Slogan;
-                // Currency ID
-                Currency_id;
-                // Currency Name
-                Currency_name;
-            }
-
             window.onload = async function () {
 
                 document.getElementById("dialog_button_close").onclick = function () {
@@ -1480,7 +1408,7 @@
                     }
                 });
 
-                businessinfo = await GetBasicBusinessInfo();
+                GetBusinessInfo();
                 await GetCurrencies();
 
                 translate_menu(language);
@@ -1506,6 +1434,7 @@
                     }
                 }, 15000);
 
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
                 document.getElementById("search_text").focus();
 
             };

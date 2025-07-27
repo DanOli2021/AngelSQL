@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -34,7 +37,6 @@
             max-width: 100% !important;
             overflow-x: auto;
         }
-        
     </style>
 
     <script>
@@ -145,6 +147,14 @@
                     <option value=":ALL">All Warehouses</option>
                 </select>
             </div>
+
+            <div class="col-4">
+                <button id="recalculate_button" class="btn btn-success w-100" style="width: 100%;"
+                    onclick="RecalculateInventory('Warehouse')">
+                    Recalculate warehouse inventory
+                </button>
+            </div>
+
         </div>
 
         <hr />
@@ -260,9 +270,71 @@
 
     <script>
 
+        var BusinessInfo = null;
+
         document.getElementById("search_button").addEventListener("click", async function () {
             Search();
         });
+
+
+        function RecalculateInventory(warehouseOrSku) {
+
+            let warehouseId = document.getElementById("Warehouse").value;
+
+            if (warehouseId === ":ALL") {
+                ShowDialog("Alert", "Please select a specific warehouse to recalculate inventory.");
+                return;
+            }
+
+            ShowAcceptCancelDialog("Recalculate Inventory", "Are you sure you want to recalculate the inventory for warehouse: " + warehouseId + "?", function () {
+
+                let response = sendToAngelPOST(Token.User, "pos_backend/pos_inventory", Token.Token, "RecalculateInventory", { "Storage_id": warehouseId });
+
+                response.then(function (query) {
+
+                    if (query.startsWith("Error:")) {
+                        ShowDialog("Alert", query);
+                        return;
+                    }
+
+                    let responce_query = JSON.parse(query);
+
+                    if (responce_query.result.startsWith("Error:")) {
+                        ShowDialog("Alert", responce_query.result);
+                        return;
+                    }
+
+                    ShowDialog("Success", "Inventory recalculated successfully for warehouse: " + warehouseId);
+                    Search(); // Refresh the search results
+                });
+            });
+
+        }
+
+        function GetBusinessInfo() {
+            if (BusinessInfo) {
+                return BusinessInfo;
+            }
+
+            let response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", {});
+
+            response.then(function (query) {
+                if (query.startsWith("Error:")) {
+                    ShowDialog("Alert", query);
+                    return;
+                }
+
+                let responce_query = JSON.parse(query);
+
+                if (responce_query.result.startsWith("Error:")) {
+                    ShowDialog("Alert", responce_query.result);
+                    return;
+                }
+
+                BusinessInfo = JSON.parse(responce_query.result);
+            });
+
+        }
 
         // Función para inicializar las fechas en los campos de fecha
         function initializeDates() {
@@ -344,7 +416,7 @@
                     }
                 };
 
-                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text", true, BusinessInfo, "Stock");
 
                 document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
 
@@ -430,7 +502,7 @@
                     "EntryOrExit":
                     {
                         "title": "Type",
-                        "html": (value) => `<span class="badge bg-${value === 'Entry' ? 'success' : 'danger'}">${value}</span>`,
+                        "html": (value) => `<span class="badge bg-${value === 'Entry' ? 'success' : 'danger'}" style="font-weight: bold; font-size: 1.2em;">${value}</span>`,
                         "style": "text-align: center;"
                     },
                     "Stock":
@@ -476,7 +548,10 @@
                     },
                 };
 
-                renderPaginatedTable(JsonData, "tableKardex", 20, customCols, "search_kardex");
+                let start_date = document.getElementById("start_date").value;
+                let end_date = document.getElementById("end_date").value;
+
+                renderPaginatedTable(JsonData, "tableKardex", 20, customCols, "search_kardex", true, BusinessInfo, "Kardex of " + sku + " in " + storage_id + " from " + start_date + " to " + end_date);
 
             });
 
@@ -548,6 +623,7 @@
 
             translate_menu(language);
 
+            GetBusinessInfo();
             initializeDates();
             FillWeraHouse();
             Search();

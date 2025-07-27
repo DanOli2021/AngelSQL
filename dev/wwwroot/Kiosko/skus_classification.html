@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -63,7 +66,7 @@
         <!-- Navigation -->
         <div class="row col-12" style="margin-top: 10px;">
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html">
+                <a class="btn btn-primary w-100" href="index.html" onclick="logout()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -222,6 +225,8 @@
 
     <script>
 
+        var BusinessInfo = null;
+
         document.getElementById('image_url').addEventListener('change', function () {
             const url = this.value;
             const mainImage = document.getElementById('classification_image');
@@ -376,7 +381,7 @@
                     return;
                 }
 
-                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text", true, BusinessInfo, "Classifications List");
 
                 document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
 
@@ -586,7 +591,11 @@
                 }
             });
 
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
+
             translate_menu(language);
+
+            GetBusinessInfo();
 
             Search(":ALL");
 

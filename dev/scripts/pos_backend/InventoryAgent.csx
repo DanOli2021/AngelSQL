@@ -38,26 +38,52 @@ string AffectSales()
         return "Ok.";
     }
 
-    result = db.Prompt("SELECT PartitionKey, id, Sale_detail, Storage_id, User_id, Account_id, Receipt_serie, Receipt_number FROM sale WHERE IsInventoryAffected = 0", true);
+    result = db.Prompt("SELECT id, PartitionKey FROM sale WHERE IsInventoryAffected = 0 ORDER BY DateTime ASC LIMIT 100", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result + " (1)";
+    }
+
+    if (result == "[]")
+    {
+        return "Ok.";
+    }
 
     DataTable sales = db.GetDataTable(result);
-    
-    foreach (DataRow sale in sales.Rows)
+
+    foreach (DataRow saleRow in sales.Rows)
     {
 
-        if (sale["Storage_id"] is DBNull)
+        result = db.Prompt($"SELECT * FROM sale WHERE id = '{saleRow["id"]}'", true);
+       
+        if (result.StartsWith("Error:"))
         {
-            sale["Storage_id"] = GetParameter("storage", api);
+            return result + " (2)";
         }
 
-        result = db.Prompt($"SELECT * FROM storage WHERE id = '{sale["Storage_id"]}'", true);
+        if (result == "[]")
+        {
+            continue; // Skip if no sale found
+        }
+
+        result = result.Trim('[', ']'); // Remove brackets from the JSON result
+
+        Sale sale = db.DeserializeDBResult<Sale>(result);
+
+        if (sale.Storage_id == null)
+        {
+            sale.Storage_id = GetParameter("storage", api);
+        }
+
+        result = db.Prompt($"SELECT * FROM storage WHERE id = '{sale.Storage_id}'", true);
 
         if (result == "[]")
         {
             Storage storage = new()
             {
-                Id = sale["Storage_id"].ToString(),
-                Description = sale["Storage_id"].ToString(),
+                Id = sale.Storage_id.ToString(),
+                Description = sale.Storage_id.ToString(),
                 Type = "General",
                 Location = "Main Warehouse",
                 Capacity = 1000000,
@@ -72,10 +98,13 @@ string AffectSales()
             }
         }
 
-        List<Sale_detail> saleDetails = db.jSonDeserialize<List<Sale_detail>>(sale["Sale_detail"].ToString());
-
-        foreach (Sale_detail saleDetail in saleDetails)
+        foreach (Sale_detail saleDetail in sale.Sale_detail)
         {
+
+            if (saleDetail.Qty <= 0)
+            {
+                continue; // Skip if the quantity is zero or negative
+            }
 
             result = db.Prompt($"SELECT Requires_inventory FROM sku WHERE id = '{saleDetail.Sku_id}'", true);
 
@@ -86,34 +115,41 @@ string AffectSales()
                 continue;
             }
 
-            result = db.Prompt($"SELECT id, stock FROM inventory PARTITION KEY {sale["Storage_id"]} WHERE id = '{saleDetail.Sku_id}'", true);
+            result = db.Prompt($"SELECT id, stock FROM inventory PARTITION KEY {sale.Storage_id.ToLower()} WHERE id = '{saleDetail.Sku_id}'", true);
 
             if (result == "[]")
             {
                 Inventory new_inventory = new()
                 {
                     Id = saleDetail.Sku_id,
-                    DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    User_id = sale["User_id"].ToString(),
+                    DateTime = saleDetail.DateTime,
+                    User_id = sale.User_id,
                     //Sku_id = saleDetail.Sku_id,
                     Description = saleDetail.Description,
-                    Storage_id = sale["Storage_id"].ToString(),
+                    Storage_id = sale.Storage_id,
                     Stock = 0
                 };
 
-                result = db.UpsertInto("Inventory", new_inventory, sale["Storage_id"].ToString());
+                result = db.UpsertInto("Inventory", new_inventory, sale.Storage_id);
 
                 if (result.StartsWith("Error:"))
                 {
                     return result + " (0)";
                 }
 
-                result = db.Prompt($"SELECT id, stock FROM inventory PARTITION KEY {sale["Storage_id"]} WHERE id = '{saleDetail.Sku_id}'", true);
-
             }
 
+            result = db.Prompt($"SELECT id, stock FROM inventory PARTITION KEY {sale.Storage_id.ToLower()} WHERE id = '{saleDetail.Sku_id}'", true);
+
+            Console.WriteLine(result);
+
+            if (result == "[]")
+            {
+                return $"Error: Inventory for SKU {saleDetail.Sku_id} not found in storage {sale.Storage_id}.";
+            }            
+
             DataTable inventory = db.GetDataTable(result);
-            Decimal stock = 0;
+            decimal stock = 0;
 
             if (inventory.Rows[0]["stock"] is not DBNull)
             {
@@ -126,14 +162,14 @@ string AffectSales()
             {
                 Id = saleDetail.Sku_id,
                 DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                User_id = sale["User_id"].ToString(),
+                User_id = sale.User_id,
                 //Sku_id = saleDetail.Sku_id,
                 Description = saleDetail.Description,
-                Storage_id = sale["Storage_id"].ToString(),
+                Storage_id = sale.Storage_id,
                 Stock = stock
             };
 
-            result = db.UpsertInto("Inventory", inventoryUpdate, sale["Storage_id"].ToString());
+            result = db.UpsertInto("Inventory", inventoryUpdate, sale.Storage_id.ToLower());
 
             if (result.StartsWith("Error:"))
             {
@@ -144,18 +180,18 @@ string AffectSales()
             {
                 Id = saleDetail.Id,
                 EntryOrExit = "Exit",
-                Account_id = sale["Account_id"].ToString(),
-                ReferenceID = sale["id"].ToString(),
+                Account_id = sale.Account_id,
+                ReferenceID = sale.Id,
                 ReferenceType = "Sale",
                 Sku_id = saleDetail.Sku_id,
                 Sku_description = saleDetail.Description,
-                Storage_id = sale["Storage_id"].ToString(),
+                Storage_id = sale.Storage_id,
                 Quantity = saleDetail.Qty,
                 Cost = saleDetail.Cost,
                 Price = saleDetail.Price,
-                DateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                DateTime = saleDetail.DateTime,
                 Stock = inventoryUpdate.Stock,
-                ReferenceDocument = sale["Receipt_serie"].ToString() + " " + sale["Receipt_number"].ToString(),
+                ReferenceDocument = sale.Receipt_serie + " " + sale.Receipt_number,
             };
 
             result = db.UpsertInto("Kardex", kardex, kardex.DateTime[..7]);
@@ -165,9 +201,21 @@ string AffectSales()
                 return result + " (3)";
             }
 
+            saleDetail.IsInventoryAffected = true; // Mark the sale detail as affected by inventory
+
         }
 
-        db.Prompt($"UPDATE sale PARTITION KEY {sale["PartitionKey"]} SET IsInventoryAffected = 1 WHERE id = '{sale["id"]}'", true);
+        object sale_detail_clone = AngelDB.ObjectConverter.CreateDictionaryOrListFromObject(sale.Sale_detail);
+        result = db.UpsertInto("Sale_detail", sale_detail_clone, saleRow["PartitionKey"].ToString());
+
+        sale.IsInventoryAffected = true; // Mark the sale as affected by inventory
+        object sale_clone = AngelDB.ObjectConverter.CreateDictionaryOrListFromObject(sale);
+        result = db.UpsertInto("Sale", sale_clone, saleRow["PartitionKey"].ToString());
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (2)";
+        }
 
     }
 

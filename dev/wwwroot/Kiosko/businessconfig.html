@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../bootstrap-5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="../css/kiosko.css">
     <link rel="stylesheet" href="./css/bottom_bar.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/material.min.css">
 
@@ -50,7 +51,7 @@
         <div class="row col-12">
             <!-- Botón de logout -->
             <div class="col-4">
-                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout">
+                <a class="btn btn-primary w-100" href="index.html" id="menu_navigation_logout" onclick="LogOut()">
                     <img src="images/icons/beta_general_back_128.png" alt="logo" style="width:24px;" class="me-2">
                     <span id="menu_log_out">Log Out</span>
                 </a>
@@ -444,6 +445,8 @@
                         preview.style.display = 'block';
                     }
                 }
+
+                document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
 
 
                 translate_menu(language);

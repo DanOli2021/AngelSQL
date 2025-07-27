@@ -39,8 +39,114 @@ return api.OperationType switch
     "UpsertInventory" => UpsertInventory(api, translation),
     "Delete" => Delete(api, translation),
     "GetKardex" => GetKardex(),
-    _ => $"Error: No service found {api.OperationType}",
+    "RecalculateInventory" => RecalculateInventory(),
+     _ => $"Error: No service found {api.OperationType}",
 };
+
+
+string RecalculateInventory()
+{
+    string result = IsTokenValid(api, "STEAKHOLDER, SUPERVISOR");
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+    
+    if (api.DataMessage == null)
+    {
+        return "Error: No data provided.";
+    }
+
+    if (api.DataMessage.Storage_id == null)
+    {
+        return "Error: No Storage_id provided.";
+    }
+
+    result = db.Prompt("GET PARTITIONS FROM TABLE inventory", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    DataTable partitions = db.GetDataTable(result);
+
+    foreach (DataRow row in partitions.Rows)
+    {
+        string partition = row["partition"].ToString().Trim();
+
+        if (partition == "")
+        {
+            continue;
+        }
+
+        result = db.Prompt($"DELETE FROM inventory PARTITION KEY {partition} WHERE Storage_id = '{api.DataMessage.Storage_id}'");
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (Inventory)";
+        }
+
+    }
+
+    result = db.Prompt("GET PARTITIONS FROM TABLE kardex", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    partitions = db.GetDataTable(result);
+
+    foreach (DataRow row in partitions.Rows)
+    {
+        string partition = row["partition"].ToString().Trim();
+
+        if (partition == "")
+        {
+            continue;
+        }
+
+        result = db.Prompt($"DELETE FROM kardex PARTITION KEY {partition} WHERE Storage_id = '{api.DataMessage.Storage_id}'");
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (Kardex)";
+        }
+
+    }
+
+    result = db.Prompt("GET PARTITIONS FROM TABLE sale", true);
+
+    if (result.StartsWith("Error:"))
+    {
+        return result;
+    }
+
+    partitions = db.GetDataTable(result);
+
+    foreach (DataRow row in partitions.Rows)
+    {
+        string partition = row["partition"].ToString().Trim();
+
+        if (partition == "")
+        {
+            continue;
+        }
+
+        result = db.Prompt($"UPDATE sale PARTITION KEY {partition} SET IsInventoryAffected = 0 WHERE Storage_id = '{api.DataMessage.Storage_id}'");
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (Sale)";
+        }
+
+    }
+
+    return "Ok.";
+
+}
 
 
 string GetKardex()
@@ -99,10 +205,10 @@ string GetKardex()
 
     if (search == ":ALL")
     {
-        return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC", true);
+        return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC, timestamp DESC", true);
     }
 
-    return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND (ReferenceDocument LIKE '%{search}%' OR Sku_description LIKE '%{search}%') AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC", true);
+    return db.Prompt($"SELECT {fields} FROM Kardex PARTITION KEY partition >= '{start_partion}' AND partition <= '{end_partion}' WHERE Sku_id = '{api.DataMessage.Sku_id}' AND Storage_id = '{api.DataMessage.Storage_id}' AND (ReferenceDocument LIKE '%{search}%' OR Sku_description LIKE '%{search}%') AND DateTime >= '{start_date}' AND DateTime <= '{end_date}' ORDER BY DateTime DESC, timestamp DESC", true);
 
 }
 
@@ -367,3 +473,6 @@ string Delete(AngelApiOperation api, Translations translation)
     return result;
 
 }
+
+
+

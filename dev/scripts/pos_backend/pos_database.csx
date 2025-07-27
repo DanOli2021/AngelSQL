@@ -66,7 +66,7 @@ private string UpdateDatabase()
 
     BusinessLine businessLine = new();
     db.CreateTable(businessLine, "BusinessLine", false, "");
-
+ 
     Series series = new();
     db.CreateTable(series, "Series", false, "");
 

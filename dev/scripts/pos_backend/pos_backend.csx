@@ -432,7 +432,7 @@ string DeletePayment()
 string UpsertSale()
 {
 
-    string result = IsTokenValid(api, "POS_DATA_UPSERT, CASHIER, STEAKHOLDER");
+    string result = IsTokenValid(api, "POS_DATA_UPSERT, CASHIER, STEAKHOLDER, ADMINISTRATIVE, SUPERVISORS");
 
     if (result.StartsWith("Error:"))
     {
@@ -517,7 +517,14 @@ string UpsertSale()
             }
         }
 
-        result = db.Prompt($"SELECT id FROM customer WHERE id = '{sale.Customer_id}'", true);
+        result = db.Prompt($"SELECT * FROM customer WHERE id = '{sale.Customer_id}'", true);
+
+        if (result.StartsWith("Error:"))
+        {
+            return result + " (2.1)";
+        }
+
+        Console.WriteLine($"Customer: {result}");
 
         Customer sale_customer;
 
@@ -566,6 +573,7 @@ string UpsertSale()
         }
         else
         {
+            Console.WriteLine($"Customer: {result}");
             sale_customer = db.jSonDeserialize<List<Customer>>(result)[0];
         }
 
@@ -580,6 +588,9 @@ string UpsertSale()
             {
                 return "Error: " + translation.Get("Customer name is required for credit sales", api.UserLanguage);
             }
+
+            Console.WriteLine($"Customer ID: {sale.Customer_id}");
+            Console.WriteLine($"Customer Credit: {sale_customer.Credit_limit}");
 
             if (sale_customer.Credit_limit <= 0)
             {
@@ -709,6 +720,15 @@ string UpsertSale()
         {
             sale.Receipt_number = GetSerie(sale_serie, "Initial_receipt_number").ToString();
         }
+
+        string warehouse = GetParameter("storage", api);
+
+        if (warehouse.StartsWith("Error:"))
+        {
+            return warehouse + " (3)";
+        }
+
+        sale.Storage_id = warehouse;
 
         Dictionary<string, object> sale_clone = ObjectCloner.CreateDictionaryFromObject(sale);
         sale_clone["Account_id"] = api.account;

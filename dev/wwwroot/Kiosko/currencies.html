@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -220,6 +223,8 @@
 
     <script>
 
+        var BusinessInfo = null;
+
         // Import from Excel
         function ImporFromSpreadSheet() {
             const input = document.createElement("input");
@@ -346,7 +351,7 @@
                     return;
                 }
 
-                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text");
+                renderPaginatedTable(JsonData, "tableContainer", 20, customCols, "search_text", true, BusinessInfo, "Currencies List");
 
                 document.getElementById("search_text").focus(); // Regresar el foco al campo de búsqueda
 
@@ -523,6 +528,8 @@
                     sessionStorage.setItem('user_groups', response_query.result);
                 }
             });
+
+            GetBusinessInfo();
 
             translate_menu(language);
 

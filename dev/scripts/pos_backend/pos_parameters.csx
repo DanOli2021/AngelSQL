@@ -309,7 +309,6 @@ string GetDefaultCurrency()
     DataTable dt = db.GetDataTable(result);
 
     result = db.Prompt($"SELECT * FROM currency WHERE id = '{dt.Rows[0]["value"].ToString().Trim()}'", true);
-    
 
     if (result == "[]")
     {

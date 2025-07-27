@@ -70,6 +70,7 @@ function SaveCustomer() {
 }
 
 function GetBusinessLines() {
+
     var response = sendToAngelPOST(Token.User, "pos_backend/pos_backend", Token.Token, "GetBusinessLines", "");
 
     response.then(function (query) {
@@ -102,7 +103,6 @@ function GetBusinessLines() {
             option.value = business_lines[i].id;
             business_line.add(option);
         }
-
 
     });
 

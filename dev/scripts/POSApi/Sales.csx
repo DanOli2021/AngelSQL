@@ -84,7 +84,7 @@ public class Sale
      // Workstation identifier, if the sale is in a workstation
     public string WorkStation { get; set; }    
     // If inventory is affected
-    public int IsInventoryAffected { get; set; } // If the sale is already in the inventory
+    public bool IsInventoryAffected { get; set; } // If the sale is already in the inventory
     public string Status { get; set; } = "PENDING"; // Sale status, default is PENDING
     // Sale observations
     public string Observations { get; set; } = "";
@@ -161,6 +161,8 @@ public class Sale_detail
     public string ClaveUnidad { get; set; }
     // Observations
     public string Observations { get; set; }
+    // If the sale detail is already in the inventory
+    public bool IsInventoryAffected { get; set; } = false; 
     // The most common classification of the sku
     public string Preferential_Classification { get; set; }
     // List of consumption taxes

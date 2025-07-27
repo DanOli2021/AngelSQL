@@ -66,7 +66,6 @@
                 style="margin-top: 20px;width:200px">
 
             <h1 class="text-center" style="font-size: 40px; font-weight: bolder;" id="auth_title">Kiosko Admin (Tools)</h1>
-            <h1 class="text-center" style="font-size: 20px; font-weight: bolder;" id="auth_subtitle">MyBusiness POS for small businesses</h1>
 
             <div class="col-sm-12" id="buttonszone">
             </div>
@@ -115,6 +114,8 @@
                     generateButtons();
                 }
             });
+
+            document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
 
             translate_menu(language);
 

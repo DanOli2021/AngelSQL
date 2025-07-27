@@ -7,131 +7,131 @@ async function GetGroupsUsingTocken(user, token) {
 }
 
 async function GetUser(user, token, userToObtain) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetUser", { User: userToObtain });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetUser", { User: userToObtain });
 }
 
 async function SaveUser(user, token, userToSave) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertUser", userToSave);
+    return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertUser", userToSave);
 }
 
 async function GetUsers(user, token, Where = {}) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetUsers", Where);
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetUsers", Where);
 }
 
 async function DeleteToken(user, token, TokenToDelete) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteToken", { TokenToDelete: TokenToDelete });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteToken", { TokenToDelete: TokenToDelete });
 }
 
 async function GetTokens(user, token) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetTokens", {});
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetTokens", {});
 }
 
 async function GetToken(user, token, TokenId) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetToken", { TokenId: TokenId });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetToken", { TokenId: TokenId });
 }
 
 async function SaveToken(user, token, Token) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "SaveToken", Token);
+    return sendToAngelPOST(user, "tokens/admintokens", token, "SaveToken", Token);
 }
 
 async function DeleteUser(user, token, UserToDelete) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteUser", { UserToDelete: UserToDelete });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteUser", { UserToDelete: UserToDelete });
 }
 
 async function GetGroups(user, token) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", {});
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", {});
 }
 
 async function GetGroup(user, token, id) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", { Where: "id = '" + id + "'" });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "GetGroups", { Where: "id = '" + id + "'" });
 }
 
 async function SaveGroup(user, token, GroupToSave) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertGroup", GroupToSave);
+    return sendToAngelPOST(user, "tokens/admintokens", token, "UpsertGroup", GroupToSave);
 }
 
 async function DeleteGroup(user, token, GroupToDelete) {
-  return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteGroup", { UserGroupToDelete: GroupToDelete });
+    return sendToAngelPOST(user, "tokens/admintokens", token, "DeleteGroup", { UserGroupToDelete: GroupToDelete });
 }
 
 async function GetTopicsFromUser(user, token) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopicsFromUser", {});
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopicsFromUser", {});
 }
 
 async function GetTopics(user, token) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopics", {});
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopics", {});
 }
 
 async function SaveTopic(user, token, topic) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertTopic", topic);
+    return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertTopic", topic);
 }
 
 async function GetTopic(user, token, topic_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopic", { Id: topic_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetTopic", { Id: topic_id });
 }
 
 async function GetSubTopicsFromTopic(user, token, topic_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopicsFromTopic", { Topic_id: topic_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopicsFromTopic", { Topic_id: topic_id });
 }
 
 async function GetSubTopic(user, token, subtopic_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopic", { Id: subtopic_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetSubTopic", { Id: subtopic_id });
 }
 
 async function SaveSubTopic(user, token, subtopic) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertSubTopic", subtopic);
+    return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertSubTopic", subtopic);
 }
 
 async function GetContentFromSubTopic(user, token, subtopic) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentFromSubTopic", { Subtopic_id: subtopic });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentFromSubTopic", { Subtopic_id: subtopic });
 }
 
 async function GetContent(user, token, Content_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContent", { Id: Content_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetContent", { Id: Content_id });
 }
 
 async function SaveContent(user, token, content) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContent", content);
+    return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContent", content);
 }
 
 async function DeleteContent(user, token, content_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContent", { Content_id: content_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContent", { Content_id: content_id });
 }
 
 async function GetContentDetail(user, token, content_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetail", { Content_id: content_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetail", { Content_id: content_id });
 }
 
 async function GetContentDetailItem(user, token, id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetailItem", { Id: id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetContentDetailItem", { Id: id });
 }
 
 async function GetTitles(user, token, content_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "GetTitles", { Content_id: content_id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "GetTitles", { Content_id: content_id });
 }
 
 async function SaveContentDetail(user, token, contentdetail) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContentDetail", contentdetail);
+    return sendToAngelPOST(user, "docs/helpdesk", token, "UpsertContentDetail", contentdetail);
 }
 
 async function DeleteContentDetail(user, token, id, Content_id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContentDetail", { Id: id, Content_id: Content_id } );
+    return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteContentDetail", { Id: id, Content_id: Content_id });
 }
 
 async function SendFileToDownload(user, token, file, dataMessage) {
-  return SendFile(user, "docs/helpdesk", token, "UploadFile", file, dataMessage);
+    return SendFile(user, "docs/helpdesk", token, "UploadFile", file, dataMessage);
 }
 
 async function SearchInfo(user, token, textToSerch) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "SearchInfo", { Search: textToSerch });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "SearchInfo", { Search: textToSerch });
 }
 
 async function DeleteSubTopic(user, token, id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteSubTopic", { Id: id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteSubTopic", { Id: id });
 }
 
 async function DeleteTopic(user, token, id) {
-  return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteTopic", { Id: id });
+    return sendToAngelPOST(user, "docs/helpdesk", token, "DeleteTopic", { Id: id });
 }
 
 async function GetPublicContent(account, Content_id) {
@@ -416,7 +416,7 @@ function showDialog(title, message) {
 
     // Crear el HTML del diálogo
     const dialogHtml = document.createElement('dialog');
-    dialogHtml.id = 'genericDialog';    
+    dialogHtml.id = 'genericDialog';
     dialogHtml.style.padding = '20px';
     dialogHtml.style.border = 'none';
     dialogHtml.style.borderRadius = '10px';
@@ -665,7 +665,7 @@ function openCenteredWindow(url) {
 
 
 
-function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {}, customSearchInput = null, exportToXlsx = true) {
+function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {}, customSearchInput = null, exportToFile = true, businessInfo = null, customTitle = null) {
     const container = document.getElementById(divId);
     let currentPage = 1;
     let filteredData = [...data];
@@ -674,11 +674,9 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
 
     const allHeaders = Object.keys(data[0]);
     const getVisibleHeaders = () => allHeaders.filter(h => customColumns[h]?.visible !== false);
-
     const totalPages = () => Math.ceil(filteredData.length / rowsPerPage);
 
     var searchInput = null;
-
     if (customSearchInput) {
         searchInput = document.getElementById(customSearchInput);
         if (searchInput) {
@@ -689,25 +687,22 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
         }
     }
 
-    var exportBtn;
+    const topControls = document.createElement("div");
+    topControls.className = "d-flex justify-content-start align-items-center gap-2 mb-2";
 
-    if (exportToXlsx == true) {
-        exportBtn = document.createElement("button");
-        exportBtn.className = "btn btn-success mb-3 ms-2";
-        exportBtn.style = "margin-top: 10px;";
+    if (exportToFile) {
+        const exportBtn = document.createElement("button");
+        exportBtn.className = "btn btn-success";
         exportBtn.innerText = "Export to Excel";
         exportBtn.onclick = exportToExcel;
-    }
 
-    const topControls = document.createElement("div");
-    topControls.className = "d-flex justify-content-between align-items-center";
+        const pdfBtn = document.createElement("button");
+        pdfBtn.className = "btn btn-danger";
+        pdfBtn.innerText = "Export to PDF";
+        pdfBtn.onclick = exportToPDF;
 
-    if (customSearchInput) {
-        searchInput.value = "";
-    }
-
-    if (exportToXlsx == true) {
         topControls.appendChild(exportBtn);
+        topControls.appendChild(pdfBtn);
     }
 
     function sortData(column) {
@@ -728,10 +723,148 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
     }
 
     function exportToExcel() {
-        const ws = XLSX.utils.json_to_sheet(filteredData);
+        const visibleHeaders = getVisibleHeaders();
+        const headerTitles = visibleHeaders.map(h => customColumns[h]?.title || h);
+        const exportData = filteredData.map(row =>
+            visibleHeaders.reduce((acc, key) => {
+                acc[customColumns[key]?.title || key] = row[key];
+                return acc;
+            }, {})
+        );
+
+        // Totales
+        const totalsRow = {};
+        visibleHeaders.forEach(key => {
+            const colConf = customColumns[key];
+            if (colConf?.sum) {
+                const total = filteredData.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+                totalsRow[customColumns[key]?.title || key] = colConf.sumFormatter ? colConf.sumFormatter(total) : total;
+            } else {
+                totalsRow[customColumns[key]?.title || key] = "";
+            }
+        });
+        exportData.push(totalsRow);
+
+        const ws = XLSX.utils.json_to_sheet([]);
+
+        let rowIndex = 0;
+        if (businessInfo) {
+            XLSX.utils.sheet_add_aoa(ws, [[businessInfo.Name || ""], [businessInfo.Slogan || ""], [""]], { origin: rowIndex });
+            rowIndex += 3;
+        }
+
+        if (customTitle) {
+            XLSX.utils.sheet_add_aoa(ws, [[customTitle]], { origin: rowIndex });
+            rowIndex++;
+        }
+
+        XLSX.utils.sheet_add_json(ws, exportData, {
+            header: headerTitles,
+            skipHeader: false,
+            origin: rowIndex
+        });
+
+        if (businessInfo) {
+            rowIndex += exportData.length + 2;
+            const footerData = [];
+
+            if (businessInfo.Address)
+                footerData.push(["Dirección:", businessInfo.Address]);
+            if (businessInfo.Phone)
+                footerData.push(["Teléfono:", businessInfo.Phone]);
+            if (businessInfo.Email)
+                footerData.push(["Correo:", businessInfo.Email]);
+            if (businessInfo.Website)
+                footerData.push(["Sitio Web:", businessInfo.Website]);
+
+            XLSX.utils.sheet_add_aoa(ws, footerData, { origin: rowIndex });
+        }
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Datos");
-        XLSX.writeFile(wb, "tabla_datos.xlsx");
+        const fileName = (customTitle || "tabla_datos").replace(/\s+/g, '_').toLowerCase() + ".xlsx";
+        XLSX.writeFile(wb, fileName);
+    }
+
+    async function exportToPDF() {
+
+        window.jsPDF = window.jspdf.jsPDF;
+
+        if (typeof jsPDF === 'undefined') {
+            ShowDialog("Error", "La librería jsPDF no está cargada. Por favor, intente de nuevo o recargue la página.");
+            return;
+        }
+
+        const doc = new jsPDF();
+        const visibleHeaders = getVisibleHeaders();
+        const headerTitles = visibleHeaders.map(h => customColumns[h]?.title || h);
+        const exportRows = filteredData.map(row => visibleHeaders.map(h => row[h]));
+
+        const hasTotals = visibleHeaders.some(h => customColumns[h]?.sum);
+        if (hasTotals) {
+            const totalRow = visibleHeaders.map(h => {
+                const conf = customColumns[h];
+                if (conf?.sum) {
+                    const total = filteredData.reduce((acc, row) => acc + (parseFloat(row[h]) || 0), 0);
+                    return conf.sumFormatter ? conf.sumFormatter(total) : total;
+                } else {
+                    return "";
+                }
+            });
+            exportRows.push(totalRow);
+        }
+
+        let y = 10;
+
+        if (businessInfo) {
+            if (businessInfo.Logo) {
+                const img = new Image();
+                img.src = businessInfo.Logo;
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        doc.addImage(img, "PNG", 10, y, 30, 30);
+                        resolve();
+                    };
+                });
+            }
+
+            doc.setFontSize(12);
+            doc.text(businessInfo.Name || "", 45, y + 5);
+            doc.setFontSize(10);
+            doc.text(businessInfo.Slogan || "", 45, y + 12);
+            y += 35;
+        }
+
+        if (customTitle) {
+            doc.setFontSize(14);
+            doc.text(customTitle, 10, y);
+            y += 10;
+        }
+
+        doc.autoTable({
+            head: [headerTitles],
+            body: exportRows,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [52, 152, 219] },
+            margin: { top: y },
+            didDrawPage: function (data) {
+                const pageSize = doc.internal.pageSize;
+                const pageHeight = pageSize.height || pageSize.getHeight();
+                doc.setFontSize(9);
+                doc.text(`Página ${doc.internal.getNumberOfPages()}`, pageSize.width - 40, pageHeight - 10);
+            }
+        });
+
+        const fileName = (customTitle || "tabla_datos").replace(/\s+/g, '_').toLowerCase() + ".pdf";
+
+        if (businessInfo) {
+            let footerY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(10);
+            doc.text("Dirección: " + businessInfo.Address, 10, footerY);
+            doc.text("Teléfono: " + businessInfo.Phone + " Email: " + businessInfo.Email + " Web: " + businessInfo.Website, 10, footerY + 6);
+        }
+
+        doc.save(fileName);
     }
 
     function renderTable() {
@@ -740,7 +873,7 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
         const end = start + rowsPerPage;
         const pageData = filteredData.slice(start, end);
 
-        let html = `<div class="table-responsive" style="width:100% !important; max-width:100% !important;"><table class="table table-bordered table-striped" style="width:100%;"> <thead><tr>`;
+        let html = `<div class="table-responsive"><table class="table table-bordered table-striped"><thead><tr>`;
 
         for (let header of visibleHeaders) {
             const colConf = customColumns[header] || {};
@@ -752,7 +885,6 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
         html += '</tr></thead><tbody>';
 
         for (let row of pageData) {
-            // Detecta "id" sin importar el casing
             const rowId = row.id || row.ID || row.Id || "";
             html += `<tr${rowId ? ` id="${String(rowId).trim().toUpperCase()}"` : ''}>`;
 
@@ -789,17 +921,13 @@ function renderPaginatedTable(data, divId, rowsPerPage = 20, customColumns = {},
 
         html += '</table></div>';
 
-        html += `<nav><ul class="pagination justify-content-center">`;
-        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">` +
-            `<button class="page-link" onclick="changePage(-1)">&#8592;</button></li>`;
-        html += `<li class="page-item disabled"><span class="page-link">Page ${currentPage} of ${totalPages()}</span></li>`;
-        html += `<li class="page-item ${currentPage === totalPages() ? 'disabled' : ''}">` +
-            `<button class="page-link" onclick="changePage(1)">&#8594;</button></li>`;
-        html += '</ul></nav>';
-
-        container.style.width = "100%";
-        container.style.maxWidth = "100%";
-        container.style.overflowX = "auto";
+        html += `<nav><ul class="pagination justify-content-center">` +
+            `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">` +
+            `<button class="page-link" onclick="changePage(-1)">&#8592;</button></li>` +
+            `<li class="page-item disabled"><span class="page-link">Page ${currentPage} of ${totalPages()}</span></li>` +
+            `<li class="page-item ${currentPage === totalPages() ? 'disabled' : ''}">` +
+            `<button class="page-link" onclick="changePage(1)">&#8594;</button></li>` +
+            '</ul></nav>';
 
         container.innerHTML = '';
         container.appendChild(topControls);
@@ -966,3 +1094,27 @@ function LogOut() {
 }
 
 
+function GetBusinessInfo() {
+    if (BusinessInfo) {
+        return BusinessInfo;
+    }
+
+    let response = sendToAngelPOST(Token.User, "pos_backend/pos_businessinfo", Token.Token, "GetBasicBusinessInfo", {});
+
+    response.then(function (query) {
+        if (query.startsWith("Error:")) {
+            ShowDialog("Alert", query);
+            return;
+        }
+
+        let responce_query = JSON.parse(query);
+
+        if (responce_query.result.startsWith("Error:")) {
+            ShowDialog("Alert", responce_query.result);
+            return;
+        }
+
+        BusinessInfo = JSON.parse(responce_query.result);
+    });
+
+}

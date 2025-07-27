@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="./css/bottom_bar.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <script src="./js/translate.js"></script>
     <script src="../js/main.js"></script>
     <script src="../proxy.js"></script>
@@ -558,6 +561,8 @@
 
     <script>
 
+        var BusinessInfo = null;
+
         function ImporFromSpreadSheet() {
             const input = document.createElement("input");
             input.type = "file";
@@ -1011,7 +1016,7 @@
                     return;
                 }
 
-                renderPaginatedTable(skus, "tableContainer", 20, customCols, "searchsku");
+                renderPaginatedTable(skus, "tableContainer", 20, customCols, "searchsku", true, BusinessInfo, "Skus List");
 
                 document.getElementById("searchsku").focus(); // Regresar el foco al campo de búsqueda
 
@@ -1449,6 +1454,8 @@
                     return;
                 }
 
+                GetBusinessInfo();
+
                 SearchSkus(":TODAY");
                 document.getElementById("sku_edit").close();
                 HideLoader(); // <-- ocultar loader
@@ -1544,6 +1551,9 @@
                 }
             };
 
+
+            GetBusinessInfo();
+            
             SearchSkus(":ALL");
 
             document.getElementById("menu_log_out").innerText = "Log Out: " + Token.User;
